@@ -31,6 +31,8 @@ int main(void)
     BOARD_InitPins();
     BOARD_BootClockRUN();
     BOARD_InitDebugConsole();
+    BOARD_ADC_InitPins();
+   // ADC_CADC_Init();
     LED_Init();
     KEY_Init();
     DelayInit();
@@ -43,8 +45,13 @@ int main(void)
     while (1)
     {
        i++ ; 
+          PRINTF("\r\n GPIO Driver example\r\n");
+          DelayMs(500U);
+          PRINTF("\r\n The LED is blinking.\r\n");
 
-	 HALLSensor_Detected_BLDC();
+         LED1 = !LED1;
+         DelayMs(100U);
+	// HALLSensor_Detected_BLDC();
 #if 0
      switch(i)
      {
