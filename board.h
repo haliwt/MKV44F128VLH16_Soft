@@ -20,13 +20,13 @@
 
 /*! @brief The UART to use for debug messages. */
 #define BOARD_USE_UART
-#define BOARD_DEBUG_UART_TYPE kSerialPort_Uart
-#define BOARD_DEBUG_UART_BASEADDR (uint32_t) UART1
-#define BOARD_DEBUG_UART_INSTANCE 1U
-#define BOARD_DEBUG_UART_CLKSRC kCLOCK_FastPeriphClk
-#define BOARD_DEBUG_UART_CLK_FREQ CLOCK_GetFastPeriphClkFreq()
-#define BOARD_UART_IRQ UART1_RX_TX_IRQn
-#define BOARD_UART_IRQ_HANDLER UART1_RX_TX_IRQHandler
+#define BOARD_DEBUG_UART_TYPE                                   kSerialPort_Uart
+#define BOARD_DEBUG_UART_BASEADDR                               (uint32_t) UART1
+#define BOARD_DEBUG_UART_INSTANCE                                1U
+#define BOARD_DEBUG_UART_CLKSRC                                  kCLOCK_FastPeriphClk
+#define BOARD_DEBUG_UART_CLK_FREQ                                CLOCK_GetFastPeriphClkFreq()
+#define BOARD_UART_IRQ                                           UART1_RX_TX_IRQn
+#define BOARD_UART_IRQ_HANDLER                                   UART1_RX_TX_IRQHandler
 
 #ifndef BOARD_DEBUG_UART_BAUDRATE
 #define BOARD_DEBUG_UART_BAUDRATE 115200

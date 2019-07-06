@@ -23,9 +23,9 @@
  ******************************************************************************/
 int main(void)
 {
-    uint8_t key; 
-    uint32_t pwmVal = 4;
-    uint16_t i;
+   // uint8_t key; 
+   // uint32_t pwmVal = 4;
+    uint8_t i;
 
     /* Board pin, clock, debug console init */
     BOARD_InitPins();
@@ -34,22 +34,41 @@ int main(void)
     LED_Init();
     KEY_Init();
     DelayInit();
+	
     /* Set the PWM Fault inputs to a low value */
     PWM_BLDC_Init();
    
-
-
+       
 
     while (1)
     {
-      
-     // GPIO_PortToggle(BOARD_LED1_GPIO, 1u << BOARD_LED1_GPIO_PIN);
-     // GPIO_PortToggle(BOARD_LED2_GPIO, 1u << BOARD_LED2_GPIO_PIN);
-    //  LED1 = !LED1;
-    //  LED2 = !LED2 ;
-    // DelayMs(100U);
-      //GPIO_PinWrite(BOARD_LED_GPIO, 7, 0) ; 
-#if 0  
+       i++ ; 
+
+	 HALLSensor_Detected_BLDC();
+#if 0
+     switch(i)
+     {
+     case 1:
+       LED2=1;
+       PWMABC_Select_Channel(2);
+       //PWM_UpdatePwmDutycycle(BOARD_PWM_BASEADDR, kPWM_Module_2, kPWM_PwmA, kPWM_SignedCenterAligned, 50); 
+       //PWM_SetPwmLdok(BOARD_PWM_BASEADDR,  kPWM_Control_Module_2, true);
+       DelayMs(500U);
+       break;
+     case 2:  
+        LED2=0;
+        PWMABC_Close_Channel(2);
+         PWMABC_Close_Channel(1);
+         PWMABC_Close_Channel(0);
+       //PWM_UpdatePwmDutycycle(BOARD_PWM_BASEADDR, kPWM_Module_2, kPWM_PwmA, kPWM_SignedCenterAligned, 0);
+       //PWM_SetPwmLdok(BOARD_PWM_BASEADDR, kPWM_Control_Module_2, true);
+      DelayMs(500U);
+      break;
+     
+     }
+     if(i==2)i =0;
+#endif 
+#if 0 
      key = KEY_Scan(0);
      switch(key)
      {
@@ -58,12 +77,14 @@ int main(void)
        
       LED1 = !LED1;
       DelayMs(100U);
+     PWMABC_Close_Channel(2);
       LED2 = 1;
      //  printf("UART%d OK! Hello Kinetis\r\n", instance);
        break;
      case KEY2_PRES:
        LED1 =1;
        LED2 = 0 ;
+        PWMABC_Select_Channel(2);
         break;
      case KEY3_PRES:
        
@@ -114,25 +135,6 @@ int main(void)
      
      }
 #endif 
-     i++ ; 
-     switch(i)
-     {
-     case 1:
-       LED2=1;
-       PWM_UpdatePwmDutycycle(BOARD_PWM_BASEADDR, kPWM_Module_2, kPWM_PwmA, kPWM_SignedCenterAligned, 50); 
-       PWM_SetPwmLdok(BOARD_PWM_BASEADDR,  kPWM_Control_Module_2, true);
-       DelayMs(500U);
-       break;
-     case 2:  
-        LED2=0;
-       PWM_UpdatePwmDutycycle(BOARD_PWM_BASEADDR, kPWM_Module_2, kPWM_PwmA, kPWM_SignedCenterAligned, 0);
-       PWM_SetPwmLdok(BOARD_PWM_BASEADDR, kPWM_Control_Module_2, true);
-      DelayMs(500U);
-      break;
-     
-     }
-     if(i==2)i =0;
-     
 #if 0 
         DelayMs(100U);
         pwmVal = pwmVal + 4;
@@ -144,13 +146,14 @@ int main(void)
         }
 
         /* Update duty cycles for all 3 PWM signals */
-       PWM_UpdatePwmDutycycle(BOARD_PWM_BASEADDR, kPWM_Module_0, kPWM_PwmA, kPWM_SignedCenterAligned, 0);
+        PWM_UpdatePwmDutycycle(BOARD_PWM_BASEADDR, kPWM_Module_0, kPWM_PwmA, kPWM_SignedCenterAligned, pwmVal);
         PWM_UpdatePwmDutycycle(BOARD_PWM_BASEADDR, kPWM_Module_1, kPWM_PwmA, kPWM_SignedCenterAligned, (pwmVal >> 1));
-       PWM_UpdatePwmDutycycle(BOARD_PWM_BASEADDR, kPWM_Module_2, kPWM_PwmA, kPWM_SignedCenterAligned, (pwmVal >> 2));
+        PWM_UpdatePwmDutycycle(BOARD_PWM_BASEADDR, kPWM_Module_2, kPWM_PwmA, kPWM_SignedCenterAligned, (pwmVal >> 2));
 
         /* Set the load okay bit for all submodules to load registers from their buffer */
       PWM_SetPwmLdok(BOARD_PWM_BASEADDR, kPWM_Control_Module_0 | kPWM_Control_Module_1 | kPWM_Control_Module_2, true);
 #endif 
     }
+	
  
 }
