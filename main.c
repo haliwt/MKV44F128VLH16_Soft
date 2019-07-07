@@ -25,33 +25,31 @@ int main(void)
 {
    // uint8_t key; 
    // uint32_t pwmVal = 4;
-    uint8_t i;
+   // uint8_t i;
 
     /* Board pin, clock, debug console init */
     BOARD_InitPins();
     BOARD_BootClockRUN();
     BOARD_InitDebugConsole();
-    BOARD_ADC_InitPins();
-   // ADC_CADC_Init();
+    PRINTF("uwStep numbers 00\n");  
     LED_Init();
     KEY_Init();
     DelayInit();
+    HALL_Init();
+    HallSensor_GetPinState();
 	
     /* Set the PWM Fault inputs to a low value */
     PWM_BLDC_Init();
    
-       
+    PRINTF("uwStep numbers 0\n");  
 
     while (1)
     {
-       i++ ; 
-          PRINTF("\r\n GPIO Driver example\r\n");
-          DelayMs(500U);
-          PRINTF("\r\n The LED is blinking.\r\n");
-
+         PRINTF("uwStep numbers \n");
+         HallSensor_GetPinState();
+	 HALLSensor_Detected_BLDC();
          LED1 = !LED1;
          DelayMs(100U);
-	// HALLSensor_Detected_BLDC();
 #if 0
      switch(i)
      {

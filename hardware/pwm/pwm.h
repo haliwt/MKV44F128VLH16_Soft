@@ -7,6 +7,9 @@
 #include "fsl_debug_console.h"
 #include "fsl_gpio.h"
 
+
+
+
 #define PWM_SRC_CLK_FREQ CLOCK_GetFreq(kCLOCK_FastPeriphClk) //84Mhz 
 /* The PWM base address */
 #define BOARD_PWM_BASEADDR PWMA

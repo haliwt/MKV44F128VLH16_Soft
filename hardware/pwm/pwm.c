@@ -45,7 +45,7 @@ uint32_t HallSensor_GetPinState(void)
   {
     State |= 0x02U;
   }
-  if(GPIO_PinRead(GPIOC,3) != GPIO_PIN_RESET)  //????¡ä??D?¡Â¡Á¡ä¨¬???¨¨?
+  if(GPIO_PinRead(GPIOB,3) != GPIO_PIN_RESET)  //????¡ä??D?¡Â¡Á¡ä¨¬???¨¨?
   {
     State |= 0x04U;
   }
@@ -63,6 +63,8 @@ uint32_t HallSensor_GetPinState(void)
 ******************************************************************/
 void PWM_BLDC_Init(void)
 {
+    
+    pwm_config_t pwmConfig;
     XBARA_Init(XBARA);
     XBARA_SetSignalsConnection(XBARA, kXBARA_InputVdd, kXBARA_OutputPwmAFault0);
     XBARA_SetSignalsConnection(XBARA, kXBARA_InputVdd, kXBARA_OutputPwmAFault1);
@@ -86,11 +88,11 @@ void PWM_BLDC_Init(void)
      * pwmConfig.pairOperation = kPWM_Independent;
      */
     PWM_GetDefaultConfig(&pwmConfig);
-
+    PRINTF("FlexPWM driver example 2\n");
     /* Use full cycle reload */
     pwmConfig.reloadLogic = kPWM_ReloadPwmFullCycle;
     /* PWM A & PWM B form a complementary PWM pair */
-    pwmConfig.pairOperation   = kPWM_ComplementaryPwmA;
+    pwmConfig.pairOperation   = kPWM_Independent; //WT.EDIT kPWM_ComplementaryPwmA;
     pwmConfig.enableDebugMode = true;
     pwmConfig.forceTrigger = kPWM_Force_Local;  //WT.EDIT
     
@@ -119,16 +121,19 @@ void PWM_BLDC_Init(void)
         PRINTF("PWM initialization failed\n");
       //  return 1;
     }
-
+    
+    PRINTF("PWM init b3\n");
     /* Call the init function with demo configuration */
     PWM_DRV_Init3PhPwm();
-
+    PRINTF("PWM init 3\n");
+    
     /* Set the load okay bit for all submodules to load registers from their buffer */
    PWM_SetPwmLdok(BOARD_PWM_BASEADDR, kPWM_Control_Module_0 | kPWM_Control_Module_1 | kPWM_Control_Module_2, true);
 
     /* Start the PWM generation from Submodules 0, 1 and 2 */
     PWM_StartTimer(BOARD_PWM_BASEADDR, kPWM_Control_Module_0 | kPWM_Control_Module_1 | kPWM_Control_Module_2);
-
+    
+    PRINTF("PWMA init end \n");
 }
 /**************************************************************
  *
@@ -142,10 +147,13 @@ void PWM_BLDC_Init(void)
 
 static void PWM_DRV_Init3PhPwm(void)
 {
+    
+
     uint16_t deadTimeVal;
     pwm_signal_param_t pwmSignal[2];
     uint32_t pwmSourceClockInHz;
     uint32_t pwmFrequencyInHz = 1500; //5KHZ PWM of frequency  1khz ~ 4.5khz 1.5khz =1.5khz 2khz = 2khz 3kh=3kz
+
 
     pwmSourceClockInHz = PWM_SRC_CLK_FREQ;
 
@@ -168,11 +176,11 @@ static void PWM_DRV_Init3PhPwm(void)
                  pwmSourceClockInHz);
 
     /*********** PWMA_SM1 - phase B configuration, setup PWM A channel only ************/
-    PWM_SetupPwm(BOARD_PWM_BASEADDR, kPWM_Module_1, pwmSignal, 2, kPWM_SignedCenterAligned, pwmFrequencyInHz,
+    PWM_SetupPwm(BOARD_PWM_BASEADDR, kPWM_Module_1, pwmSignal, 1, kPWM_SignedCenterAligned, pwmFrequencyInHz,
                  pwmSourceClockInHz);
 
     /*********** PWMA_SM2 - phase C configuration, setup PWM A channel only ************/
-    PWM_SetupPwm(BOARD_PWM_BASEADDR, kPWM_Module_2, pwmSignal, 2, kPWM_SignedCenterAligned, pwmFrequencyInHz,
+    PWM_SetupPwm(BOARD_PWM_BASEADDR, kPWM_Module_2, pwmSignal, 1, kPWM_SignedCenterAligned, pwmFrequencyInHz,
                  pwmSourceClockInHz);
 }
 
@@ -189,9 +197,10 @@ static void PWM_DRV_Init3PhPwm(void)
 void HALLSensor_Detected_BLDC(void)
 {
   /* hall  */
-  BLDCMotor.uwStep = HallSensor_GetPinState();
+  //BLDCMotor.uwStep = HallSensor_GetPinState();
    __IO uint32_t tmp = 0;
   //uwStep = HallSensor_GetPinState();
+   uwStep = HallSensor_GetPinState();
   if(Dir == CW)
   {
     uwStep = (uint32_t)7 - uwStep;        // ?¨´?Y?3D¨°¡À¨ª¦Ì?1??¨¦ CW = 7 - CCW;
@@ -219,93 +228,91 @@ void HALLSensor_Detected_BLDC(void)
 #endif   
   /*---- six step changed phase */
   /*---- 1(001,U),IC2(010,V),IC3(100,W) ----*/
-  for(uwStep =0 ;uwStep < 7 ;uwStep ++)
-  {
-      uwStep ++ ; 
+  PRINTF("uwStep = %d\n",uwStep);
   switch(uwStep)//switch(BLDCMotor.uwStep)
-  {
+ {
     case 1://C+ A-
       /*  PWM_A0 B 0 stop  */ 
        PWMABC_Close_Channel(1);  //close B channel 
-       DelayMs(500U);
+     //  DelayMs(500U);
       /*  PWM_A1 and PWM_B1 output */
        PWMABC_Select_Channel(2);    //open C upper half-bridge
       /*  PWM_A2 and PWM_B2 output  */
       PWMABC_Select_Channel(0);    
-      DelayMs(500U);
+      //DelayMs(500U);
       break;
     
     case 2: //A+  B-
       /*  Channe3 configuration */ 
         PWMABC_Close_Channel(2); //close C channel 
-        DelayMs(500U);
+      //  DelayMs(500U);
     
       /*  Channel configuration  */
         PWMABC_Select_Channel(0);
       
       /*  Channe2 configuration */
        PWMABC_Select_Channel(1);
-       DelayMs(500U);
+      // DelayMs(500U);
       break;
     
     case 3:// C+ B-
       /*  Channel configuration */ 
          PWMABC_Close_Channel(0); //close A channel 
-         DelayMs(500U);
+       //  DelayMs(500U);
       /*  Channe3 configuration  */
          PWMABC_Select_Channel(2);
      /*  Channe2 configuration  */
 		 PWMABC_Select_Channel(1);
-    DelayMs(500U);
+   // DelayMs(500U);
       break;
     
     case 4:// B+ C-
       /*  Channel configuration */ 
           PWMABC_Close_Channel(0); //close A channel 
-          DelayMs(500U);
+        //  DelayMs(500U);
       /*  Channe2 configuration */
             PWMABC_Select_Channel(1);
       
       /*  Channe3 configuration */
           PWMABC_Select_Channel(2);
-          DelayMs(500U);
+         // DelayMs(500U);
       break;
     
     case 5: // B+ A-
 
       /*  Channe3 configuration */       
         PWMABC_Close_Channel(2); //close C channel 
-         DelayMs(500U);
+       //  DelayMs(500U);
       /*  Channe2 configuration */
          PWMABC_Select_Channel(1);
       
       /*  Channel configuration */
          PWMABC_Select_Channel(0);
-          DelayMs(500U);
+        //  DelayMs(500U);
       break;
     
     case 6: // A+ C-
 
       /*  Channe2 configuration */ 
       PWMABC_Close_Channel(1); //close B channel 
-       DelayMs(500U);
+       //DelayMs(500U);
       /*  Channel configuration */
          PWMABC_Select_Channel(0);
       
       /*  Channe3 configuration */
        PWMABC_Select_Channel(2);
-	   DelayMs(500U);
+	//   DelayMs(500U);
       
  
       break;
   }
-    if(uwStep == 6) uwStep=0;
+   
   /* ¨¢¡é?¨¬¡ä£¤¡¤¡é???¨¤ */
  // HAL_TIM_GenerateEvent(&htimx_BLDC, TIM_EVENTSOURCE_COM);
  // __HAL_TIM_CLEAR_IT(htim, TIM_FLAG_COM);
 //  BLDCMotor.Lock_Time = 0;
-  	}
-}
+ }
+
 
 
 
