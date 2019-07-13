@@ -25,13 +25,13 @@ int main(void)
 {
    // uint8_t key; 
    // uint32_t pwmVal = 4;
-   // uint8_t i;
+    uint32_t i;
 
     /* Board pin, clock, debug console init */
     BOARD_InitPins();
     BOARD_BootClockRUN();
     BOARD_InitDebugConsole();
-    PRINTF("uwStep numbers 00\n");  
+   
     LED_Init();
     KEY_Init();
     DelayInit();
@@ -41,15 +41,16 @@ int main(void)
     /* Set the PWM Fault inputs to a low value */
     PWM_BLDC_Init();
    
-    PRINTF("uwStep numbers 0\n");  
+    
 
     while (1)
     {
-         PRINTF("uwStep numbers \n");
-         HallSensor_GetPinState();
-	 HALLSensor_Detected_BLDC();
-         LED1 = !LED1;
-         DelayMs(100U);
+         i=HallSensor_GetPinState();
+         PRINTF("i = %d \r\n",i);
+        
+	     HALLSensor_Detected_BLDC();
+        // LED1 = !LED1;
+         //DelayMs(100U);
 #if 0
      switch(i)
      {

@@ -84,7 +84,8 @@ static void ADC_CADC_Init(void)
 
     PRINTF("Press any key to trigger the conversion ...\r\n");
     PRINTF("\r\nSample 0\tSample 1\tSample 2\tSample 3\r\n");
-    while (1)
+#if 0
+ 
     {
         GETCHAR();
         PRINTF("\r\n");
@@ -110,6 +111,7 @@ static void ADC_CADC_Init(void)
         }
         CADC_ClearStatusFlags(CADC_BASEADDR, kCADC_ConverterAEndOfScanFlag);
     }
+#endif 
 }
 
 

@@ -89,12 +89,13 @@ void PWM_BLDC_Init(void)
      */
     PWM_GetDefaultConfig(&pwmConfig);
     PRINTF("FlexPWM driver example 2\n");
+	pwmConfig.enableDebugMode = true;  //WT.EDIT 2019-07-13
     /* Use full cycle reload */
-    pwmConfig.reloadLogic = kPWM_ReloadPwmFullCycle;
+    pwmConfig.reloadLogic =kPWM_ReloadPwmHalfCycle; //WT.EDIT 2019-07-13 //kPWM_ReloadPwmFullCycle;
     /* PWM A & PWM B form a complementary PWM pair */
     pwmConfig.pairOperation   = kPWM_Independent; //WT.EDIT kPWM_ComplementaryPwmA;
     pwmConfig.enableDebugMode = true;
-    pwmConfig.forceTrigger = kPWM_Force_Local;  //WT.EDIT
+    pwmConfig.forceTrigger =  kPWM_Force_LocalReload;//kPWM_Force_Local;  //WT.EDIT
     
 
     /* Initialize submodule 0 */
@@ -108,7 +109,7 @@ void PWM_BLDC_Init(void)
     //pwmConfig.clockSource           = kPWM_Submodule0Clock;
     pwmConfig.clockSource           =  kPWM_BusClock; //WT.EDIT 2019-06-29
     //pwmConfig.initializationControl = kPWM_Initialize_MasterSync;
-    pwmConfig.initializationControl = kPWM_Initialize_LocalSync;   //WT.EDIT 2019-06-29
+    pwmConfig.initializationControl = kPWM_Initialize_ExtSync;//kPWM_Initialize_LocalSync;   //WT.EDIT 2019-06-29
     if (PWM_Init(BOARD_PWM_BASEADDR, kPWM_Module_1, &pwmConfig) == kStatus_Fail)
     {
         PRINTF("PWM initialization failed\n");
@@ -152,7 +153,7 @@ static void PWM_DRV_Init3PhPwm(void)
     uint16_t deadTimeVal;
     pwm_signal_param_t pwmSignal[2];
     uint32_t pwmSourceClockInHz;
-    uint32_t pwmFrequencyInHz = 1500; //5KHZ PWM of frequency  1khz ~ 4.5khz 1.5khz =1.5khz 2khz = 2khz 3kh=3kz
+    uint32_t pwmFrequencyInHz = 3000; //5KHZ PWM of frequency  1khz ~ 4.5khz 1.5khz =1.5khz 2khz = 2khz 3kh=3kz
 
 
     pwmSourceClockInHz = PWM_SRC_CLK_FREQ;
@@ -162,26 +163,28 @@ static void PWM_DRV_Init3PhPwm(void)
 
     pwmSignal[0].pwmChannel       = kPWM_PwmA;
     pwmSignal[0].level            = kPWM_HighTrue;
-    pwmSignal[0].dutyCyclePercent = 50; /* 1 percent dutycycle */
+    pwmSignal[0].dutyCyclePercent = 80; /* 1 percent dutycycle */
     pwmSignal[0].deadtimeValue    = deadTimeVal;
 
     pwmSignal[1].pwmChannel = kPWM_PwmB;
     pwmSignal[1].level      = kPWM_HighTrue;
     /* Dutycycle field of PWM B does not matter as we are running in PWM A complementary mode */
-    pwmSignal[1].dutyCyclePercent = 50;
+    pwmSignal[1].dutyCyclePercent = 80;
     pwmSignal[1].deadtimeValue    = deadTimeVal;
-
+#if 0
     /*********** PWMA_SM0 - phase A, configuration, setup 2 channel as an example ************/
-    PWM_SetupPwm(BOARD_PWM_BASEADDR, kPWM_Module_0, pwmSignal, 2, kPWM_SignedCenterAligned, pwmFrequencyInHz,
+    PWM_SetupPwm(BOARD_PWM_BASEADDR, kPWM_Module_0, pwmSignal, 1, kPWM_EdgeAligned , pwmFrequencyInHz,
                  pwmSourceClockInHz);
+	
 
     /*********** PWMA_SM1 - phase B configuration, setup PWM A channel only ************/
-    PWM_SetupPwm(BOARD_PWM_BASEADDR, kPWM_Module_1, pwmSignal, 1, kPWM_SignedCenterAligned, pwmFrequencyInHz,
+    PWM_SetupPwm(BOARD_PWM_BASEADDR, kPWM_Module_1, pwmSignal, 2, kPWM_EdgeAligned , pwmFrequencyInHz,
                  pwmSourceClockInHz);
 
     /*********** PWMA_SM2 - phase C configuration, setup PWM A channel only ************/
-    PWM_SetupPwm(BOARD_PWM_BASEADDR, kPWM_Module_2, pwmSignal, 1, kPWM_SignedCenterAligned, pwmFrequencyInHz,
+    PWM_SetupPwm(BOARD_PWM_BASEADDR, kPWM_Module_2, pwmSignal, 2, kPWM_EdgeAligned , pwmFrequencyInHz,
                  pwmSourceClockInHz);
+#endif 
 }
 
 
@@ -196,15 +199,47 @@ static void PWM_DRV_Init3PhPwm(void)
 *********************************************************/
 void HALLSensor_Detected_BLDC(void)
 {
+
+   uint16_t deadTimeVal;
+    pwm_signal_param_t pwmSignal[2];
+    uint32_t pwmSourceClockInHz;
+    uint32_t pwmFrequencyInHz = 3000; //5KHZ PWM of frequency  1khz ~ 4.5khz 1.5khz =1.5khz 2khz = 2khz 3kh=3kz
+
+
+    pwmSourceClockInHz = PWM_SRC_CLK_FREQ;
+
+    /* Set deadtime count, we set this to about 650ns */
+    deadTimeVal = ((uint64_t)pwmSourceClockInHz * 650) / 1000000000;
+
+    pwmSignal[0].pwmChannel       = kPWM_PwmA;
+    pwmSignal[0].level            = kPWM_HighTrue;
+    pwmSignal[0].dutyCyclePercent = 50; /* 1 percent dutycycle */
+    pwmSignal[0].deadtimeValue    = deadTimeVal;
+
+    pwmSignal[1].pwmChannel = kPWM_PwmB;
+    pwmSignal[1].level      = kPWM_LowTrue;//kPWM_HighTrue; //WT.EDIT 
+    /* Dutycycle field of PWM B does not matter as we are running in PWM A complementary mode */
+    pwmSignal[1].dutyCyclePercent = 50;
+    pwmSignal[1].deadtimeValue    = deadTimeVal;
   /* hall  */
   //BLDCMotor.uwStep = HallSensor_GetPinState();
    __IO uint32_t tmp = 0;
   //uwStep = HallSensor_GetPinState();
    uwStep = HallSensor_GetPinState();
+    
+   PWM_SetupPwm(BOARD_PWM_BASEADDR, kPWM_Module_0, pwmSignal, 2, kPWM_EdgeAligned , pwmFrequencyInHz,
+                 pwmSourceClockInHz);
+   PWM_UpdatePwmDutycycle(BOARD_PWM_BASEADDR, kPWM_Module_0, kPWM_PwmA, kPWM_EdgeAligned, 0);  //PWMA_A0/B0
+   PWM_SetPwmLdok(BOARD_PWM_BASEADDR,  kPWM_Control_Module_0, true); 
+   PWM_UpdatePwmDutycycle(BOARD_PWM_BASEADDR, kPWM_Module_1, kPWM_PwmA, kPWM_EdgeAligned, 50);
+   PWM_SetPwmLdok(BOARD_PWM_BASEADDR,  kPWM_Control_Module_1, true); 
   if(Dir == CW)
   {
     uwStep = (uint32_t)7 - uwStep;        // ?¨´?Y?3D¨°¡À¨ª¦Ì?1??¨¦ CW = 7 - CCW;
   }
+  else 
+    uwStep = uwStep-(uint32_t)7 ; 
+  
 #if 0  //WT.EDIT
   if( PWM_ChangeFlag == 1)
   {
@@ -229,12 +264,13 @@ void HALLSensor_Detected_BLDC(void)
   /*---- six step changed phase */
   /*---- 1(001,U),IC2(010,V),IC3(100,W) ----*/
   PRINTF("uwStep = %d\n",uwStep);
+ #if 0
   switch(uwStep)//switch(BLDCMotor.uwStep)
  {
     case 1://C+ A-
-      /*  PWM_A0 B 0 stop  */ 
+       /*  PWM_A0 B 0 stop  */ 
        PWMABC_Close_Channel(1);  //close B channel 
-     //  DelayMs(500U);
+      //DelayMs(500U);
       /*  PWM_A1 and PWM_B1 output */
        PWMABC_Select_Channel(2);    //open C upper half-bridge
       /*  PWM_A2 and PWM_B2 output  */
@@ -293,10 +329,10 @@ void HALLSensor_Detected_BLDC(void)
     
     case 6: // A+ C-
 
-      /*  Channe2 configuration */ 
-      PWMABC_Close_Channel(1); //close B channel 
+         /*  Channe2 configuration */ 
+         PWMABC_Close_Channel(1); //close B channel 
        //DelayMs(500U);
-      /*  Channel configuration */
+        /*  Channel configuration */
          PWMABC_Select_Channel(0);
       
       /*  Channe3 configuration */
@@ -306,7 +342,8 @@ void HALLSensor_Detected_BLDC(void)
  
       break;
   }
-   
+ 
+ #endif   
   /* ¨¢¡é?¨¬¡ä£¤¡¤¡é???¨¤ */
  // HAL_TIM_GenerateEvent(&htimx_BLDC, TIM_EVENTSOURCE_COM);
  // __HAL_TIM_CLEAR_IT(htim, TIM_FLAG_COM);
@@ -329,19 +366,21 @@ void PWMABC_Select_Channel(uint8_t s_pwma)
 
  if(s_pwma == 0)
  {
+ 
    PWM_UpdatePwmDutycycle(BOARD_PWM_BASEADDR, kPWM_Module_0, kPWM_PwmA, kPWM_SignedCenterAligned, 50); 
-   PWM_SetPwmLdok(BOARD_PWM_BASEADDR,  kPWM_Control_Module_0, true);
+   PWM_SetPwmLdok(BOARD_PWM_BASEADDR,  kPWM_Control_Module_0, true); 
  }
  else if (s_pwma == 1)
  	{
-      PWM_UpdatePwmDutycycle(BOARD_PWM_BASEADDR, kPWM_Module_1, kPWM_PwmA, kPWM_SignedCenterAligned, 50); 
-     PWM_SetPwmLdok(BOARD_PWM_BASEADDR,  kPWM_Control_Module_1, true);
+      /*PWMA A1 channel PWM output*/
+	  PWM_UpdatePwmDutycycle(BOARD_PWM_BASEADDR, kPWM_Module_1, kPWM_PwmA, kPWM_SignedCenterAligned, 50); 
+      PWM_SetPwmLdok(BOARD_PWM_BASEADDR,  kPWM_Control_Module_1, true);
 	
  	}
  else if(s_pwma == 2)
  {
     PWM_UpdatePwmDutycycle(BOARD_PWM_BASEADDR, kPWM_Module_2, kPWM_PwmA, kPWM_SignedCenterAligned, 50); 
-   PWM_SetPwmLdok(BOARD_PWM_BASEADDR,  kPWM_Control_Module_2, true);
+    PWM_SetPwmLdok(BOARD_PWM_BASEADDR,  kPWM_Control_Module_2, true);
  }
   
 
@@ -359,13 +398,14 @@ void PWMABC_Close_Channel(uint8_t f_pwma)
 {
    if(f_pwma == 0)
  {
+   /*PWMA_A0 channel PTD0 is low*/
    PWM_UpdatePwmDutycycle(BOARD_PWM_BASEADDR, kPWM_Module_0, kPWM_PwmA, kPWM_SignedCenterAligned, 0); 
-   PWM_SetPwmLdok(BOARD_PWM_BASEADDR,  kPWM_Control_Module_0, true);
+   PWM_SetPwmLdok(BOARD_PWM_BASEADDR,  kPWM_Control_Module_0, true); 
  }
  else if (f_pwma == 1)
  	{
       PWM_UpdatePwmDutycycle(BOARD_PWM_BASEADDR, kPWM_Module_1, kPWM_PwmA, kPWM_SignedCenterAligned, 0); 
-     PWM_SetPwmLdok(BOARD_PWM_BASEADDR,  kPWM_Control_Module_1, true);
+      PWM_SetPwmLdok(BOARD_PWM_BASEADDR,  kPWM_Control_Module_1, true);
 	
  	}
  else if(f_pwma == 2)
