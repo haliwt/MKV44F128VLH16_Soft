@@ -232,8 +232,8 @@ typedef enum _pwm_mode
 /*! @brief PWM output pulse mode, high-true or low-true */
 typedef enum _pwm_level_select
 {
-    kPWM_HighTrue = 0U, /*!< High level represents "on" or "active" state */
-    kPWM_LowTrue        /*!< Low level represents "on" or "active" state */
+     kPWM_HighTrue = 0U, /*!< High level represents "on" or "active" state */
+     kPWM_LowTrue       /*!< Low level represents "on" or "active" state */
 } pwm_level_select_t;
 
 /*! @brief PWM reload source select */
