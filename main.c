@@ -48,7 +48,7 @@ int main(void)
         uwStep=HallSensor_GetPinState();
         PRINTF("i = %d \r\n",uwStep);
         
-	 HALLSensor_Detected_BLDC(uwStep);
+	   HALLSensor_Detected_BLDC(uwStep);
         // LED1 = !LED1;
          //DelayMs(100U);
 #if 0

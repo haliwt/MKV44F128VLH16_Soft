@@ -40,21 +40,19 @@ uint32_t HallSensor_GetPinState(void)
 {
    __IO static uint32_t State ;
   State  = 0;
-  if(GPIO_PinRead(GPIOE, 16)!= GPIO_PIN_RESET)//????¡ä??D?¡Â¡Á¡ä¨¬???¨¨?
+  if(GPIO_PinRead(GPIOE, 16)!= GPIO_PIN_RESET)  //HALL_C 
   {
     State |= 0x01U;
   }
-  if(GPIO_PinRead(GPIOC,6) != GPIO_PIN_RESET)  //????¡ä??D?¡Â¡Á¡ä¨¬???¨¨?
+  if(GPIO_PinRead(GPIOC,6) != GPIO_PIN_RESET)  //HALL_B
   {
     State |= 0x02U;
   }
-  if(GPIO_PinRead(GPIOB,3) != GPIO_PIN_RESET)  //????¡ä??D?¡Â¡Á¡ä¨¬???¨¨?
+  if(GPIO_PinRead(GPIOB,3) != GPIO_PIN_RESET)  //HALL_A
   {
     State |= 0x04U;
   }
-  return State;
-
-
+   return State;
 
 }
 /******************************************************************
@@ -267,78 +265,78 @@ void HALLSensor_Detected_BLDC(uint32_t uvw)
   /*---- 1(001,U),IC2(010,V),IC3(100,W) ----*/
  // PRINTF("uwStep = %d\n",uwStep);
  #if 1
-  switch(uvw)//switch(BLDCMotor.uwStep)
+ switch(uvw)//switch(BLDCMotor.uwStep)
  {
-    case 1://C+ A-
+    case 1://B+ A-
        /*  PWM_A0 B 0 stop  */ 
-       PWMA_Close_ABC_Channel(1);  //close B channel 
+       PWMA_Close_ABC_Channel(2);  //close B channel 
       
       /*  PWM_A1 and PWM_B1 output */
-       PWMA_Select_C_Channel(0);    //open C upper half-bridge
+       PWMA_Select_B_Channel(0);    //open C upper half-bridge
       /*  PWM_A2 and PWM_B2 output  */
       PWMA_Select_A_Channel(1);    
       PRINTF("uwStep = %d\n",uwStep);
       break;
     
-    case 2: //A+  B-
+    case 2: //A+  C-
       /*  Channe3 configuration */ 
-        PWMA_Close_ABC_Channel(2); //close C channel 
+        PWMA_Close_ABC_Channel(1); //close C channel 
    
     
       /*  Channel configuration A+ */
        PWMA_Select_A_Channel(0);
       
       /*  Channe2 configuration B- */
-       PWMA_Select_B_Channel(1);
+       PWMA_Select_C_Channel(1);
       PRINTF("uwStep = %d\n",uwStep);
       break;
     
-    case 3:// C+ B-
+    case 3:// B+ C-
       /*  Channel configuration */ 
          PWMA_Close_ABC_Channel(0); //close A channel 
      
       /*  Channe3 configuration  */
-         PWMA_Select_C_Channel(0);
+         PWMA_Select_B_Channel(0);
      /*  Channe2 configuration  */
-        PWMA_Select_B_Channel(1);
+        PWMA_Select_C_Channel(1);
    PRINTF("uwStep = %d\n",uwStep);
       break;
     
-    case 4:// B+ C-
+    case 4:// C+ B-
       /*  Channel configuration */ 
           PWMA_Close_ABC_Channel(0); //close A channel 
       
       /*  Channe2 configuration */
-           PWMA_Select_B_Channel(0);
+           PWMA_Select_C_Channel(0);
       
       /*  Channe3 configuration */
-          PWMA_Select_C_Channel(1);
+          PWMA_Select_B_Channel(1);
          PRINTF("uwStep = %d\n",uwStep);
       break;
     
-    case 5: // B+ A-
+    case 5: // C+ A-
 
       /*  Channe3 configuration */       
-        PWMA_Close_ABC_Channel(2); //close C channel 
+        PWMA_Close_ABC_Channel(1); //close C channel 
        //  DelayMs(500U);
       /*  Channe2 configuration */
-         PWMA_Select_B_Channel(0);
+         PWMA_Select_C_Channel(0);
       
       /*  Channel configuration */
          PWMA_Select_A_Channel(1);
         PRINTF("uwStep = %d\n",uwStep);
       break;
     
-    case 6: // A+ C-
+    case 6: // A+ B-
 
          /*  Channe2 configuration */ 
-         PWMA_Close_ABC_Channel(1); //close B channel 
+         PWMA_Close_ABC_Channel(2); //close B channel 
        //DelayMs(500U);
         /*  Channel configuration */
          PWMA_Select_A_Channel(0);
       
       /*  Channe3 configuration */
-       PWMA_Select_C_Channel(1);
+       PWMA_Select_B_Channel(1);
 	//   DelayMs(500U);
       PRINTF("uwStep = %d\n",uwStep);
  
