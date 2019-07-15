@@ -18,12 +18,7 @@
 #define HALL_B          PCin(6)
 #define HALL_C          PBin(3)
 
-#define PWMA_A0         PDout(0)
-#define PWMA_B0         PDout(1)
-#define PWMA_A1         PDout(2)
-#define PWMA_B1         PDout(3)
-#define PWMA_A2         PDout(4)
-#define PWMA_B2         PDout(5)
+
 
 
 #define CCW                              (int32_t)(1)
