@@ -132,10 +132,10 @@ void PWM_BLDC_Init(void)
     PRINTF("PWM init 3\n");
     
     /* Set the load okay bit for all submodules to load registers from their buffer */
-   PWM_SetPwmLdok(BOARD_PWM_BASEADDR, kPWM_Control_Module_0 | kPWM_Control_Module_1 | kPWM_Control_Module_2, true);
+  // PWM_SetPwmLdok(BOARD_PWM_BASEADDR, kPWM_Control_Module_0 | kPWM_Control_Module_1 | kPWM_Control_Module_2, true);
 
     /* Start the PWM generation from Submodules 0, 1 and 2 */
-    PWM_StartTimer(BOARD_PWM_BASEADDR, kPWM_Control_Module_0 | kPWM_Control_Module_1 | kPWM_Control_Module_2);
+  //  PWM_StartTimer(BOARD_PWM_BASEADDR, kPWM_Control_Module_0 | kPWM_Control_Module_1 | kPWM_Control_Module_2);
     
     PRINTF("PWMA init end \n");
 }
@@ -178,16 +178,17 @@ static void PWM_DRV_Init3PhPwm(void)
     /*********** PWMA_SM0 - phase A, configuration, setup 2 channel as an example ************/
     PWM_SetupPwm(BOARD_PWM_BASEADDR, kPWM_Module_0, pwmSignal, 2, kPWM_EdgeAligned , pwmFrequencyInHz,
                  pwmSourceClockInHz);
-#if 0	
+	
 
     /*********** PWMA_SM1 - phase B configuration, setup PWM A channel only ************/
     PWM_SetupPwm(BOARD_PWM_BASEADDR, kPWM_Module_1, pwmSignal, 2, kPWM_EdgeAligned , pwmFrequencyInHz,
                  pwmSourceClockInHz);
 
+
     /*********** PWMA_SM2 - phase C configuration, setup PWM A channel only ************/
     PWM_SetupPwm(BOARD_PWM_BASEADDR, kPWM_Module_2, pwmSignal, 2, kPWM_EdgeAligned , pwmFrequencyInHz,
                  pwmSourceClockInHz);
-#endif 
+
 }
 
 
@@ -202,7 +203,7 @@ static void PWM_DRV_Init3PhPwm(void)
 *********************************************************/
 void HALLSensor_Detected_BLDC(void)
 {
-    #if 0
+    #if 1
     uint16_t deadTimeVal;
     pwm_signal_param_t pwmSignal[2];
     uint32_t pwmSourceClockInHz;
@@ -230,13 +231,37 @@ void HALLSensor_Detected_BLDC(void)
    __IO uint32_t tmp = 0;
   //uwStep = HallSensor_GetPinState();
    uwStep = HallSensor_GetPinState();
-    
-   //PWM_SetupPwm(BOARD_PWM_BASEADDR, kPWM_Module_0, pwmSignal, 2, kPWM_EdgeAligned , pwmFrequencyInHz,
-                // pwmSourceClockInHz);
+   
+   PWM_SetupPwm(BOARD_PWM_BASEADDR, kPWM_Module_0, pwmSignal, 2, kPWM_EdgeAligned , pwmFrequencyInHz,
+                 pwmSourceClockInHz);
+   
    PWM_UpdatePwmDutycycle(BOARD_PWM_BASEADDR, kPWM_Module_0, kPWM_PwmA, kPWM_EdgeAligned, 0);  //PWMA_A0 LOW lever
    PWM_SetPwmLdok(BOARD_PWM_BASEADDR,  kPWM_Control_Module_0, true); 
-   PWM_UpdatePwmDutycycle(BOARD_PWM_BASEADDR, kPWM_Module_1, kPWM_PwmA, kPWM_EdgeAligned, 50);//PWMA_B0 PWM
-   PWM_SetPwmLdok(BOARD_PWM_BASEADDR,  kPWM_Control_Module_1, true); 
+  // PWM_StartTimer(BOARD_PWM_BASEADDR, kPWM_Control_Module_0); //PWMA_A0 / B0 trurn off
+   PWM_StopTimer(BOARD_PWM_BASEADDR, kPWM_Control_Module_0);
+   
+   PWM_UpdatePwmDutycycle(BOARD_PWM_BASEADDR, kPWM_Module_0, kPWM_PwmA, kPWM_EdgeAligned, 0);
+ 
+   /**********PWMA _A1/B1************************/
+   
+   PWM_StartTimer(BOARD_PWM_BASEADDR, kPWM_Control_Module_1);
+   PWM_UpdatePwmDutycycle(BOARD_PWM_BASEADDR, kPWM_Module_1, kPWM_PwmA, kPWM_EdgeAligned, 0);  //PWMA_A0 LOW lever
+   PWM_SetPwmLdok(BOARD_PWM_BASEADDR,  kPWM_Control_Module_1, true);
+   /*PWMA_B1 = ON*/
+   
+   PWM_UpdatePwmDutycycle(BOARD_PWM_BASEADDR, kPWM_Module_2, kPWM_PwmA, kPWM_EdgeAligned, 0);//PWMA_B0 PWM
+   PWM_SetPwmLdok(BOARD_PWM_BASEADDR,  kPWM_Control_Module_2, false); 
+
+   /*********PWMA_A2/B2*****************/
+
+   PWM_StartTimer(BOARD_PWM_BASEADDR, kPWM_Control_Module_2);
+   PWM_UpdatePwmDutycycle(BOARD_PWM_BASEADDR, kPWM_Module_1, kPWM_PwmA, kPWM_EdgeAligned, 0);  //PWMA_A0 LOW lever
+   PWM_SetPwmLdok(BOARD_PWM_BASEADDR,  kPWM_Control_Module_1, true);
+   
+   PWM_StopTimer(BOARD_PWM_BASEADDR, kPWM_Control_Module_2);
+   PWM_UpdatePwmDutycycle(BOARD_PWM_BASEADDR, kPWM_Module_2, kPWM_PwmA, kPWM_EdgeAligned, 0);//PWMA_B0 PWM
+   PWM_SetPwmLdok(BOARD_PWM_BASEADDR,  kPWM_Control_Module_2, false); 
+   
   if(Dir == CW)
   {
     uwStep = (uint32_t)7 - uwStep;        // ?¨´?Y?3D¨°¡À¨ª¦Ì?1??¨¦ CW = 7 - CCW;
