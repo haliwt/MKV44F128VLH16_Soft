@@ -63,9 +63,14 @@ void HALLSensor_Detected_BLDC(void);
 
 
 void PWM_BLDC_Init(void);   // initial pwm function
-void PWMABC_Select_Channel(uint8_t s_pwma);  //select one PWM channel
-void PWMABC_Close_Channel(uint8_t f_pwma);   //Close one PWM channel 
 
+void PWMA_Select_A_Channel(uint8_t s_pwmA);  //select one PWM A channel,H-bridge first 
+void PWMA_Select_B_Channel(uint8_t s_pwmB);  //select one PWM B  channel,H-bridge second
+void PWMA_Select_C_Channel(uint8_t s_pwmC); 
+
+
+
+void PWMA_Close_ABC_Channel(uint8_t f_pwma);
 
 
 
