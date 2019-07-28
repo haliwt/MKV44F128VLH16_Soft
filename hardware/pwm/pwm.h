@@ -14,8 +14,12 @@
 /* The PWM base address */
 #define BOARD_PWM_BASEADDR PWMA
 
-#define HALL_A          PEin(16)
-#define HALL_B          PCin(6)
+//#define HALL_A          //PEin(16)
+//#define HALL_B          //PCin(6)
+//#define HALL_C          //PBin(3)
+
+#define HALL_A          PBin(1)
+#define HALL_B          PBin(2)
 #define HALL_C          PBin(3)
 
 
@@ -26,26 +30,26 @@
 
 #define  PWMA_INIT_ON                    1
 
-/* 鐢垫満鍙傛暟瀹氫箟 ------------------------------------------------------------------*/
+/* 无刷马达定义 ------------------------------------------------------------------*/
 typedef struct {
-  __IO int32_t  uwStep ;  	    // 鐢垫満鏃嬭浆鐘舵�?
-  __IO int32_t  Dir ;        	    // 鐢垫満鏃嬭浆鏂瑰悜
-  __IO int32_t  Position;           // 鐢垫満浣嶇疆
-  __IO int32_t  Speed;		    // 鐢垫満閫熷害
-  __IO uint16_t PWM_Duty; 	    // 鍗犵┖姣?
-  __IO int32_t  Hall_Period;        // 闇嶅皵浼犳劅鍣ㄨЕ鍙戝懆鏈?
-  __IO int32_t  Hall_PulNum;       // 闇嶅皵浼犳劅鍣ㄨ剦鍐蹭釜鏁?
-  __IO int32_t  Lock_Time;         // 鐢垫満鍫佃浆鏃堕棿
+  __IO int32_t  uwStep ;  	    // 马达霍尔步数
+  __IO int32_t  Dir ;        	    // 方向
+  __IO int32_t  Position;           // 位置
+  __IO int32_t  Speed;		    // 速度
+  __IO uint16_t PWM_Duty; 	    // PWM 占空比
+  __IO int32_t  Hall_Period;        // 霍尔周期
+  __IO int32_t  Hall_PulNum;       // 霍尔记数
+  __IO int32_t  Lock_Time;         // 堵转电流
 }BLDC_Typedef;
 
 extern BLDC_Typedef BLDCMotor ;
 
 extern __IO int32_t  uwStep ;
 
-extern __IO uint32_t Lock_Time; // 鐢垫満鍫佃浆鏃堕棿
+extern __IO uint32_t Lock_Time; // 堵转时间
 extern __IO float   PWM_Duty;
 extern __IO int32_t Dir;
-extern uint16_t SPEED_VALUE ;   //鐢垫満鐨勯�熷害鍊?
+extern uint16_t SPEED_VALUE ;   //速度值
 
 
 

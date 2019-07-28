@@ -23,8 +23,11 @@ __IO uint32_t Lock_Time = 0;  // 堵转电流
 ***********************************************************/
 void HALL_Init(void)
 {
-   GPIO_QuickInit(HW_GPIOE, 16, kGPIO_Mode_IPU);
-   GPIO_QuickInit(HW_GPIOC, 6, kGPIO_Mode_IPU);
+   //GPIO_QuickInit(HW_GPIOE, 16, kGPIO_Mode_IPU);
+   //GPIO_QuickInit(HW_GPIOC, 6, kGPIO_Mode_IPU);
+   //GPIO_QuickInit(HW_GPIOB, 3, kGPIO_Mode_IPU);
+   GPIO_QuickInit(HW_GPIOB, 1, kGPIO_Mode_IPU);
+   GPIO_QuickInit(HW_GPIOB, 2, kGPIO_Mode_IPU);
    GPIO_QuickInit(HW_GPIOB, 3, kGPIO_Mode_IPU);
 
 
@@ -40,15 +43,15 @@ uint32_t HallSensor_GetPinState(void)
 {
    __IO static uint32_t State ;
   State  = 0;
-  if(GPIO_PinRead(GPIOE, 16)!= GPIO_PIN_RESET)  //HALL_C 
+  if(GPIO_PinRead(GPIOB, 3)!= GPIO_PIN_RESET)  //HALL_C 
   {
     State |= 0x01U;
   }
-  if(GPIO_PinRead(GPIOC,6) != GPIO_PIN_RESET)  //HALL_B
+  if(GPIO_PinRead(GPIOB,2) != GPIO_PIN_RESET)  //HALL_B
   {
     State |= 0x02U;
   }
-  if(GPIO_PinRead(GPIOB,3) != GPIO_PIN_RESET)  //HALL_A
+  if(GPIO_PinRead(GPIOB,1) != GPIO_PIN_RESET)  //HALL_A
   {
     State |= 0x04U;
   }
@@ -205,52 +208,15 @@ static void PWM_DRV_Init3PhPwm(void)
 *********************************************************/
 void HALLSensor_Detected_BLDC(uint32_t uvw)
 {
-        //C+ A- 
-       /*  PWM_A0 B 0 stop  */ 
-     //  PWMA_Close_ABC_Channel(1);  //close B channel 
       
-      /*  PWM_A1 and PWM_B1 output */
-     //  PWMA_Select_C_Channel(0);    //open C upper half-bridge
-      /*  PWM_A2 and PWM_B2 output  */
-    //  PWMA_Select_A_Channel(1);   
-
-  #if 0
-	/**************************PWM_A0****************************************/
-    PWM_UpdatePwmDutycycle(BOARD_PWM_BASEADDR, kPWM_Module_0, kPWM_PwmA, kPWM_SignedCenterAligned, 0); 
-	PWM_SetPwmLdok(BOARD_PWM_BASEADDR,  kPWM_Control_Module_0, true);
-   
-	PWM_UpdatePwmDutycycle(BOARD_PWM_BASEADDR, kPWM_Module_0, kPWM_PwmB, kPWM_SignedCenterAligned, 0); 
-	PWM_SetPwmLdok(BOARD_PWM_BASEADDR,  kPWM_Control_Module_0, true);
-
-
-   /**************************PWM_A1****************************************/
-   PWM_UpdatePwmDutycycle(BOARD_PWM_BASEADDR, kPWM_Module_1, kPWM_PwmA, kPWM_SignedCenterAligned, 0); 
-   PWM_SetPwmLdok(BOARD_PWM_BASEADDR,  kPWM_Control_Module_1, true);
-
-   PWM_UpdatePwmDutycycle(BOARD_PWM_BASEADDR, kPWM_Module_1, kPWM_PwmB, kPWM_SignedCenterAligned, 50); 
-   PWM_SetPwmLdok(BOARD_PWM_BASEADDR,  kPWM_Control_Module_1, true);
-  
-
-  /**************************PWM_A2****************************************/
-  PWM_UpdatePwmDutycycle(BOARD_PWM_BASEADDR, kPWM_Module_2, kPWM_PwmB, kPWM_SignedCenterAligned, 0); 
-   PWM_SetPwmLdok(BOARD_PWM_BASEADDR,  kPWM_Control_Module_2, true); 
-
-
-  PWM_UpdatePwmDutycycle(BOARD_PWM_BASEADDR, kPWM_Module_2, kPWM_PwmA, kPWM_SignedCenterAligned, 50); 
-   PWM_SetPwmLdok(BOARD_PWM_BASEADDR,  kPWM_Control_Module_2, true);
-
-   
- #endif 
-
-  /***********************************************************************************/
 #if 1
 /* hall  */
   //BLDCMotor.uwStep = HallSensor_GetPinState();
    __IO uint32_t tmp = 0;
-  //uwStep = HallSensor_GetPinState();
-  uwStep = HallSensor_GetPinState();
+
+ 
   
-//  uwStep = uvw;
+
   if(Dir == CW)
   {
     uwStep = (uint32_t)7 - uwStep;        // ?ù?Y?3Dò±íμ?1??é CW = 7 - CCW;
@@ -259,8 +225,6 @@ void HALLSensor_Detected_BLDC(uint32_t uvw)
     uwStep = uwStep-(uint32_t)7 ; 
   
 
-  
-  
   /*---- six step changed phase */
   /*---- 1(001,U),IC2(010,V),IC3(100,W) ----*/
  // PRINTF("uwStep = %d\n",uwStep);
@@ -269,18 +233,18 @@ void HALLSensor_Detected_BLDC(uint32_t uvw)
  {
     case 1://B+ A-
        /*  PWM_A0 B 0 stop  */ 
-       PWMA_Close_ABC_Channel(2);  //close B channel 
+       PWMA_Close_ABC_Channel(2);  //close C channel 
       
       /*  PWM_A1 and PWM_B1 output */
        PWMA_Select_B_Channel(0);    //open C upper half-bridge
       /*  PWM_A2 and PWM_B2 output  */
       PWMA_Select_A_Channel(1);    
-      PRINTF("uwStep = %d\n",uwStep);
+      PRINTF("uwStep = %d\n",uvw);
       break;
     
     case 2: //A+  C-
       /*  Channe3 configuration */ 
-        PWMA_Close_ABC_Channel(1); //close C channel 
+        PWMA_Close_ABC_Channel(1); //close B channel 
    
     
       /*  Channel configuration A+ */
@@ -288,18 +252,18 @@ void HALLSensor_Detected_BLDC(uint32_t uvw)
       
       /*  Channe2 configuration B- */
        PWMA_Select_C_Channel(1);
-      PRINTF("uwStep = %d\n",uwStep);
+      PRINTF("uwStep = %d\n",uvw);
       break;
     
     case 3:// B+ C-
       /*  Channel configuration */ 
          PWMA_Close_ABC_Channel(0); //close A channel 
      
-      /*  Channe3 configuration  */
+      /*  Channe3 configuration B+  */
          PWMA_Select_B_Channel(0);
-     /*  Channe2 configuration  */
+     /*  Channe2 configuration C-  */
         PWMA_Select_C_Channel(1);
-   PRINTF("uwStep = %d\n",uwStep);
+   PRINTF("uwStep = %d\n",uvw);
       break;
     
     case 4:// C+ B-
@@ -311,7 +275,7 @@ void HALLSensor_Detected_BLDC(uint32_t uvw)
       
       /*  Channe3 configuration */
           PWMA_Select_B_Channel(1);
-         PRINTF("uwStep = %d\n",uwStep);
+         PRINTF("uwStep = %d\n",uvw);
       break;
     
     case 5: // C+ A-
@@ -324,7 +288,7 @@ void HALLSensor_Detected_BLDC(uint32_t uvw)
       
       /*  Channel configuration */
          PWMA_Select_A_Channel(1);
-        PRINTF("uwStep = %d\n",uwStep);
+        PRINTF("uwStep = %d\n",uvw);
       break;
     
     case 6: // A+ B-
@@ -332,22 +296,22 @@ void HALLSensor_Detected_BLDC(uint32_t uvw)
          /*  Channe2 configuration */ 
          PWMA_Close_ABC_Channel(2); //close B channel 
        //DelayMs(500U);
-        /*  Channel configuration */
+        /*  Channel configuration A+*/
          PWMA_Select_A_Channel(0);
       
-      /*  Channe3 configuration */
+      /*  Channe3 configuration B -*/
        PWMA_Select_B_Channel(1);
-	//   DelayMs(500U);
-      PRINTF("uwStep = %d\n",uwStep);
+	 //   DelayMs(500U);
+      PRINTF("uwStep = %d\n",uvw);
  
       break;
   }
  
  #endif   
-  /* á￠?ì′￥·￠???à */
+  /* 立刻触发换向*/
  // HAL_TIM_GenerateEvent(&htimx_BLDC, TIM_EVENTSOURCE_COM);
  // __HAL_TIM_CLEAR_IT(htim, TIM_FLAG_COM);
-//  BLDCMotor.Lock_Time = 0;
+   BLDCMotor.Lock_Time = 0;
  #endif 
  }
 
@@ -371,12 +335,13 @@ void PWMA_Select_A_Channel(uint8_t s_pwma)
  {
  
    PWM_UpdatePwmDutycycle(BOARD_PWM_BASEADDR, kPWM_Module_0, kPWM_PwmB,   kPWM_EdgeAligned, 0); 
-   //PWM_SetPwmLdok(BOARD_PWM_BASEADDR,  kPWM_Control_Module_1, true);
-
+  
+ 
     
    PWM_UpdatePwmDutycycle(BOARD_PWM_BASEADDR, kPWM_Module_0, kPWM_PwmA,   kPWM_EdgeAligned, 50); 
    PWM_SetPwmLdok(BOARD_PWM_BASEADDR,  kPWM_Control_Module_0, true);
-   PWM_StartTimer(BOARD_PWM_BASEADDR, kPWM_Control_Module_0 );
+   PWM_StartTimer(BOARD_PWM_BASEADDR,  kPWM_Control_Module_0 );
+  
     
  }
  else if (s_pwma == 1) //selected PWM_B0 turn off PWMA_A1 next bridge half cycle
@@ -475,11 +440,11 @@ void PWMA_Close_ABC_Channel(uint8_t f_pwmabC)
     //close PWMA_A0/B0 channel
     PWM_UpdatePwmDutycycle(BOARD_PWM_BASEADDR, kPWM_Module_0, kPWM_PwmA,   kPWM_EdgeAligned, 0); 
 	PWM_SetPwmLdok(BOARD_PWM_BASEADDR,  kPWM_Control_Module_0, true);
+
    
 	PWM_UpdatePwmDutycycle(BOARD_PWM_BASEADDR, kPWM_Module_0, kPWM_PwmB,   kPWM_EdgeAligned, 0); 
 	PWM_SetPwmLdok(BOARD_PWM_BASEADDR,  kPWM_Control_Module_0, true);
-	//PWM_StopTimer(BOARD_PWM_BASEADDR, kPWM_Control_Module_0);
-	 PWM_StartTimer(BOARD_PWM_BASEADDR, kPWM_Control_Module_0 );
+	PWM_StartTimer(BOARD_PWM_BASEADDR, kPWM_Control_Module_0 );
 
  }
  else if (f_pwmabC == 1) //turn off PWMA_A1,B1, 

@@ -14,6 +14,7 @@
 #include "led.h"
 #include "key.h"
 #include "pwm.h"
+#include "adc.h"
 /*******************************************************************************
  *
  * Funtion Name: main(void)
@@ -25,7 +26,7 @@ int main(void)
 {
    // uint8_t key; 
    // uint32_t pwmVal = 4;
-    uint32_t i;
+   // uint32_t i;
 
     /* Board pin, clock, debug console init */
     BOARD_InitPins();
@@ -37,6 +38,7 @@ int main(void)
     DelayInit();
     HALL_Init();
     HallSensor_GetPinState();
+    ADC_CADC_Init();
 	
     /* Set the PWM Fault inputs to a low value */
     PWM_BLDC_Init();
@@ -45,35 +47,14 @@ int main(void)
 
     while (1)
     {
-        uwStep=HallSensor_GetPinState();
-        PRINTF("i = %d \r\n",uwStep);
+         uwStep=HallSensor_GetPinState();
+         PRINTF("i = %d \r\n",uwStep);
         
-	   HALLSensor_Detected_BLDC(uwStep);
-        // LED1 = !LED1;
-         //DelayMs(100U);
-#if 0
-     switch(i)
-     {
-     case 1:
-       LED2=1;
-       PWMABC_Select_Channel(2);
-       //PWM_UpdatePwmDutycycle(BOARD_PWM_BASEADDR, kPWM_Module_2, kPWM_PwmA, kPWM_SignedCenterAligned, 50); 
-       //PWM_SetPwmLdok(BOARD_PWM_BASEADDR,  kPWM_Control_Module_2, true);
-       DelayMs(500U);
-       break;
-     case 2:  
-        LED2=0;
-        PWMABC_Close_Channel(2);
-         PWMABC_Close_Channel(1);
-         PWMABC_Close_Channel(0);
-       //PWM_UpdatePwmDutycycle(BOARD_PWM_BASEADDR, kPWM_Module_2, kPWM_PwmA, kPWM_SignedCenterAligned, 0);
-       //PWM_SetPwmLdok(BOARD_PWM_BASEADDR, kPWM_Control_Module_2, true);
-      DelayMs(500U);
-      break;
-     
-     }
-     if(i==2)i =0;
-#endif 
+	 HALLSensor_Detected_BLDC(uwStep);
+         LED1 = !LED1;
+         //LED2= !LED2;
+         DelayMs(100U);
+
 #if 0 
      key = KEY_Scan(0);
      switch(key)

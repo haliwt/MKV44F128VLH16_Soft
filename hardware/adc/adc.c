@@ -1,7 +1,7 @@
 #include "adc.h"
 
 /* Initialize CADC */
-static void ADC_CADC_Init(void);
+//void ADC_CADC_Init(void);
 
 
 
@@ -12,7 +12,7 @@ static void ADC_CADC_Init(void);
  *
  *
  ******************************************************************************/
-static void ADC_CADC_Init(void)
+void ADC_CADC_Init(void)
 {
     
     cadc_config_t cadcConfigStruct;
@@ -33,7 +33,7 @@ static void ADC_CADC_Init(void)
      * cadcConfigStruct.powerUpDelay = 26U;
      */
     CADC_GetDefaultConfig(&cadcConfigStruct);
-    cadcConfigStruct.dualConverterScanMode = kCADC_DualConverterWorkAsTriggeredSequential;
+    cadcConfigStruct.dualConverterScanMode =  kCADC_DualConverterWorkAsLoopSequential;//WT.EDIT kCADC_DualConverterWorkAsTriggeredSequential;
     CADC_Init(CADC_BASEADDR, &cadcConfigStruct);
 
     /* Configure each converter. */
@@ -63,7 +63,7 @@ static void ADC_CADC_Init(void)
     cadcSampleConfigStruct.channelNumber          = CADC_CHANNEL2_NUMBER;
     cadcSampleConfigStruct.enableDifferentialPair = CADC_CHANNEL2_ENABLE_DIFF;
     CADC_SetSampleConfig(CADC_BASEADDR, 1U, &cadcSampleConfigStruct);
-
+#if 0
     /* For converter B. */
     cadcSampleConfigStruct.channelNumber          = CADC_CHANNEL3_NUMBER;
     cadcSampleConfigStruct.enableDifferentialPair = CADC_CHANNEL3_ENABLE_DIFF;
@@ -71,12 +71,12 @@ static void ADC_CADC_Init(void)
     cadcSampleConfigStruct.channelNumber          = CADC_CHANNEL4_NUMBER;
     cadcSampleConfigStruct.enableDifferentialPair = CADC_CHANNEL4_ENABLE_DIFF;
     CADC_SetSampleConfig(CADC_BASEADDR, 3U, &cadcSampleConfigStruct);
-
+#endif 
     /* Enable the sample slot. */
     sampleMask = CADC_SAMPLE_MASK(0U)    /* For converter A. */
-                 | CADC_SAMPLE_MASK(1U)  /* For converter A. */
-                 | CADC_SAMPLE_MASK(2U)  /* For converter B. */
-                 | CADC_SAMPLE_MASK(3U); /* For converter B. */
+                 | CADC_SAMPLE_MASK(1U);  /* For converter A. */
+                // | CADC_SAMPLE_MASK(2U)  /* For converter B. */
+                // | CADC_SAMPLE_MASK(3U); /* For converter B. */
     CADC_EnableSample(CADC_BASEADDR, sampleMask, true);
     CADC_EnableSample(CADC_BASEADDR, (uint16_t)(~sampleMask), false); /* Disable other sample slot. */
 
@@ -87,7 +87,7 @@ static void ADC_CADC_Init(void)
 #if 0
  
     {
-        GETCHAR();
+       // GETCHAR();
         PRINTF("\r\n");
 
         /* Trigger the converter.
@@ -106,8 +106,8 @@ static void ADC_CADC_Init(void)
         {
             PRINTF("%d\t\t", (int16_t)CADC_GetSampleResultValue(CADC_BASEADDR, 0U));
             PRINTF("%d\t\t", (int16_t)CADC_GetSampleResultValue(CADC_BASEADDR, 1U));
-            PRINTF("%d\t\t", (int16_t)CADC_GetSampleResultValue(CADC_BASEADDR, 2U));
-            PRINTF("%d", (int16_t)CADC_GetSampleResultValue(CADC_BASEADDR, 3U));
+           // PRINTF("%d\t\t", (int16_t)CADC_GetSampleResultValue(CADC_BASEADDR, 2U));
+            //PRINTF("%d", (int16_t)CADC_GetSampleResultValue(CADC_BASEADDR, 3U));
         }
         CADC_ClearStatusFlags(CADC_BASEADDR, kCADC_ConverterAEndOfScanFlag);
     }
