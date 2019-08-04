@@ -341,21 +341,17 @@ void FGPIO_CheckAttributeBytes(FGPIO_Type *base, gpio_checker_attribute_t attrib
 
 /******************************************************************/
  /**
- * @brief  设置引脚为输入还是输出功能  用户一般不必调用
- * @note   只有当引脚作为GPIO时才有意义
- * @code
- *      // 将PORTB端口的3引脚设置输入引脚
+ * @brief  设置引脚为输入还是输出功�? 用户一般不必调�? * @note   只有当引脚作为GPIO时才有意�? * @code
+ *      // 将PORTB端口�?引脚设置输入引脚
  *      GPIO_PinConfig(HW_GPIOB, 3, kInpput);
  * @endcode
- * @param[in]  instance GPIO模块号
- *              @arg HW_GPIOA 芯片的PORTA端口
+ * @param[in]  instance GPIO模块�? *              @arg HW_GPIOA 芯片的PORTA端口
  *              @arg HW_GPIOB 芯片的PORTB端口
  *              @arg HW_GPIOC 芯片的PORTC端口
  *              @arg HW_GPIOD 芯片的PORTD端口
  *              @arg HW_GPIOE 芯片的PORTE端口
- * @param[in]  pin  端口上的引脚号 0~31
- * @param[in]  mode 输入或者输出设置
- *              @arg kInpput  输入功能选择
+ * @param[in]  pin  端口上的引脚�?0~31
+ * @param[in]  mode 输入或者输出设�? *              @arg kInpput  输入功能选择
  *              @arg kOutput  输出功能选择
  * @retval None
  */
@@ -381,8 +377,7 @@ void PORT_PinOpenDrainConfig(uint32_t instance, uint8_t pin, bool status)
 /**
  * @brief  set pin internal pullup/down resistors
  * @note   pull resistor value is about 20K
- * @param[in]  instance GPIO模块号
- *              @arg HW_GPIOx  GPIOx moudle
+ * @param[in]  instance GPIO模块�? *              @arg HW_GPIOx  GPIOx moudle
  * @param[in]  pin  pin index number 0-31
  * @param[in]  pull pull select
  *              @arg kPullDisabled  disable pull resistor

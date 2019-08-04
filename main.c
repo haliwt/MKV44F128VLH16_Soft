@@ -15,6 +15,7 @@
 #include "key.h"
 #include "pwm.h"
 #include "adc.h"
+#include "output.h"
 /*******************************************************************************
  *
  * Funtion Name: main(void)
@@ -25,6 +26,7 @@
 int main(void)
 {
     uint8_t key; 
+	uint8_t i;
    // uint32_t pwmVal = 4;
    // uint32_t i;
 
@@ -39,6 +41,7 @@ int main(void)
     HALL_Init();
     HallSensor_GetPinState();
     ADC_CADC_Init();
+    OUTPUT_Fucntion_Init();
 	
     /* Set the PWM Fault inputs to a low value */
     PWM_BLDC_Init();
@@ -51,7 +54,7 @@ int main(void)
 
 
      key = KEY_Scan(0);
-     printf("key = %d \r\n",key);
+     PRINTF("key = %d \r\n",key);
      switch(key)
      {
      
@@ -108,10 +111,26 @@ int main(void)
         LED2 =!LED2;
         DelayMs(500U);
         break;
-     case KEY10_PRES:
-        LED2=1;
-        DelayMs(500U);
-         LED2=0;
+     case KEY10_PRES: //¿Õµ÷°´¼ü
+        i++;
+        
+		if(i==1)
+		{
+           AIR = 1;
+		   LED2=1;
+           DelayMs(500U);
+           LED2=0;
+		}
+		if(i >= 2)
+		{
+           AIR = 0;
+		   LED1=1;
+           DelayMs(500U);
+           LED1=0;
+		   i=0;
+		}
+		
+		 
         break;
      
      
