@@ -33,7 +33,7 @@
 #define KEY9_GPIO_PIN              12
 #define KEY0XA_GPIO_PIN            13
 
-#define KEY1          PEin(29)  //定义PTE端口的26引脚为输入
+#define KEY1          PEin(29)  //空调按键，按一次开，再按一次关闭
 #define KEY2          PEin(30)
 #define KEY3          PEin(24)
 #define KEY4          PEin(25)

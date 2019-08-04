@@ -24,7 +24,7 @@
  ******************************************************************************/
 int main(void)
 {
-   // uint8_t key; 
+    uint8_t key; 
    // uint32_t pwmVal = 4;
    // uint32_t i;
 
@@ -47,31 +47,26 @@ int main(void)
 
     while (1)
     {
-         uwStep=HallSensor_GetPinState();
-         PRINTF("i = %d \r\n",uwStep);
         
-	 HALLSensor_Detected_BLDC(uwStep);
-         LED1 = !LED1;
-         //LED2= !LED2;
-         DelayMs(100U);
 
-#if 0 
+
      key = KEY_Scan(0);
+     printf("key = %d \r\n",key);
      switch(key)
      {
      
      case KEY1_PRES:
        
-      LED1 = !LED1;
+      LED1 = !LED1; // GPIO_PortToggle(GPIOD,6);
       DelayMs(100U);
-     PWMABC_Close_Channel(2);
-      LED2 = 1;
+     
+     // LED2 = 1;
      //  printf("UART%d OK! Hello Kinetis\r\n", instance);
        break;
      case KEY2_PRES:
        LED1 =1;
        LED2 = 0 ;
-        PWMABC_Select_Channel(2);
+        
         break;
      case KEY3_PRES:
        
@@ -121,26 +116,7 @@ int main(void)
      
      
      }
-#endif 
-#if 0 
-        DelayMs(100U);
-        pwmVal = pwmVal + 4;
 
-        /* Reset the duty cycle percentage */
-        if (pwmVal > 100)
-        {
-            pwmVal = 4;
-        }
-
-        /* Update duty cycles for all 3 PWM signals */
-        PWM_UpdatePwmDutycycle(BOARD_PWM_BASEADDR, kPWM_Module_0, kPWM_PwmA, kPWM_SignedCenterAligned, pwmVal);
-        PWM_UpdatePwmDutycycle(BOARD_PWM_BASEADDR, kPWM_Module_1, kPWM_PwmA, kPWM_SignedCenterAligned, (pwmVal >> 1));
-        PWM_UpdatePwmDutycycle(BOARD_PWM_BASEADDR, kPWM_Module_2, kPWM_PwmA, kPWM_SignedCenterAligned, (pwmVal >> 2));
-
-        /* Set the load okay bit for all submodules to load registers from their buffer */
-      PWM_SetPwmLdok(BOARD_PWM_BASEADDR, kPWM_Control_Module_0 | kPWM_Control_Module_1 | kPWM_Control_Module_2, true);
-#endif 
     }
-	
  
 }
