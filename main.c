@@ -108,7 +108,7 @@ int main(void)
         LED2 =!LED2;
         DelayMs(500U);
         break;
-     case KEY0XA_PRES:
+     case KEY10_PRES:
         LED2=1;
         DelayMs(500U);
          LED2=0;
