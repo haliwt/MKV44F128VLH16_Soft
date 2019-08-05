@@ -67,11 +67,21 @@ int main(void)
      //  printf("UART%d OK! Hello Kinetis\r\n", instance);
        break;
      case START_PRES:
-	 	uwStep = HallSensor_GetPinState();
-		
-	   HALLSensor_Detected_BLDC(uwStep);
+	   recoder_number.start_number++ ;
        LED1 =1;
        LED2 = 0 ;
+	   if(recoder_number.start_number==1)
+	   	{
+		   uwStep = HallSensor_GetPinState();
+		   PRINTF("uwStep = %d \r\n",uwStep);
+		   HALLSensor_Detected_BLDC(uwStep);
+	   	}
+	   else 
+	   {
+             recoder_number.start_number=0;
+
+	   }
+       
         
         break;
      case KEY3_PRES:
@@ -80,8 +90,8 @@ int main(void)
        DelayMs(200U);
         break;
      case KEY4_PRES:
-       LED1 = !LED1;
-       LED2 = !LED2 ;
+        LED1 = !LED1;
+        LED2 = !LED2 ;
         DelayMs(100U);
         break;
      case KEY5_PRES:

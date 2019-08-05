@@ -28,6 +28,7 @@
 
 typedef struct _output_t
 {
+  uint8_t start_number;
   uint8_t air_number;
   uint8_t wiper_number;
   uint8_t door_number;

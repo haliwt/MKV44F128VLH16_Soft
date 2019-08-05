@@ -341,7 +341,7 @@ void FGPIO_CheckAttributeBytes(FGPIO_Type *base, gpio_checker_attribute_t attrib
 
 /******************************************************************/
  /**
- * @brief  设置引脚为输入还是输出功�? 用户一般不必调�? * @note   只有当引脚作为GPIO时才有意�? * @code
+ * @brief  设置引脚为输入还是输出功�? 用户�?般不必调�? * @note   只有当引脚作为GPIO时才有意�? * @code
  *      // 将PORTB端口�?引脚设置输入引脚
  *      GPIO_PinConfig(HW_GPIOB, 3, kInpput);
  * @endcode
@@ -351,7 +351,7 @@ void FGPIO_CheckAttributeBytes(FGPIO_Type *base, gpio_checker_attribute_t attrib
  *              @arg HW_GPIOD 芯片的PORTD端口
  *              @arg HW_GPIOE 芯片的PORTE端口
  * @param[in]  pin  端口上的引脚�?0~31
- * @param[in]  mode 输入或者输出设�? *              @arg kInpput  输入功能选择
+ * @param[in]  mode 输入或�?�输出设�? *              @arg kInpput  输入功能选择
  *              @arg kOutput  输出功能选择
  * @retval None
  */
@@ -398,8 +398,8 @@ void PORT_PinPullConfig(uint32_t instance, uint8_t pin, port_pull pull)
             PORT_InstanceTable[instance]->PCR[pin] |= PORT_PCR_PS_MASK;
             break;
         case kPORT_PullDown :
-            PORT_InstanceTable[instance]->PCR[pin] |= PORT_PCR_PE_MASK;
-            PORT_InstanceTable[instance]->PCR[pin] &= ~PORT_PCR_PS_MASK;
+            PORT_InstanceTable[instance]->PCR[pin] |= PORT_PCR_PE_MASK; //Enalbe pullup or pulldown
+            PORT_InstanceTable[instance]->PCR[pin] &= ~PORT_PCR_PS_MASK;  //PS =0 pulldown ps=1 up
             break;
         default:
             break;
