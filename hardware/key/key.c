@@ -113,9 +113,9 @@ uint8_t KEY_Scan(uint8_t mode)
    }
    else if(BRAKE == 0 && START == 0 && KEY3==0 && KEY4==0 && KEY5==0 &&KEY6==0 && KEY7==0|| \
    	              KEY8 == 0 && KEY9== 0 && KEY10 == 0)
-   {
+   
       key_up = 1;
       return 0;
-   }
+   
    
 }
