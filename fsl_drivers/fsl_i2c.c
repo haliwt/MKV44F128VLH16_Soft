@@ -797,10 +797,10 @@ void I2C_MasterSetBaudRate(I2C_Type *base, uint32_t baudRate_Bps, uint32_t srcCl
 }
 
 /*!
- * brief Sends a START on the I2C bus.
+ * brief Sends a START_KEY on the I2C bus.
  *
- * This function is used to initiate a new master mode transfer by sending the START signal.
- * The slave address is sent following the I2C START signal.
+ * This function is used to initiate a new master mode transfer by sending the START_KEY signal.
+ * The slave address is sent following the I2C START_KEY signal.
  *
  * param base I2C peripheral base pointer
  * param address 7-bit slave device address.
@@ -820,7 +820,7 @@ status_t I2C_MasterStart(I2C_Type *base, uint8_t address, i2c_direction_t direct
     }
     else
     {
-        /* Send the START signal. */
+        /* Send the START_KEY signal. */
         base->C1 |= I2C_C1_MST_MASK | I2C_C1_TX_MASK;
 
 #if defined(FSL_FEATURE_I2C_HAS_DOUBLE_BUFFERING) && FSL_FEATURE_I2C_HAS_DOUBLE_BUFFERING
@@ -847,7 +847,7 @@ status_t I2C_MasterStart(I2C_Type *base, uint8_t address, i2c_direction_t direct
 }
 
 /*!
- * brief Sends a REPEATED START on the I2C bus.
+ * brief Sends a REPEATED START_KEY on the I2C bus.
  *
  * param base I2C peripheral base pointer
  * param address 7-bit slave device address.

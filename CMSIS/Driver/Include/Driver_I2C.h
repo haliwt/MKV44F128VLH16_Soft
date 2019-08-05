@@ -105,7 +105,7 @@ typedef volatile struct _ARM_I2C_STATUS {
 #define ARM_I2C_EVENT_ADDRESS_NACK        (1UL << 4)  ///< Address not acknowledged from Slave
 #define ARM_I2C_EVENT_GENERAL_CALL        (1UL << 5)  ///< General Call indication
 #define ARM_I2C_EVENT_ARBITRATION_LOST    (1UL << 6)  ///< Master lost arbitration
-#define ARM_I2C_EVENT_BUS_ERROR           (1UL << 7)  ///< Bus error detected (START/STOP at illegal position)
+#define ARM_I2C_EVENT_BUS_ERROR           (1UL << 7)  ///< Bus error detected (START_KEY/STOP at illegal position)
 #define ARM_I2C_EVENT_BUS_CLEAR           (1UL << 8)  ///< Bus clear finished
 
 

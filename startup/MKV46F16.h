@@ -6331,7 +6331,7 @@ typedef struct {
   __O  uint8_t CERQ;                               /**< Clear Enable Request Register, offset: 0x1A */
   __O  uint8_t SERQ;                               /**< Set Enable Request Register, offset: 0x1B */
   __O  uint8_t CDNE;                               /**< Clear DONE Status Bit Register, offset: 0x1C */
-  __O  uint8_t SSRT;                               /**< Set START Bit Register, offset: 0x1D */
+  __O  uint8_t SSRT;                               /**< Set START_KEY Bit Register, offset: 0x1D */
   __O  uint8_t CERR;                               /**< Clear Error Register, offset: 0x1E */
   __O  uint8_t CINT;                               /**< Clear Interrupt Request Register, offset: 0x1F */
        uint8_t RESERVED_2[4];
@@ -6875,16 +6875,16 @@ typedef struct {
 #define DMA_CDNE_NOP(x)                          (((uint8_t)(((uint8_t)(x)) << DMA_CDNE_NOP_SHIFT)) & DMA_CDNE_NOP_MASK)
 /*! @} */
 
-/*! @name SSRT - Set START Bit Register */
+/*! @name SSRT - Set START_KEY Bit Register */
 /*! @{ */
 #define DMA_SSRT_SSRT_MASK                       (0xFU)
 #define DMA_SSRT_SSRT_SHIFT                      (0U)
 #define DMA_SSRT_SSRT(x)                         (((uint8_t)(((uint8_t)(x)) << DMA_SSRT_SSRT_SHIFT)) & DMA_SSRT_SSRT_MASK)
 #define DMA_SSRT_SAST_MASK                       (0x40U)
 #define DMA_SSRT_SAST_SHIFT                      (6U)
-/*! SAST - Set All START Bits (activates all channels)
- *  0b0..Set only the TCDn_CSR[START] bit specified in the SSRT field
- *  0b1..Set all bits in TCDn_CSR[START]
+/*! SAST - Set All START_KEY Bits (activates all channels)
+ *  0b0..Set only the TCDn_CSR[START_KEY] bit specified in the SSRT field
+ *  0b1..Set all bits in TCDn_CSR[START_KEY]
  */
 #define DMA_SSRT_SAST(x)                         (((uint8_t)(((uint8_t)(x)) << DMA_SSRT_SAST_SHIFT)) & DMA_SSRT_SAST_MASK)
 #define DMA_SSRT_NOP_MASK                        (0x80U)
@@ -7932,7 +7932,7 @@ typedef struct {
 /*! @{ */
 #define DMA_CSR_START_MASK                       (0x1U)
 #define DMA_CSR_START_SHIFT                      (0U)
-/*! START - Channel Start
+/*! START_KEY - Channel Start
  *  0b0..The channel is not explicitly started.
  *  0b1..The channel is explicitly started via a software initiated service request.
  */
