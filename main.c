@@ -27,7 +27,7 @@ int main(void)
 {
     uint8_t key; 
 	
-   output_t recoder_number;
+    output_t recoder_number;
   
 
     /* Board pin, clock, debug console init */
@@ -107,10 +107,10 @@ int main(void)
         break;
     case KEY7_PRES:
         LED1=1;
-	LED2=1;
+		LED2=1;
         DelayMs(300U);
         LED2=0;
-	LED1=0;
+		LED1=0;
         break;
    case KEY8_PRES:  //≥µ¬÷ÃΩ≤‚–≈∫≈ ‰≥ˆ
         WHEEL =1;

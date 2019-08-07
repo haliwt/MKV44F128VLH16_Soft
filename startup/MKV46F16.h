@@ -12562,7 +12562,7 @@ typedef struct {
 
 /*! @name PCR - Pin Control Register n */
 /*! @{ */
-#define PORT_PCR_PS_MASK                         (0x1U)
+#define PORT_PCR_PS_MASK                         (0x1U)  //Pullup
 #define PORT_PCR_PS_SHIFT                        (0U)
 /*! PS - Pull Select
  *  0b0..Internal pulldown resistor is enabled on the corresponding pin, if the corresponding PE field is set.

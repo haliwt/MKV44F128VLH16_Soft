@@ -68,7 +68,7 @@
 #define __ARMv8MBL_CMSIS_VERSION       ((__ARMv8MBL_CMSIS_VERSION_MAIN << 16U) | \
                                          __ARMv8MBL_CMSIS_VERSION_SUB           )  /*!< \deprecated CMSIS HAL version number */
 
-#define __CORTEX_M                     ( 2U)                                            /*!< Cortex-M Core */
+#define __CORTEX_M                      (2U)                                            /*!< Cortex-M Core */
 
 /** __FPU_USED indicates whether an FPU is used or not.
     This core does not support an FPU at all

@@ -614,5 +614,5 @@ void PORT_PinPullConfig(uint32_t instance, uint8_t pin, port_pull pull);
 
 
 
-/****************************************************************/
+
 #endif /* _FSL_GPIO_H_*/

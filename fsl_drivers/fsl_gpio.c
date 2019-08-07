@@ -377,7 +377,7 @@ void PORT_PinOpenDrainConfig(uint32_t instance, uint8_t pin, bool status)
 /**
  * @brief  set pin internal pullup/down resistors
  * @note   pull resistor value is about 20K
- * @param[in]  instance GPIO模块�? *              @arg HW_GPIOx  GPIOx moudle
+ * @param[in]  instance GPIO_A or'B' or'C'             @arg HW_GPIOx  GPIOx moudle
  * @param[in]  pin  pin index number 0-31
  * @param[in]  pull pull select
  *              @arg kPullDisabled  disable pull resistor
@@ -398,8 +398,8 @@ void PORT_PinPullConfig(uint32_t instance, uint8_t pin, port_pull pull)
             PORT_InstanceTable[instance]->PCR[pin] |= PORT_PCR_PS_MASK;
             break;
         case kPORT_PullDown :
-            PORT_InstanceTable[instance]->PCR[pin] |= PORT_PCR_PE_MASK; //Enalbe pullup or pulldown
-            PORT_InstanceTable[instance]->PCR[pin] &= ~PORT_PCR_PS_MASK;  //PS =0 pulldown ps=1 up
+            PORT_InstanceTable[instance]->PCR[pin] |= PORT_PCR_PE_MASK; //Pull Enable
+            PORT_InstanceTable[instance]->PCR[pin] &= ~PORT_PCR_PS_MASK;  //Pull Select =PS =0 pulldown ps=1 up
             break;
         default:
             break;

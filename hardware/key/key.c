@@ -11,25 +11,10 @@ void KEY_Init(void)
 {
    gpio_pin_config_t key_config = {
 	  kGPIO_DigitalInput ,
-	  1,
-  };
+	  0,
+    };
 
-#if 0
-   /* 灏咷PIO璁剧疆涓鸿緭鍏ユā寮忥紝鑺墖鍐呴儴鑷姩閰嶇疆涓婃媺鐢甸樆*/
-    GPIO_QuickInit(HW_GPIOE, 29, kGPIO_Mode_IPD);
-    GPIO_QuickInit(HW_GPIOE, 30, kGPIO_Mode_IPD);
-    GPIO_QuickInit(HW_GPIOE, 24, kGPIO_Mode_IPD);
-    GPIO_QuickInit(HW_GPIOE, 25, kGPIO_Mode_IPD);
-    GPIO_QuickInit(HW_GPIOA, 1, kGPIO_Mode_IPD);
-    GPIO_QuickInit(HW_GPIOA,  2, kGPIO_Mode_IPD);
-    GPIO_QuickInit(HW_GPIOA, 4, kGPIO_Mode_IPD);
-    GPIO_QuickInit(HW_GPIOA,  5, kGPIO_Mode_IPD);
-    GPIO_QuickInit(HW_GPIOA, 12, kGPIO_Mode_IPD);
-    GPIO_QuickInit(HW_GPIOA,  13, kGPIO_Mode_IPD);
-#endif 
-      
-#if 1
-/* Port D Clock Gate Control: Clock enabled */
+   /* Port D Clock Gate Control: Clock enabled */
     CLOCK_EnableClock(kCLOCK_PortE);
     
     CLOCK_EnableClock(kCLOCK_PortA);
@@ -76,7 +61,7 @@ void KEY_Init(void)
                 
                 
 
-#endif 
+
 
 }
 
@@ -186,31 +171,26 @@ uint8_t KEY_Scan(uint8_t mode)
    
    
 }
-#if 0
-/****************************************************************************
-  * 函数名称: 
-  * 输入函数参数：无
-  * 功能: KEY_DOWN -按键按下
-  *       KEY_UP  -按键没有按下
-  * 返回值：
-*****************************************************************************/
-KEYState_TypeDef KEY3_StateRead(void)
+/******************************************************************************
+ *
+ * Function Name: 
+ * Function Active: Interrpt brake input key 
+ * @brief Interrupt service fuction of switch.
+ *
+ * This function toggles the LED
+ *
+******************************************************************************/
+void BARKE_KEY_IRQ_HANDLER(void)
 {
-  /* ¶ÁÈ¡´ËÊ±°´¼üÖµ²¢ÅÐ¶ÏÊÇ·ñÊÇ±»°´ÏÂ×´Ì¬£¬Èç¹ûÊÇ±»°´ÏÂ×´Ì¬½øÈëº¯ÊýÄÚ */
-  if(HAL_GPIO_ReadPin(KEY3_GPIO,KEY3_GPIO_PIN)==KEY3_DOWN_LEVEL)
-  {
-    /* ÑÓÊ±Ò»Ð¡¶ÎÊ±¼ä£¬Ïû³ý¶¶¶¯ */
-    HAL_Delay(10);
-    /*判断是否按键按下 */
-    if(HAL_GPIO_ReadPin(KEY3_GPIO,KEY3_GPIO_PIN)==KEY3_DOWN_LEVEL)
-    {
-      /* 等待按键弹开，退出按键扫描函数 */
-      while(HAL_GPIO_ReadPin(KEY3_GPIO,KEY3_GPIO_PIN)==KEY3_DOWN_LEVEL);
-       /* 按键扫描完毕，确定按键按下 */
-      return KEY_DOWN;
-    }
-  }
-  /* 按键没有被按下 */
-  return KEY_UP;
+    /* Clear external interrupt flag. */
+    GPIO_PortClearInterruptFlags(BRAKE_GPIO, 1U << BRAKE_GPIO_PIN );
+    /* Change state of button . */
+  
+
+	/* Add for ARM errata 838869, affects Cortex-M4, Cortex-M4F Store immediate 
+    overlapping
+  exception return operation might vector to incorrect interrupt */
+#if defined __CORTEX_M && (__CORTEX_M == 4U)
+    __DSB();
+#endif
 }
-#endif 
