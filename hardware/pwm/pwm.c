@@ -235,8 +235,6 @@ void HALLSensor_Detected_BLDC(uint32_t uvw)
   else 
     uvw = uvw-(uint32_t)7 ; 
   
-  if (uvw == 7 )
-      uvw =0;
   /*---- six step changed phase */
   /*---- 1(001,U),IC2(010,V),IC3(100,W) ----*/
   PRINTF("uwStep = %d\n",uvw);
@@ -247,9 +245,8 @@ void HALLSensor_Detected_BLDC(uint32_t uvw)
        PWMA_Close_ABC_Channel(2);  //close C channel 
       
       /*  PWM_A1 and PWM_B1 output */
-      // PWMA_Select_B_Channel(0);    //open C upper half-bridge
-      /*  PWM_A2 and PWM_B2 output  */
-      PWMA_Select_A_Channel(1);    
+       PWMA_Select_BC_Channel(0);
+     
       PRINTF("uwStep = %d\n",uvw);
       break;
     
@@ -259,10 +256,9 @@ void HALLSensor_Detected_BLDC(uint32_t uvw)
    
     
       /*  Channel configuration A+ */
-       PWMA_Select_A_Channel(0);
+         PWMA_Select_AB_Channel(1);
       
-      /*  Channe2 configuration B- */
-    //   PWMA_Select_C_Channel(1);
+    
       PRINTF("uwStep = %d\n",uvw);
       break;
     
@@ -271,9 +267,8 @@ void HALLSensor_Detected_BLDC(uint32_t uvw)
          PWMA_Close_ABC_Channel(0); //close A0 B0 channel 
      
       /*  Channe3 configuration B+  */
-         PWMA_Select_BC_Channel(0);
-     /*  Channe2 configuration C-  */
-      //  PWMA_Select_C_Channel(1);
+         PWMA_Select_BC_Channel(1);
+    
       
         PRINTF("uwStep = %d\n",uvw);
       break;
@@ -282,11 +277,10 @@ void HALLSensor_Detected_BLDC(uint32_t uvw)
       /*  Channel configuration */ 
           PWMA_Close_ABC_Channel(0); //close A channel 
       
-      /*  Channe2 configuration */
-       //    PWMA_Select_C_Channel(0);
+        /*  Channe2 configuration */
+         PWMA_Select_CA_Channel(1);
       
-      /*  Channe3 configuration */
-         // PWMA_Select_B_Channel(1);
+      
          PRINTF("uwStep = %d\n",uvw);
       break;
     
@@ -309,11 +303,9 @@ void HALLSensor_Detected_BLDC(uint32_t uvw)
          PWMA_Close_ABC_Channel(2); //close B channel 
        //DelayMs(500U);
         /*  Channel configuration A+*/
-         PWMA_Select_A_Channel(0);
+         PWMA_Select_AB_Channel(0);
       
-      /*  Channe3 configuration B -*/
-      // PWMA_Select_B_Channel(1);
-	 //   DelayMs(500U);
+     
       PRINTF("uwStep = %d\n",uvw);
  
       break;
@@ -341,35 +333,31 @@ void HALLSensor_Detected_BLDC(uint32_t uvw)
  *
  *
 **************************************************************/
-void PWMA_Select_A_Channel(uint8_t s_pwma)
+void PWMA_Select_AB_Channel(uint8_t s_pwma)
 {
-
+     if(s_pwma == 0)  //A + B -
+     	{
+	      //PWM_StartTimer(BOARD_PWM_BASEADDR, kPWM_Control_Module_1);
+	     /*PWMA A1 channel PWM output*/
+	     PWM_UpdatePwmDutycycle(BOARD_PWM_BASEADDR, kPWM_Module_0, kPWM_PwmA,   kPWM_EdgeAligned, 50); 
+	    // PWM_SetPwmLdok(BOARD_PWM_BASEADDR,  kPWM_Control_Module_1, true);
+		 PWM_UpdatePwmDutycycle(BOARD_PWM_BASEADDR, kPWM_Module_1, kPWM_PwmB,   kPWM_EdgeAligned, 50); //
+	     PWM_SetPwmLdok(BOARD_PWM_BASEADDR, kPWM_Control_Module_0| kPWM_Control_Module_1, true);
+	    // PWM_StartTimer(BOARD_PWM_BASEADDR, kPWM_Control_Module_1);
+	     PWM_StartTimer(BOARD_PWM_BASEADDR, kPWM_Control_Module_0 |kPWM_Control_Module_1 );
+     	}
+	 if(s_pwma == 1)  //A + C -
+     	{
+	      //PWM_StartTimer(BOARD_PWM_BASEADDR, kPWM_Control_Module_1);
+	     /*PWMA A1 channel PWM output*/
+	     PWM_UpdatePwmDutycycle(BOARD_PWM_BASEADDR, kPWM_Module_0, kPWM_PwmA,   kPWM_EdgeAligned, 50); 
+	    // PWM_SetPwmLdok(BOARD_PWM_BASEADDR,  kPWM_Control_Module_1, true);
+		 PWM_UpdatePwmDutycycle(BOARD_PWM_BASEADDR, kPWM_Module_2, kPWM_PwmB,   kPWM_EdgeAligned, 50); //
+	     PWM_SetPwmLdok(BOARD_PWM_BASEADDR, kPWM_Control_Module_0| kPWM_Control_Module_2, true);
+	    // PWM_StartTimer(BOARD_PWM_BASEADDR, kPWM_Control_Module_1);
+	     PWM_StartTimer(BOARD_PWM_BASEADDR, kPWM_Control_Module_0 |kPWM_Control_Module_2 );
+     	}
     
- if(s_pwma == 0) //A = PWMA_A0 B0 ,selected PWMA_A0 turn off PWMA_B0
- {
- 
-   PWM_UpdatePwmDutycycle(BOARD_PWM_BASEADDR, kPWM_Module_0, kPWM_PwmB,   kPWM_EdgeAligned, 0); 
-  
- 
-    
-   PWM_UpdatePwmDutycycle(BOARD_PWM_BASEADDR, kPWM_Module_0, kPWM_PwmA,   kPWM_EdgeAligned, 50); 
-   PWM_SetPwmLdok(BOARD_PWM_BASEADDR,  kPWM_Control_Module_0, true);
-  
-  
-    
- }
- else if (s_pwma == 1) //selected PWM_B0 turn off PWMA_A1 next bridge half cycle
- {
-      /*PWMA A1 channel PWM output*/
-	 PWM_UpdatePwmDutycycle(BOARD_PWM_BASEADDR, kPWM_Module_0, kPWM_PwmA,   kPWM_EdgeAligned, 0); 
-     //PWM_SetPwmLdok(BOARD_PWM_BASEADDR,  kPWM_Control_Module_1, true);
-
-     PWM_UpdatePwmDutycycle(BOARD_PWM_BASEADDR, kPWM_Module_0, kPWM_PwmB,   kPWM_EdgeAligned, 50); 
-     PWM_SetPwmLdok(BOARD_PWM_BASEADDR,  kPWM_Control_Module_0, true);
-	
- }
-
-  
 }
 /**************************************************************
  *
@@ -383,15 +371,30 @@ void PWMA_Select_A_Channel(uint8_t s_pwma)
 void PWMA_Select_BC_Channel(uint8_t s_pwmb)
 {
   
+     if(s_pwmb==0) //B+ A -
+     {
+	     //PWM_StartTimer(BOARD_PWM_BASEADDR, kPWM_Control_Module_1);
+	     /*PWMA A1 channel PWM output*/
+	     PWM_UpdatePwmDutycycle(BOARD_PWM_BASEADDR, kPWM_Module_1, kPWM_PwmA,   kPWM_EdgeAligned, 50); 
+	    // PWM_SetPwmLdok(BOARD_PWM_BASEADDR,  kPWM_Control_Module_1, true);
+		 PWM_UpdatePwmDutycycle(BOARD_PWM_BASEADDR, kPWM_Module_0, kPWM_PwmB,   kPWM_EdgeAligned, 50); //
+	     PWM_SetPwmLdok(BOARD_PWM_BASEADDR, kPWM_Control_Module_1| kPWM_Control_Module_0, true);
+	    // PWM_StartTimer(BOARD_PWM_BASEADDR, kPWM_Control_Module_1);
+	     PWM_StartTimer(BOARD_PWM_BASEADDR, kPWM_Control_Module_1 |kPWM_Control_Module_0 );
+     }
 
-     //PWM_StartTimer(BOARD_PWM_BASEADDR, kPWM_Control_Module_1);
-     /*PWMA A1 channel PWM output*/
-     PWM_UpdatePwmDutycycle(BOARD_PWM_BASEADDR, kPWM_Module_1, kPWM_PwmA,   kPWM_EdgeAligned, 50); 
-    // PWM_SetPwmLdok(BOARD_PWM_BASEADDR,  kPWM_Control_Module_1, true);
-	 PWM_UpdatePwmDutycycle(BOARD_PWM_BASEADDR, kPWM_Module_2, kPWM_PwmB,   kPWM_EdgeAligned, 50); //
-     PWM_SetPwmLdok(BOARD_PWM_BASEADDR, kPWM_Control_Module_1| kPWM_Control_Module_2, true);
-    // PWM_StartTimer(BOARD_PWM_BASEADDR, kPWM_Control_Module_1);
-     PWM_StartTimer(BOARD_PWM_BASEADDR, kPWM_Control_Module_1 |kPWM_Control_Module_2 );
+
+	 if(s_pwmb==1) //B+ C -
+     {
+	     //PWM_StartTimer(BOARD_PWM_BASEADDR, kPWM_Control_Module_1);
+	     /*PWMA A1 channel PWM output*/
+	     PWM_UpdatePwmDutycycle(BOARD_PWM_BASEADDR, kPWM_Module_1, kPWM_PwmA,   kPWM_EdgeAligned, 50); 
+	    // PWM_SetPwmLdok(BOARD_PWM_BASEADDR,  kPWM_Control_Module_1, true);
+		 PWM_UpdatePwmDutycycle(BOARD_PWM_BASEADDR, kPWM_Module_2, kPWM_PwmB,   kPWM_EdgeAligned, 50); //
+	     PWM_SetPwmLdok(BOARD_PWM_BASEADDR, kPWM_Control_Module_1| kPWM_Control_Module_2, true);
+	    // PWM_StartTimer(BOARD_PWM_BASEADDR, kPWM_Control_Module_1);
+	     PWM_StartTimer(BOARD_PWM_BASEADDR, kPWM_Control_Module_1 |kPWM_Control_Module_2 );
+     }
 }
 /**************************************************************
  *
@@ -405,14 +408,28 @@ void PWMA_Select_BC_Channel(uint8_t s_pwmb)
 void PWMA_Select_CA_Channel(uint8_t s_pwmc)
 {
  
-    //PWM_StartTimer(BOARD_PWM_BASEADDR, kPWM_Control_Module_1);
-     /*PWMA A1 channel PWM output*/
-     PWM_UpdatePwmDutycycle(BOARD_PWM_BASEADDR, kPWM_Module_2, kPWM_PwmA,   kPWM_EdgeAligned, 50); 
-    // PWM_SetPwmLdok(BOARD_PWM_BASEADDR,  kPWM_Control_Module_1, true);
-	 PWM_UpdatePwmDutycycle(BOARD_PWM_BASEADDR, kPWM_Module_0, kPWM_PwmB,   kPWM_EdgeAligned, 50); //
-     PWM_SetPwmLdok(BOARD_PWM_BASEADDR, kPWM_Control_Module_0| kPWM_Control_Module_2, true);
-    // PWM_StartTimer(BOARD_PWM_BASEADDR, kPWM_Control_Module_1);
-     PWM_StartTimer(BOARD_PWM_BASEADDR, kPWM_Control_Module_0 |kPWM_Control_Module_2 );
+     if(s_pwmc == 0) //C + A -
+     {
+	    //PWM_StartTimer(BOARD_PWM_BASEADDR, kPWM_Control_Module_1);
+	     /*PWMA A1 channel PWM output*/
+	     PWM_UpdatePwmDutycycle(BOARD_PWM_BASEADDR, kPWM_Module_2, kPWM_PwmA,   kPWM_EdgeAligned, 50); 
+	    // PWM_SetPwmLdok(BOARD_PWM_BASEADDR,  kPWM_Control_Module_1, true);
+		 PWM_UpdatePwmDutycycle(BOARD_PWM_BASEADDR, kPWM_Module_0, kPWM_PwmB,   kPWM_EdgeAligned, 50); //
+	     PWM_SetPwmLdok(BOARD_PWM_BASEADDR, kPWM_Control_Module_0| kPWM_Control_Module_2, true);
+	    // PWM_StartTimer(BOARD_PWM_BASEADDR, kPWM_Control_Module_1);
+	     PWM_StartTimer(BOARD_PWM_BASEADDR, kPWM_Control_Module_0 |kPWM_Control_Module_2 );
+     }
+	  if(s_pwmc == 1) //C + B -
+     {
+	    //PWM_StartTimer(BOARD_PWM_BASEADDR, kPWM_Control_Module_1);
+	     /*PWMA A1 channel PWM output*/
+	     PWM_UpdatePwmDutycycle(BOARD_PWM_BASEADDR, kPWM_Module_2, kPWM_PwmA,   kPWM_EdgeAligned, 50); 
+	    // PWM_SetPwmLdok(BOARD_PWM_BASEADDR,  kPWM_Control_Module_1, true);
+		 PWM_UpdatePwmDutycycle(BOARD_PWM_BASEADDR, kPWM_Module_1, kPWM_PwmB,   kPWM_EdgeAligned, 50); //
+	     PWM_SetPwmLdok(BOARD_PWM_BASEADDR, kPWM_Control_Module_1| kPWM_Control_Module_2, true);
+	    // PWM_StartTimer(BOARD_PWM_BASEADDR, kPWM_Control_Module_1);
+	     PWM_StartTimer(BOARD_PWM_BASEADDR, kPWM_Control_Module_1 |kPWM_Control_Module_2 );
+     }
  
 }
 
