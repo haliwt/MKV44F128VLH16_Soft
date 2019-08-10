@@ -77,17 +77,17 @@ int main(void)
 		   PRINTF("uwStep = %d \r\n",uwStep);
 		   HALLSensor_Detected_BLDC(uwStep);
 	   	}
-	   else 
-	   {
-             recoder_number.start_number=0;
-			 PMW_AllClose_ABC_Channel();
-
-	   }
+	   
+	   
        
         
         break;
      case KEY3_PRES:
        
+       recoder_number.start_number=0;
+			 PMW_AllClose_ABC_Channel();
+                      DelayMs(100U);
+                       PMW_AllClose_ABC_Channel();
        LED2 = !LED2 ;
        DelayMs(200U);
         break;

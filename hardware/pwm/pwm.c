@@ -117,7 +117,7 @@ void PWM_BLDC_Init(void)
     /* PWM A & PWM B form a complementary PWM pair */
     pwmConfig.pairOperation   = kPWM_Independent; //WT.EDIT kPWM_ComplementaryPwmA;
     pwmConfig.enableDebugMode = true;
-    pwmConfig.forceTrigger =  kPWM_Force_LocalReload;//kPWM_Force_Local;  //WT.EDIT
+    pwmConfig.forceTrigger =  kPWM_Force_Local; //kPWM_Force_LocalReload;//kPWM_Force_Local;  //WT.EDIT
     
 
     /* Initialize submodule 0 */
