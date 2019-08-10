@@ -54,7 +54,7 @@ int main(void)
     while (1)
     {
         
-    
+      
      key = KEY_Scan(0);
      PRINTF("key = %d \r\n",key);
      if(recoder_number.start_number==1)
@@ -71,19 +71,13 @@ int main(void)
 	   recoder_number.start_number++ ;
        LED1 =1;
        LED2 = 0 ;
-	   if(recoder_number.start_number==1)
-	   	{
-		   uwStep = HallSensor_GetPinState();
-		   PRINTF("uwStep = %d \r\n",uwStep);
-		   HALLSensor_Detected_BLDC(uwStep);
-	   	}
-	   
+	 
 	   
        
         
         break;
      case KEY3_PRES:
-       
+       PRINTF(" Stop PWMA output\r\n");
        recoder_number.start_number=0;
 			 PMW_AllClose_ABC_Channel();
                       DelayMs(100U);
