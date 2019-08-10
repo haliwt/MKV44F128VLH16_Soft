@@ -57,6 +57,13 @@ int main(void)
     
      key = KEY_Scan(0);
      PRINTF("key = %d \r\n",key);
+     if(recoder_number.start_number==1)
+     {
+        uwStep = HallSensor_GetPinState();
+        PRINTF("ouread = %d \r\n",uwStep);
+        HALLSensor_Detected_BLDC(uwStep);
+        
+     }
      switch(key)
      {
      
