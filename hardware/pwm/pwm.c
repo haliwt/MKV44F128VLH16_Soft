@@ -459,7 +459,7 @@ void PWMA_Close_ABC_Channel(uint8_t f_pwmabc)
     	}
 	if(f_pwmabc==1)  //Close B channel 
 	{
-         //close PWMA_A0/B0 channel
+         //close PWMA_A1/B1 channel
 		    PWM_UpdatePwmDutycycle(BOARD_PWM_BASEADDR, kPWM_Module_1, kPWM_PwmA,  kPWM_EdgeAligned, 0); 
 		   
 		    PWM_UpdatePwmDutycycle(BOARD_PWM_BASEADDR, kPWM_Module_1, kPWM_PwmB,   kPWM_EdgeAligned, 0); 

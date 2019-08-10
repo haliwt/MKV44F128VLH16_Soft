@@ -49,7 +49,7 @@ int main(void)
     /* Set the PWM Fault inputs to a low value */
     PWM_BLDC_Init();
    
-    
+    PMW_AllClose_ABC_Channel();
 
     while (1)
     {
@@ -68,7 +68,7 @@ int main(void)
      {
      
       case START_PRES:
-	   recoder_number.start_number++ ;
+	   recoder_number.start_number=1 ;
        LED1 =1;
        LED2 = 0 ;
 	 
