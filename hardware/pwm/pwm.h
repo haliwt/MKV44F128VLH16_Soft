@@ -75,7 +75,7 @@ void PWM_BLDC_Init(void);   // initial pwm function
 void PWMA_Select_A_Channel(uint8_t s_pwmA);  //select one PWM A channel,H-bridge first 
 void PWMA_Select_B_Channel(uint8_t s_pwmB);  //select one PWM B  channel,H-bridge second
 void PWMA_Select_C_Channel(uint8_t s_pwmC); 
-
+void PMW_AllClose_ABC_Channel(void);
 
 
 void PWMA_Close_ABC_Channel(uint8_t f_pwma);

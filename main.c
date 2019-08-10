@@ -80,6 +80,7 @@ int main(void)
 	   else 
 	   {
              recoder_number.start_number=0;
+			 PMW_AllClose_ABC_Channel();
 
 	   }
        

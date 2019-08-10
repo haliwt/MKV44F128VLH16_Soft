@@ -113,7 +113,7 @@ void PWM_BLDC_Init(void)
     PRINTF("FlexPWM driver example 2\n");
 	pwmConfig.enableDebugMode = true;  //WT.EDIT 2019-07-13
     /* Use full cycle reload */
-    pwmConfig.reloadLogic =kPWM_ReloadPwmHalfCycle; //WT.EDIT 2019-07-13 //kPWM_ReloadPwmFullCycle;
+    pwmConfig.reloadLogic =kPWM_ReloadImmediate;//kPWM_ReloadPwmFullCycle;//kPWM_ReloadPwmHalfCycle; //WT.EDIT 2019-07-13 //kPWM_ReloadPwmFullCycle;
     /* PWM A & PWM B form a complementary PWM pair */
     pwmConfig.pairOperation   = kPWM_Independent; //WT.EDIT kPWM_ComplementaryPwmA;
     pwmConfig.enableDebugMode = true;
@@ -482,6 +482,50 @@ void PWMA_Close_ABC_Channel(uint8_t f_pwmabC)
    PWM_StartTimer(BOARD_PWM_BASEADDR, kPWM_Control_Module_2 );
  }
     
+}
+/**************************************************************
+ *
+ *Function Name: PWM_ALLClose_ABC_Channel
+ *Function Active :be used to kPWM_Control_Module_0 
+ *
+ *
+ *
+**************************************************************/
+
+void PMW_AllClose_ABC_Channel(void)
+{
+   PWM_UpdatePwmDutycycle(BOARD_PWM_BASEADDR, kPWM_Module_0, kPWM_PwmA,   kPWM_EdgeAligned, 0); 
+   PWM_SetPwmLdok(BOARD_PWM_BASEADDR,  kPWM_Control_Module_0, true);
+
+   PWM_UpdatePwmDutycycle(BOARD_PWM_BASEADDR, kPWM_Module_0, kPWM_PwmB,   kPWM_EdgeAligned, 0); 
+	PWM_SetPwmLdok(BOARD_PWM_BASEADDR,  kPWM_Control_Module_0, true);
+
+   PWM_UpdatePwmDutycycle(BOARD_PWM_BASEADDR, kPWM_Module_1, kPWM_PwmA,   kPWM_EdgeAligned, 0); 
+   PWM_SetPwmLdok(BOARD_PWM_BASEADDR,  kPWM_Control_Module_1, true);
+
+   PWM_UpdatePwmDutycycle(BOARD_PWM_BASEADDR, kPWM_Module_1, kPWM_PwmB,   kPWM_EdgeAligned, 0); 
+   PWM_SetPwmLdok(BOARD_PWM_BASEADDR,  kPWM_Control_Module_1, true);
+
+   PWM_UpdatePwmDutycycle(BOARD_PWM_BASEADDR, kPWM_Module_2, kPWM_PwmA,   kPWM_EdgeAligned, 0); 
+   PWM_SetPwmLdok(BOARD_PWM_BASEADDR,  kPWM_Control_Module_1, true);
+
+   PWM_UpdatePwmDutycycle(BOARD_PWM_BASEADDR, kPWM_Module_2, kPWM_PwmB,   kPWM_EdgeAligned, 0); 
+   PWM_SetPwmLdok(BOARD_PWM_BASEADDR,  kPWM_Control_Module_2, true);
+
+   PWM_StartTimer(BOARD_PWM_BASEADDR, kPWM_Control_Module_0 );
+   PWM_StartTimer(BOARD_PWM_BASEADDR, kPWM_Control_Module_1);
+   PWM_StartTimer(BOARD_PWM_BASEADDR, kPWM_Control_Module_2 );
+   
+   PWM_StopTimer(BOARD_PWM_BASEADDR, kPWM_Control_Module_0 );
+   PWM_StopTimer(BOARD_PWM_BASEADDR, kPWM_Control_Module_1 );
+   PWM_StopTimer(BOARD_PWM_BASEADDR, kPWM_Control_Module_2 );
+
+   PWM_SetupSwCtrlOut(BOARD_PWM_BASEADDR,kPWM_Module_0,kPWM_PwmA,false);
+   PWM_SetupSwCtrlOut(BOARD_PWM_BASEADDR,kPWM_Module_0,kPWM_PwmB,false);
+   PWM_SetupSwCtrlOut(BOARD_PWM_BASEADDR,kPWM_Module_1,kPWM_PwmA,false);
+   PWM_SetupSwCtrlOut(BOARD_PWM_BASEADDR,kPWM_Module_1,kPWM_PwmB,false);
+   PWM_SetupSwCtrlOut(BOARD_PWM_BASEADDR,kPWM_Module_2,kPWM_PwmA,false);
+   PWM_SetupSwCtrlOut(BOARD_PWM_BASEADDR,kPWM_Module_2,kPWM_PwmB,false);
 }
 
 
