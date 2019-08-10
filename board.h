@@ -55,8 +55,9 @@
 #define BOARD_SW2_GPIO_PIN 6U
 #endif
 #define BOARD_SW2_IRQ PORTE_IRQn
-#define BOARD_SW2_IRQ_HANDLER PORTE_IRQHandler
+#define BOARD_SW2_IRQ_HANDLER  PORTE_IRQHandler
 #define BOARD_SW2_NAME "SW2"
+#define BRAKE_KEY_IRQ_HANDLER  PORTA_IRQHandler
 
 /* Board led color mapping */
 #define LOGIC_LED_ON 1U

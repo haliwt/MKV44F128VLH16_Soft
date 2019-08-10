@@ -14,9 +14,13 @@
 /* The PWM base address */
 #define BOARD_PWM_BASEADDR PWMA
 
-//#define HALL_A          //PEin(16)
-//#define HALL_B          //PCin(6)
-//#define HALL_C          //PBin(3)
+#define HALL_A_GPIO          GPIOB
+#define HALL_B_GPIO          GPIOB
+#define HALL_C_GPIO          GPIOB
+
+#define HALL_A_GPIO_PIN       1
+#define HALL_B_GPIO_PIN       2
+#define HALL_C_GPIO_PIN       3
 
 #define HALL_A          PBin(1)
 #define HALL_B          PBin(2)

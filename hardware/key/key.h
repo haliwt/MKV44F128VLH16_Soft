@@ -4,7 +4,8 @@
 #include "fsl_gpio.h"
 #include "fsl_port.h"
 #include "clock_config.h"
-#include "MKV46F16.h"
+#include "led.h"
+
 
 /* 定义一个按键----*/
 typedef enum
@@ -13,19 +14,20 @@ typedef enum
   KEY_DOWN = 1,
 }KEYState_TypeDef;
 
-#define BRAKE_GPIO            GPIOA
-#define START_GPIO            GPIOE 
-#define KEY3_GPIO             GPIOE
-#define KEY4_GPIO             GPIOA
-#define KEY5_GPIO             GPIOA
-#define KEY6_GPIO             GPIOA
-#define KEY7_GPIO             GPIOA
-#define KEY8_GPIO             GPIOA
-#define KEY9_GPIO             GPIOE
-#define KEY10_GPIO            GPIOE
+#define BRAKE_KEY_GPIO            	GPIOA
+#define BRAKE_KEY_PORT            	PORTA
+#define START_KEY_GPIO            	GPIOE 
+#define KEY3_GPIO             		GPIOE
+#define KEY4_GPIO             		GPIOA
+#define KEY5_GPIO             		GPIOA
+#define KEY6_GPIO             		GPIOA
+#define KEY7_GPIO             		GPIOA
+#define KEY8_GPIO             		GPIOA
+#define KEY9_GPIO             		GPIOE
+#define KEY10_GPIO            		GPIOE
 
-#define BRAKE_GPIO_PIN              1//29
-#define START_GPIO_PIN              25//30
+#define BRAKE_KEY_GPIO_PIN              1//29
+#define START_KEY_GPIO_PIN              25//30
 #define KEY3_GPIO_PIN              24//24
 #define KEY4_GPIO_PIN              12//25
 #define KEY5_GPIO_PIN              13
@@ -56,6 +58,9 @@ typedef enum
 #define KEY8_PRES       8      //PTA5,
 #define KEY9_PRES       9      //PTE30,
 #define KEY10_PRES     10      //PTE29,
+
+
+#define BRAKE_KEY_IRQ           PORTA_IRQn  //interrupt number
 
 #define BARKE_KEY_IRQ_HANDLER   PORTA_IRQHandler   //BCD;Pin detect (Port E)--'startup_MKV46F16.s'  
 

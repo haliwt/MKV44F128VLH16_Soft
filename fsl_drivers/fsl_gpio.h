@@ -29,6 +29,7 @@
 #define FSL_GPIO_DRIVER_VERSION (MAKE_VERSION(2, 3, 2))
 /*@}*/
 
+
 /*! @brief GPIO direction definition */
 typedef enum _gpio_pin_direction
 {
@@ -95,7 +96,9 @@ typedef enum _gpio_interrupt_config
     kGPIO_ActiveLowTriggerOutputEnable  = 0xEU,  /*!< Enable active low-trigger output. */
 } gpio_interrupt_config_t;
 #endif
-/*! @} */
+/*! @}WT.EDIT  */
+
+
 
 /*******************************************************************************
  * API
@@ -226,28 +229,30 @@ static inline uint32_t GPIO_PinRead(GPIO_Type *base, uint32_t pin)
 /*! @name GPIO Interrupt */
 /*@{*/
 #if !(defined(FSL_FEATURE_PORT_HAS_NO_INTERRUPT) && FSL_FEATURE_PORT_HAS_NO_INTERRUPT)
-/*!
- * @brief Reads the GPIO port interrupt status flag.
- *
- * If a pin is configured to generate the DMA request, the corresponding flag
- * is cleared automatically at the completion of the requested DMA transfer.
- * Otherwise, the flag remains set until a logic one is written to that flag.
- * If configured for a level sensitive interrupt that remains asserted, the flag
- * is set again immediately.
- *
- * @param base GPIO peripheral base pointer (GPIOA, GPIOB, GPIOC, and so on.)
- * @retval The current GPIO port interrupt status flag, for example, 0x00010001 means the
- *         pin 0 and 17 have the interrupt.
- */
-uint32_t GPIO_PortGetInterruptFlags(GPIO_Type *base);
+	/*!
+	 * @brief Reads the GPIO port interrupt status flag.
+	 *
+	 * If a pin is configured to generate the DMA request, the corresponding flag
+	 * is cleared automatically at the completion of the requested DMA transfer.
+	 * Otherwise, the flag remains set until a logic one is written to that flag.
+	 * If configured for a level sensitive interrupt that remains asserted, the flag
+	 * is set again immediately.
+	 *
+	 * @param base GPIO peripheral base pointer (GPIOA, GPIOB, GPIOC, and so on.)
+	 * @retval The current GPIO port interrupt status flag, for example, 0x00010001 means the
+	 *         pin 0 and 17 have the interrupt.
+	 */
+	uint32_t GPIO_PortGetInterruptFlags(GPIO_Type *base);
 
-/*!
- * @brief Clears multiple GPIO pin interrupt status flags.
- *
- * @param base GPIO peripheral base pointer (GPIOA, GPIOB, GPIOC, and so on.)
- * @param mask GPIO pin number macro
- */
-void GPIO_PortClearInterruptFlags(GPIO_Type *base, uint32_t mask);
+	/*!
+	 * @brief Clears multiple GPIO pin interrupt status flags.
+	 *
+	 * @param base GPIO peripheral base pointer (GPIOA, GPIOB, GPIOC, and so on.)
+	 * @param mask GPIO pin number macro
+	 */
+	void GPIO_PortClearInterruptFlags(GPIO_Type *base, uint32_t mask);
+
+	
 #else
 /*!
  * @brief Configures the gpio pin interrupt/DMA request.

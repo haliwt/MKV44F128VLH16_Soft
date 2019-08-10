@@ -1,9 +1,9 @@
 /*
  * Copyright (c) 2015, Freescale Semiconductor, Inc.
- * Copyright 2016-2017 NXP
- * All rights reserved.
- *
+ * Simplify software DATA-2019-08-07
+ * 
  * SPDX-License-Identifier: BSD-3-Clause
+ *
  */
 
 #include "fsl_debug_console.h"
@@ -16,6 +16,9 @@
 #include "pwm.h"
 #include "adc.h"
 #include "output.h"
+   
+   
+
 /*******************************************************************************
  *
  * Funtion Name: main(void)
@@ -51,22 +54,13 @@ int main(void)
     while (1)
     {
         
-
-
+    
      key = KEY_Scan(0);
      PRINTF("key = %d \r\n",key);
      switch(key)
      {
      
-     case BRAKE_PRES:
-       
-      LED1 = !LED1; // GPIO_PortToggle(GPIOD,6);
-      DelayMs(100U);
-     
-     // LED2 = 1;
-     //  printf("UART%d OK! Hello Kinetis\r\n", instance);
-       break;
-     case START_PRES:
+      case START_PRES:
 	   recoder_number.start_number++ ;
        LED1 =1;
        LED2 = 0 ;
@@ -170,3 +164,27 @@ int main(void)
     }
  
 }
+/******************************************************************************
+ *
+ * Function Name: 
+ * Function Active: Interrpt brake input key 
+ * @brief Interrupt service fuction of switch.
+ *
+ * This function toggles the LED
+ *
+******************************************************************************/
+#if 0
+void BARKE_KEY_IRQ_HANDLER(void )//void BOARD_BRAKE_IRQ_HANDLER(void)
+{
+    /* Clear external interrupt flag. */
+    GPIO_PortClearInterruptFlags(BRAKE_KEY_GPIO, 1U << BRAKE_KEY_GPIO_PIN );
+    /* Change state of button. */
+   
+/* Add for ARM errata 838869, affects Cortex-M4, Cortex-M4F Store immediate overlapping
+  exception return operation might vector to incorrect interrupt */
+#if defined __CORTEX_M && (__CORTEX_M == 4U)
+    __DSB();
+#endif
+}
+#endif 
+

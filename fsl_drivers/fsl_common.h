@@ -20,7 +20,7 @@
 #endif
 
 #include "fsl_device_registers.h"
-
+#include "cmsis_iccarm.h"
 /*!
  * @addtogroup ksdk_common
  * @{

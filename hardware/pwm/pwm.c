@@ -23,12 +23,30 @@ __IO uint32_t Lock_Time = 0;  // 堵转电流
 ***********************************************************/
 void HALL_Init(void)
 {
-   //GPIO_QuickInit(HW_GPIOE, 16, kGPIO_Mode_IPU);
-   //GPIO_QuickInit(HW_GPIOC, 6, kGPIO_Mode_IPU);
-   //GPIO_QuickInit(HW_GPIOB, 3, kGPIO_Mode_IPU);
-   GPIO_QuickInit(HW_GPIOB, 1, kGPIO_Mode_IPU);
-   GPIO_QuickInit(HW_GPIOB, 2, kGPIO_Mode_IPU);
-   GPIO_QuickInit(HW_GPIOB, 3, kGPIO_Mode_IPU);
+    gpio_pin_config_t hall_config = {
+	  kGPIO_DigitalInput ,
+	  0,
+    };
+
+   /* Port B Clock Gate Control: Clock enabled */
+    CLOCK_EnableClock(kCLOCK_PortB);
+    
+   /* PORTB is configured as PTB1, */
+     PORT_SetPinMux(PORTB, 1U, kPORT_MuxAsGpio);
+     PORT_SetPinMux(PORTB, 2U, kPORT_MuxAsGpio);
+	 PORT_SetPinMux(PORTB, 3U, kPORT_MuxAsGpio);
+
+	 GPIO_PinInit(HALL_A_GPIO, HALL_A_GPIO_PIN, &hall_config);
+	 GPIO_PinInit(HALL_B_GPIO, HALL_B_GPIO_PIN, &hall_config);
+	 GPIO_PinInit(HALL_C_GPIO, HALL_C_GPIO_PIN, &hall_config);
+     /*GPIO input pullup or pulldown or disable*/
+	 PORT_PinPullConfig(HW_GPIOB, 1, kPORT_PullDisable);
+	 PORT_PinPullConfig(HW_GPIOB, 2, kPORT_PullDisable);
+	 PORT_PinPullConfig(HW_GPIOB, 3, kPORT_PullDisable);
+
+	// PORT_SetPinConfig(PORTB,1, &config);
+	// PORT_SetPinConfig(PORTB,2, &config);
+	// PORT_SetPinConfig(PORTB,3, &config);
 
 
 }
@@ -167,13 +185,13 @@ static void PWM_DRV_Init3PhPwm(void)
 
     pwmSignal[0].pwmChannel       = kPWM_PwmA;
     pwmSignal[0].level            = kPWM_HighTrue;
-    pwmSignal[0].dutyCyclePercent = 80; /* 1 percent dutycycle */
+    pwmSignal[0].dutyCyclePercent = 50; /* 1 percent dutycycle */
     pwmSignal[0].deadtimeValue    = deadTimeVal;
 
     pwmSignal[1].pwmChannel = kPWM_PwmB;
     pwmSignal[1].level      = kPWM_HighTrue;
     /* Dutycycle field of PWM B does not matter as we are running in PWM A complementary mode */
-    pwmSignal[1].dutyCyclePercent = 80;
+    pwmSignal[1].dutyCyclePercent = 50;
     pwmSignal[1].deadtimeValue    = deadTimeVal;
 
    // PWM_SetupSwCtrlOut(BOARD_PWM_BASEADDR, kPWM_Module_0, kPWM_PwmA|kPWM_PwmB, false);
@@ -209,17 +227,14 @@ static void PWM_DRV_Init3PhPwm(void)
 void HALLSensor_Detected_BLDC(uint32_t uvw)
 {
       
-#if 1
+
 /* hall  */
   //BLDCMotor.uwStep = HallSensor_GetPinState();
    __IO uint32_t tmp = 0;
 
- 
-  
-
-  if(Dir == CW)
+ if(Dir == CW)
   {
-    uwStep = (uint32_t)7 - uwStep;        // ?ù?Y?3Dò±íμ?1??é CW = 7 - CCW;
+    uwStep = (uint32_t)7 - uwStep;        // 逆时针 CW = 7 - CCW;
   }
   else 
     uwStep = uwStep-(uint32_t)7 ; 
@@ -228,7 +243,6 @@ void HALLSensor_Detected_BLDC(uint32_t uvw)
   /*---- six step changed phase */
   /*---- 1(001,U),IC2(010,V),IC3(100,W) ----*/
  // PRINTF("uwStep = %d\n",uwStep);
- #if 1
  switch(uvw)//switch(BLDCMotor.uwStep)
  {
     case 1://B+ A-
@@ -307,12 +321,12 @@ void HALLSensor_Detected_BLDC(uint32_t uvw)
       break;
   }
  
- #endif   
+  
   /* 立刻触发换向*/
  // HAL_TIM_GenerateEvent(&htimx_BLDC, TIM_EVENTSOURCE_COM);
  // __HAL_TIM_CLEAR_IT(htim, TIM_FLAG_COM);
    BLDCMotor.Lock_Time = 0;
- #endif 
+
  }
 
 
