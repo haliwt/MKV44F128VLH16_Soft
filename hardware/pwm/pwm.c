@@ -5,12 +5,12 @@ pwm_config_t pwmConfig;
 static void PWM_DRV_Init3PhPwm(void);
 
 
-BLDC_Typedef BLDCMotor = {0,CW,0,0,100,0,0,0};
+
 __IO int32_t uwStep = 0;      //六步引脚状态
-__IO int32_t Dir = CCW;       // 方向
+
 __IO uint32_t Lock_Time = 0;  // 堵转电流
 
-
+__IO int8_t Dir = CCW;       //
 
 
 
@@ -232,8 +232,7 @@ void HALLSensor_Detected_BLDC(uint32_t uvw)
   {
     uvw = (uint32_t)7 - uvw;        // 逆时针 CW = 7 - CCW;
   }
-  else 
-    uvw = uvw-(uint32_t)7 ; 
+ 
   
   /*---- six step changed phase */
   /*---- 1(001,U),IC2(010,V),IC3(100,W) ----*/
@@ -317,7 +316,7 @@ void HALLSensor_Detected_BLDC(uint32_t uvw)
   /* 立刻触发换向*/
  // HAL_TIM_GenerateEvent(&htimx_BLDC, TIM_EVENTSOURCE_COM);
  // __HAL_TIM_CLEAR_IT(htim, TIM_FLAG_COM);
-   BLDCMotor.Lock_Time = 0;
+  
 
  }
 

@@ -26,13 +26,14 @@
 #define OUTPUT_DOOR_GPIO_PIN          19
 #define OUTPUT_WHEEL_GPIO_PIN         0
 
-typedef struct _output_t
+typedef struct _output_t_
 {
   uint8_t start_number;
   uint8_t air_number;
   uint8_t wiper_number;
   uint8_t door_number;
   uint8_t wheel_number;
+  uint8_t dir_change;
 
 }output_t;
 

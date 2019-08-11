@@ -28,31 +28,21 @@
 
 
 
+#define CCW                              (int8_t)(1)
+#define CW                               (int8_t)(-1)
 
-#define CCW                              (int32_t)(1)
-#define CW                               (int32_t)(-1)
+
 
 #define  PWMA_INIT_ON                    1
 
-/* 无刷马达定义 ------------------------------------------------------------------*/
-typedef struct {
-  __IO int32_t  uwStep ;  	    // 马达霍尔步数
-  __IO int32_t  Dir ;        	    // 方向
-  __IO int32_t  Position;           // 位置
-  __IO int32_t  Speed;		    // 速度
-  __IO uint16_t PWM_Duty; 	    // PWM 占空比
-  __IO int32_t  Hall_Period;        // 霍尔周期
-  __IO int32_t  Hall_PulNum;       // 霍尔记数
-  __IO int32_t  Lock_Time;         // 堵转电流
-}BLDC_Typedef;
 
-extern BLDC_Typedef BLDCMotor ;
+
 
 extern __IO int32_t  uwStep ;
 
 extern __IO uint32_t Lock_Time; // 堵转时间
 extern __IO float   PWM_Duty;
-extern __IO int32_t Dir;
+extern __IO int8_t Dir;
 extern uint16_t SPEED_VALUE ;   //速度值
 
 

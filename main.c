@@ -17,8 +17,8 @@
 #include "adc.h"
 #include "output.h"
    
-   
 
+output_t recoder_number;
 /*******************************************************************************
  *
  * Funtion Name: main(void)
@@ -30,7 +30,7 @@ int main(void)
 {
     uint8_t key; 
 	
-    output_t recoder_number;
+   // output_t recoder_number;
   
 
     /* Board pin, clock, debug console init */
@@ -49,20 +49,32 @@ int main(void)
     /* Set the PWM Fault inputs to a low value */
     PWM_BLDC_Init();
    
-    PMW_AllClose_ABC_Channel();
+  //  PMW_AllClose_ABC_Channel();
 
     while (1)
     {
         
       
      key = KEY_Scan(0);
-     PRINTF("key = %d \r\n",key);
-     if(recoder_number.start_number==1)
+    // PRINTF("key = %d \r\n",key);
+     if(recoder_number.start_number==1)//CW
      {
-        uwStep = HallSensor_GetPinState();
+        PMW_AllClose_ABC_Channel();
+		uwStep = HallSensor_GetPinState();
         PRINTF("ouread = %d \r\n",uwStep);
         HALLSensor_Detected_BLDC(uwStep);
         
+     }
+
+     else
+     {
+         PMW_AllClose_ABC_Channel();
+         DelayMs(10U);
+         PMW_AllClose_ABC_Channel();
+		 PWM_StopTimer(BOARD_PWM_BASEADDR,  kPWM_Control_Module_0);
+		 PWM_StopTimer(BOARD_PWM_BASEADDR,  kPWM_Control_Module_1);
+		 PWM_StopTimer(BOARD_PWM_BASEADDR,  kPWM_Control_Module_2);
+     
      }
      switch(key)
      {
@@ -72,18 +84,24 @@ int main(void)
        LED1 =1;
        LED2 = 0 ;
 	 
-	   
+	   break;
+     case DIR_PRES:
+	   recoder_number.dir_change=recoder_number.dir_change + 1;
+	   PRINTF(" DIR_change = %d  \r\n", recoder_number.dir_change);
+	   DelayMs(100U);
+	   if(recoder_number.dir_change == 1)
+	   	{
+            
+			Dir = Dir;
+	    }
+	   else 
+	   	{
+	       Dir = -Dir;
+		   recoder_number.dir_change =0;
+	   	}
        
-        
-        break;
-     case KEY3_PRES:
-       PRINTF(" Stop PWMA output\r\n");
-       recoder_number.start_number=0;
-			 PMW_AllClose_ABC_Channel();
-                      DelayMs(100U);
-                       PMW_AllClose_ABC_Channel();
        LED2 = !LED2 ;
-       DelayMs(200U);
+
         break;
      case KEY4_PRES:
         LED1 = !LED1;
@@ -175,13 +193,13 @@ int main(void)
  * This function toggles the LED
  *
 ******************************************************************************/
-#if 0
+#if 1
 void BARKE_KEY_IRQ_HANDLER(void )//void BOARD_BRAKE_IRQ_HANDLER(void)
 {
     /* Clear external interrupt flag. */
     GPIO_PortClearInterruptFlags(BRAKE_KEY_GPIO, 1U << BRAKE_KEY_GPIO_PIN );
     /* Change state of button. */
-   
+     recoder_number.start_number=0;
 /* Add for ARM errata 838869, affects Cortex-M4, Cortex-M4F Store immediate overlapping
   exception return operation might vector to incorrect interrupt */
 #if defined __CORTEX_M && (__CORTEX_M == 4U)

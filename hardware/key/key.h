@@ -50,7 +50,7 @@ typedef enum
 
 #define BRAKE_PRES      1      //PTA1
 #define START_PRES      2      //PTE25
-#define KEY3_PRES       3      //PTE24,
+#define DIR_PRES        3      //PTE24, DIR KEY
 #define KEY4_PRES       4      //PTA12,
 #define KEY5_PRES       5      //PTA13,
 #define KEY6_PRES       6      //PTA2,

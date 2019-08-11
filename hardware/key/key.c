@@ -61,9 +61,9 @@ void KEY_Init(void)
                 
      /* Brake_Key Init input interrupt switch GPIO. */
   #if (defined(FSL_FEATURE_PORT_HAS_NO_INTERRUPT) && FSL_FEATURE_PORT_HAS_NO_INTERRUPT)
-   GPIO_SetPinInterruptConfig(BRAKE_KEY_GPIO , BRAKE_KEY_GPIO_PIN , kGPIO_InterruptRisingEdge );
+   GPIO_SetPinInterruptConfig(BRAKE_KEY_GPIO , BRAKE_KEY_GPIO_PIN ,  kPORT_InterruptFallingEdge );
   #else
-    PORT_SetPinInterruptConfig(BRAKE_KEY_PORT, BRAKE_KEY_GPIO_PIN, kPORT_InterruptRisingEdge);
+    PORT_SetPinInterruptConfig(BRAKE_KEY_PORT, BRAKE_KEY_GPIO_PIN,  kPORT_InterruptFallingEdge);
   #endif
     EnableIRQ(BRAKE_KEY_IRQ);
     GPIO_PinInit(BRAKE_KEY_GPIO, BRAKE_KEY_GPIO_PIN, &key_config);
@@ -117,7 +117,7 @@ uint8_t KEY_Scan(uint8_t mode)
 	     while(DIR_KEY==1);
 	       /* 按键扫描完毕，确定按键按下 */
 
-		 return KEY3_PRES;
+		 return DIR_PRES;
 	 }
 	 else if(DIGITAL_ADD_KEY==1)       	
 	 {
@@ -192,17 +192,19 @@ uint8_t KEY_Scan(uint8_t mode)
  * This function toggles the LED
  *
 ******************************************************************************/
+#if 0
 void BARKE_KEY_IRQ_HANDLER(void )//void BOARD_BRAKE_IRQ_HANDLER(void)
 {
     /* Clear external interrupt flag. */
     GPIO_PortClearInterruptFlags(BRAKE_KEY_GPIO, 1U << BRAKE_KEY_GPIO_PIN );
     /* Change state of button. */
-     LED1 = !LED1;
-	 DelayMs(50);
-	 LED2 = !LED2;
+     PMW_AllClose_ABC_Channel();
+     DelayMs(10U);
+     PMW_AllClose_ABC_Channel();
 /* Add for ARM errata 838869, affects Cortex-M4, Cortex-M4F Store immediate overlapping
   exception return operation might vector to incorrect interrupt */
 #if defined __CORTEX_M && (__CORTEX_M == 4U)
     __DSB();
 #endif
 }
+#endif 
