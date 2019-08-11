@@ -30,7 +30,7 @@ int main(void)
 {
     uint8_t key; 
 	
-   // output_t recoder_number;
+   uint16_t sampleMask;
   
 
     /* Board pin, clock, debug console init */
@@ -49,7 +49,7 @@ int main(void)
     /* Set the PWM Fault inputs to a low value */
     PWM_BLDC_Init();
    
-  //  PMW_AllClose_ABC_Channel();
+
 
     while (1)
     {
@@ -59,7 +59,28 @@ int main(void)
     // PRINTF("key = %d \r\n",key);
      if(recoder_number.start_number==1)//CW
      {
-        PMW_AllClose_ABC_Channel();
+
+     	{
+            
+		    CADC_DoSoftwareTriggerConverter(CADC_BASEADDR, kCADC_ConverterA);
+	             /* Wait the conversion to be done. */
+	         while (kCADC_ConverterAEndOfScanFlag !=
+	               (kCADC_ConverterAEndOfScanFlag & CADC_GetStatusFlags(CADC_BASEADDR)))
+	        {
+	        }
+
+	        /* Read the result value. */
+	        if (sampleMask == (sampleMask & CADC_GetSampleReadyStatusFlags(CADC_BASEADDR)))
+	        {
+	           //PRINTF("%d\t\t", (int16_t)CADC_GetSampleResultValue(CADC_BASEADDR, 0U));
+	           PRINTF("%d\t\t", (int16_t)CADC_GetSampleResultValue(CADC_BASEADDR, 1U));
+	           // PRINTF("%d\t\t", (int16_t)CADC_GetSampleResultValue(CADC_BASEADDR, 2U));
+	            //PRINTF("%d", (int16_t)CADC_GetSampleResultValue(CADC_BASEADDR, 3U));
+        }
+        CADC_ClearStatusFlags(CADC_BASEADDR, kCADC_ConverterAEndOfScanFlag);
+
+     	}
+		PMW_AllClose_ABC_Channel();
 		uwStep = HallSensor_GetPinState();
         PRINTF("ouread = %d \r\n",uwStep);
         HALLSensor_Detected_BLDC(uwStep);
@@ -87,20 +108,19 @@ int main(void)
 	   break;
      case DIR_PRES:
 	   recoder_number.dir_change=recoder_number.dir_change + 1;
-	   PRINTF(" DIR_change = %d  \r\n", recoder_number.dir_change);
-	   DelayMs(100U);
+	   printf(" DIR_change = %d  \r\n", recoder_number.dir_change);
 	   if(recoder_number.dir_change == 1)
 	   	{
             
 			Dir = Dir;
 	    }
 	   else 
-	   	{
+	   {
 	       Dir = -Dir;
-		   recoder_number.dir_change =0;
-	   	}
+	       recoder_number.dir_change =0;
+	   }
        
-       LED2 = !LED2 ;
+           LED2 = !LED2 ;
 
         break;
      case KEY4_PRES:
@@ -166,16 +186,21 @@ int main(void)
            LED2=0;
 	}
        else if( recoder_number.air_number==2 || recoder_number.air_number> 2)
-	{
+	    {
            AIR = 0;
 		   LED1=1;
            DelayMs(500U);
            LED1=0;
            recoder_number.air_number =0;
 		   
-	}
-		
-		 
+	    }
+		break;
+	   default :
+	   {
+
+       
+
+	   }
         break;
      
      
