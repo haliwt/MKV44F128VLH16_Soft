@@ -31,7 +31,7 @@ int main(void)
     uint8_t key; 
 	
    uint16_t sampleMask;
-  
+ 
 
     /* Board pin, clock, debug console init */
     BOARD_InitPins();
@@ -190,9 +190,13 @@ int main(void)
 	        /* Read the result value. */
 	        if (sampleMask == (sampleMask & CADC_GetSampleReadyStatusFlags(CADC_BASEADDR)))
 	        {
-	           //PRINTF("%d\t\t", (int16_t)CADC_GetSampleResultValue(CADC_BASEADDR, 0U));
-	           PRINTF("%d\t\t", (int16_t)CADC_GetSampleResultValue(CADC_BASEADDR, 1U));
-	           // PRINTF("%d\t\t", (int16_t)CADC_GetSampleResultValue(CADC_BASEADDR, 2U));
+                 PWM_Duty =(int16_t)CADC_GetSampleResultValue(CADC_BASEADDR, 1U);
+		       PRINTF("%d\t\t",PWM_Duty );
+	           //PRINTF("%d\t\t", (int16_t)CADC_GetSampleResultValue(CADC_BASEADDR, 1U));
+			   DelayMs(50U);
+               PWM_Duty = (uint16_t)((CADC_GetSampleResultValue(CADC_BASEADDR, 1U))/ 330);
+	           PRINTF("PWM_Duty = %d\r\n", PWM_Duty);
+			   DelayMs(200U);
 	            //PRINTF("%d", (int16_t)CADC_GetSampleResultValue(CADC_BASEADDR, 3U));
         }
         CADC_ClearStatusFlags(CADC_BASEADDR, kCADC_ConverterAEndOfScanFlag);
