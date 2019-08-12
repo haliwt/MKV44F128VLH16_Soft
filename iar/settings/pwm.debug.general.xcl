@@ -1,0 +1,15 @@
+"C:\Program Files (x86)\IAR Systems\Embedded Workbench 8.2\arm\bin\armproc.dll" 
+
+"C:\Program Files (x86)\IAR Systems\Embedded Workbench 8.2\arm\bin\armjlink2.dll" 
+
+"L:\MKV44F256FVH16_Pro\IAR_mkv44f128vlh16_software_folder\MKV44F128VLH16_Soft-IAR_nofreeRTOS_mkv44f128vlh16\iar\debug\pwm.out" 
+
+--plugin="C:\Program Files (x86)\IAR Systems\Embedded Workbench 8.2\arm\bin\armbat.dll" 
+
+--device_macro="C:\Program Files (x86)\IAR Systems\Embedded Workbench 8.2\arm\config\debugger\NXP\Kxx.dmac" 
+
+--flash_loader="C:\Program Files (x86)\IAR Systems\Embedded Workbench 8.2\arm\config\flashloader\NXP\FlashKV4x24K.board" 
+
+
+
+
