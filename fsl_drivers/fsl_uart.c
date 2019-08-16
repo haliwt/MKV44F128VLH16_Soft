@@ -345,7 +345,7 @@ status_t UART_Init(UART_Type *base, const uart_config_t *config, uint32_t srcClo
 }
 
 /*!
- * brief Deinitializes a UART instance.
+ * brief Deinitializes a UART instance. 取消UART 端口初始化
  *
  * This function waits for TX complete, disables TX and RX, and disables the UART clock.
  *

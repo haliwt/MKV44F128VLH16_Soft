@@ -802,7 +802,7 @@ extern "C" {
 #endif
 
 #ifndef configUSE_PORT_OPTIMISED_TASK_SELECTION
-	#define configUSE_PORT_OPTIMISED_TASK_SELECTION 0
+	#define configUSE_PORT_OPTIMISED_TASK_SELECTION 1  //WT.EDIT 0  最多优化32个级别
 #endif
 
 #ifndef configAPPLICATION_ALLOCATED_HEAP

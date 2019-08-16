@@ -42,7 +42,7 @@
  ******************************************************************************/
 /* Application API */
  
-static void vTaskTaskUserIF(void *pvParameters);
+static void vTaskTaskUSART(void *pvParameters);
 static void vTaskLED(void *pvParameters);
 static void vTaskMsgPro(void *pvParameters);
 static void vTaskStart(void *pvParameters);
@@ -281,7 +281,7 @@ static void vTaskStart(void *pvParameters)
 */
 static void AppTaskCreate (void)
 {
-    xTaskCreate( vTaskTaskUserIF,   	/* 任务函数  */
+    xTaskCreate( vTaskTaskUSART,   	/* 任务函数  */
                  "vTaskUserIF",     	/* 任务名    */
                  512,               	/* 任务栈大小，单位word，也就是4字节 */
                  NULL,              	/* 任务参数  */

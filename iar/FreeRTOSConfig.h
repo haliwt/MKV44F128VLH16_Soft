@@ -49,7 +49,7 @@
 #define configMAX_PRIORITIES                    7 //WT.EDIT 5
 #define configMINIMAL_STACK_SIZE                ((unsigned short)90)
 #define configMAX_TASK_NAME_LEN                 16
-#define configUSE_16_BIT_TICKS                  0
+#define configUSE_16_BIT_TICKS                  1 // WT.EDIT 0£¬ 8bit
 #define configIDLE_SHOULD_YIELD                 1
 #define configUSE_TASK_NOTIFICATIONS            1
 #define configUSE_MUTEXES                       1
@@ -107,9 +107,9 @@
 #define INCLUDE_vTaskPrioritySet                1
 #define INCLUDE_uxTaskPriorityGet               1
 #define INCLUDE_vTaskDelete                     1
-#define INCLUDE_vTaskSuspend                    1
-#define INCLUDE_vTaskDelayUntil                 1            //task delay times assigin to time 
-#define INCLUDE_vTaskDelay                      1            //task delay times
+#define INCLUDE_vTaskSuspend                    0 // 1 WT.
+#define INCLUDE_vTaskDelayUntil                 1            
+#define INCLUDE_vTaskDelay                      1            
 #define INCLUDE_xTaskGetSchedulerState          1
 #define INCLUDE_xTaskGetCurrentTaskHandle       1
 #define INCLUDE_uxTaskGetStackHighWaterMark     0
