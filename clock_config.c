@@ -270,7 +270,7 @@ const mcg_config_t mcgConfig_BOARD_BootClockRUN = {
 };
 const sim_clock_config_t simConfig_BOARD_BootClockRUN = {
     .er32kSrc = SIM_OSC32KSEL_LPO_CLK, /* OSC32KSEL select: LPO clock */
-    .clkdiv1  = 0x01180000U,// WT.EDIT 1/1, 1/2,1/7 //0x11070000U,           /* SIM_CLKDIV1 - OUTDIV1: /2, OUTDIV2: /2, OUTDIV4: /8 */
+    .clkdiv1  = 0x11070000U, //.clkdiv1  = 0x01180000U,// WT.EDIT 1/1, 1/2,1/7 //0x11070000U,           /* SIM_CLKDIV1 - OUTDIV1: /2, OUTDIV2: /2, OUTDIV4: /8 */
 };
 const osc_config_t oscConfig_BOARD_BootClockRUN = 
 {
@@ -427,8 +427,8 @@ void DWT_DelayUs(uint32_t us)
  */
 void DWT_DelayMs(uint32_t ms)
 {
-   // DWT_DelayUs(ms*1000);
-     DWT_DelayUs(ms*500);
+    DWT_DelayUs(ms*1000);
+    // DWT_DelayUs(ms*500);
 }
 
 /**

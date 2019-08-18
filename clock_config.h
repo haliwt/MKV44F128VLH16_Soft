@@ -63,7 +63,7 @@ typedef struct
 /*******************************************************************************
  * Definitions for BOARD_BootClockRUN configuration
  ******************************************************************************/
-#define BOARD_BOOTCLOCKRUN_CORE_CLOCK 168000000U // WT.EDIT //84000000U /*!< Core clock frequency: 84000000Hz */
+#define BOARD_BOOTCLOCKRUN_CORE_CLOCK  84000000U  //168000000U // WT.EDIT //84000000U /*!< Core clock frequency: 84000000Hz */
 
 /*! @brief MCG set for BOARD_BootClockRUN configuration.
  */

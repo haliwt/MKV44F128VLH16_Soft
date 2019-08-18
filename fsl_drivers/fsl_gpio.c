@@ -80,7 +80,7 @@ static uint32_t GPIO_GetInstance(GPIO_Type *base)
     return instance;
 }
 #endif
-/*!
+/********************************************************************************************
  * brief Initializes a GPIO pin used by the board.
  *
  * To initialize the GPIO, define a pin configuration, as either input or output, in the user file.
@@ -105,7 +105,7 @@ static uint32_t GPIO_GetInstance(GPIO_Type *base)
  * param base   GPIO peripheral base pointer (GPIOA, GPIOB, GPIOC, and so on.)
  * param pin    GPIO port pin number
  * param config GPIO pin configuration pointer
- */
+**********************************************************************************************/
 void GPIO_PinInit(GPIO_Type *base, uint32_t pin, const gpio_pin_config_t *config)
 {
     assert(NULL != config);
@@ -339,26 +339,24 @@ void FGPIO_CheckAttributeBytes(FGPIO_Type *base, gpio_checker_attribute_t attrib
 
 #endif /* FSL_FEATURE_SOC_FGPIO_COUNT */
 
-/******************************************************************/
- /**
- * @brief  设置引脚为输入还是输出功能  用户一般不必调用
- * @note   只有当引脚作为GPIO时才有意义
- * @code
- *      // 将PORTB端口的3引脚设置输入引脚
- *      GPIO_PinConfig(HW_GPIOB, 3, kInpput);
+/*********************************************************************
+ *
+ *Function Name : void GPIO_PinConfig(uint32_t instane .....)
+ *      
+ * example:GPIO_PinConfig(HW_GPIOB, 3, kInpput);
  * @endcode
- * @param[in]  instance GPIO模块号
- *              @arg HW_GPIOA 芯片的PORTA端口
- *              @arg HW_GPIOB 芯片的PORTB端口
- *              @arg HW_GPIOC 芯片的PORTC端口
- *              @arg HW_GPIOD 芯片的PORTD端口
- *              @arg HW_GPIOE 芯片的PORTE端口
- * @param[in]  pin  端口上的引脚号 0~31
- * @param[in]  mode 输入或者输出设置
- *              @arg kInpput  输入功能选择
- *              @arg kOutput  输出功能选择
+ * @param[in]  instance GPIO PORT 
+ *              @arg HW_GPIOA  
+ *              @arg HW_GPIOB 
+ *              @arg HW_GPIOC 
+ *              @arg HW_GPIOD 
+ *              @arg HW_GPIOE 
+ * @param[in]  pin  HW_GPIOx of pin  0~31
+ * @param[in]  mode  GPIOx input or output
+ *              @arg kInpput  
+ *              @arg kOutput  
  * @retval None
- */
+***********************************************************************/
 void GPIO_PinConfig(uint32_t instance, uint8_t pin, gpio_pin_direction_t mode)
 {
     SIM->SCGC5 |= SIM_GPIOClockGateTable[instance];
@@ -378,18 +376,19 @@ void PORT_PinOpenDrainConfig(uint32_t instance, uint8_t pin, bool status)
     (status) ? (PORT_InstanceTable[instance]->PCR[pin] |= PORT_PCR_ODE_MASK):(PORT_InstanceTable[instance]->PCR[pin] &= ~PORT_PCR_ODE_MASK);
 }
 
-/**
+/*****************************************************************
+ *
  * @brief  set pin internal pullup/down resistors
  * @note   pull resistor value is about 20K
- * @param[in]  instance GPIO模块号
+ * @param[in]  instance GPIO PORT
  *              @arg HW_GPIOx  GPIOx moudle
  * @param[in]  pin  pin index number 0-31
  * @param[in]  pull pull select
  *              @arg kPullDisabled  disable pull resistor
  *              @arg kPullUp        pull up
  *              @arg kPullDown      pull down
- * @retval None
- */
+ * 
+**********************************************************************/
 void PORT_PinPullConfig(uint32_t instance, uint8_t pin, port_pull pull)
 {
     SIM->SCGC5 |= SIM_GPIOClockGateTable[instance];
@@ -411,7 +410,7 @@ void PORT_PinPullConfig(uint32_t instance, uint8_t pin, port_pull pull)
     }
 }
 
-/**
+/*********************************************************************
  * @brief  GPIO��ʼ������
  * @code
  *    //��ʼ������PORTB�˿ڵ�10����Ϊ�����������
@@ -425,7 +424,7 @@ void PORT_PinPullConfig(uint32_t instance, uint8_t pin, port_pull pull)
  * @param[in]  GPIO_InitStruct GPIO��ʼ���ṹ�壬����������״̬����  
  * @see GPIO��ʼ����������
  * @retval None
- */
+*********************************************************************/
 void GPIO_Init(GPIO_InitTypeDef * GPIO_InitStruct)
 {
     /* config state */
@@ -461,7 +460,6 @@ void GPIO_Init(GPIO_InitTypeDef * GPIO_InitStruct)
     }
     /* config pinMux */
     PORT_PinMuxConfig(GPIO_InitStruct->instance, GPIO_InitStruct->pinx, kPORT_MuxAsGpio );
-  //  PORT_SetPinMux(GPIO_InitStruct->instance, GPIO_InitStruct->pinx, kPORT_MuxAsGpio); //WT.EDIT
 }
 /**
  * @brief  ���ٳ�ʼ��һ��GPIO���� ʵ������GPIO_Init���������
