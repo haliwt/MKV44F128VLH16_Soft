@@ -52,30 +52,33 @@ output_t recoder_number;
  ******************************************************************************/
 /* Application API */
  
-static void vTaskTaskUSART(void *pvParameters);
+static void vTaskUSART(void *pvParameters);
 static void vTaskLED(void *pvParameters);
+
 static void vTaskDIR(void *pvParameters);
+#if 0
 static void vTaskBLDC(void *pvParameters);
-
-
 static void vTaskMsgPro(void *pvParameters);
 static void vTaskStart(void *pvParameters);
+#endif 
 
 static void AppTaskCreate (void);
 static void AppObjCreate (void);
+
 /*
 **********************************************************************************************************
 											变量声明
 **********************************************************************************************************
 */
-static TaskHandle_t xHandleTaskUserIF = NULL;
+static TaskHandle_t xHandleTaskUSART = NULL;
+
 static TaskHandle_t xHandleTaskLED = NULL;
-static TaskHandle_t xHandleTaskLED2 = NULL;
-static TaskHandle_t xHandleTaskBLDC = NULL;
+static TaskHandle_t xHandleTaskDIR = NULL;
+//static TaskHandle_t xHandleTaskBLDC = NULL;
 
 
-static TaskHandle_t xHandleTaskMsgPro = NULL;
-static TaskHandle_t xHandleTaskStart = NULL;
+//static TaskHandle_t xHandleTaskMsgPro = NULL;
+//static TaskHandle_t xHandleTaskStart = NULL;
 static QueueHandle_t xQueue1 = NULL;
 static QueueHandle_t xQueue2 = NULL;
 static QueueHandle_t xQueue3 = NULL;
@@ -90,6 +93,7 @@ typedef struct Msg
 }MSG_T;
 
 MSG_T   g_tMsg; /* 定义一个结构体用于消息队列 */
+//uint8_t ch[8];
 
 /*******************************************************************************
  *
@@ -103,11 +107,12 @@ int main(void)
     BOARD_InitPins();
     BOARD_BootClockRUN();
     BOARD_InitDebugConsole();
+    
    
     LED_Init();
     KEY_Init();
     DelayInit();
-    HALL_Init();
+    
     HallSensor_GetPinState();
     ADC_CADC_Init();
 	
@@ -115,7 +120,7 @@ int main(void)
     PWM_BLDC_Init();
     
      //BOARD_InitDebugConsole();
-     USART_EDMA_Init();
+     USART_POLLING_Init();
      
    //  POLLING_USART_Init();
     /* Initialize logger for 10 logs with maximum lenght of one log 20 B */
@@ -137,77 +142,82 @@ int main(void)
 *	返 回 值: 无
 *   优 先 级: 1  (数值越小优先级越低，最低优先级)
 ********************************************************************************************************/
-static void vTaskTaskUSART(void *pvParameters)
+static void vTaskUSART(void *pvParameters)
 {
-
   
+  MSG_T *ptMsg;
+  uint8_t ucCount;
+  uint8_t ch[8];
   
-  uint8_t g_txBuffer[ECHO_BUFFER_LENGTH] ;
- uint8_t g_rxBuffer[ECHO_BUFFER_LENGTH] ;
-  
-  uart_edma_handle_t g_uartEdmaHandle;
-  edma_handle_t g_uartTxEdmaHandle;
-  edma_handle_t g_uartRxEdmaHandle;
-  
-  
-  volatile bool rxBufferEmpty            = true;
-  volatile bool txBufferFull             = false;
-  volatile bool txOnGoing                = false;
-  volatile bool rxOnGoing                = false; 
-
-    uart_transfer_t xfer;
-    uart_transfer_t sendXfer;
-    uart_transfer_t receiveXfer;
-    uint8_t g_tipString[]="vTaskUsart\r\n";
-
+  /* 初始化结构体指针 */
+	ptMsg = &g_tMsg;
 	
-	/* Send g_tipString out. */
-	  xfer.data 	= g_tipString;
-	  xfer.dataSize = sizeof(g_tipString) - 1;
-	  txOnGoing 	= true;
-	  UART_SendEDMA(DEMO_UART, &g_uartEdmaHandle, &xfer);
-
-	  /* Wait send finished */
-	  while (txOnGoing)
-	  {
-	  }
-	
-	  /* Start to echo. */
-	  sendXfer.data 	= g_txBuffer;
-	  sendXfer.dataSize    = ECHO_BUFFER_LENGTH;
-	  receiveXfer.data	   = g_rxBuffer;
-	  receiveXfer.dataSize = ECHO_BUFFER_LENGTH;
-  
+	/* 初始化数组 */
+	ptMsg->ucMessageID = 0;
+	ptMsg->ulData[0] = 0;
+	ptMsg->usData[0] = 0;
   while(1)
     {
-       g_txBuffer[0] = 2;
-       g_txBuffer[1] = 0x0a;
-       g_txBuffer[2] = 0x0b;
-       g_txBuffer[3] = 0x04;
       
-      /* If RX is idle and g_rxBuffer is empty, start to read data to g_rxBuffer. */
-        if ((!rxOnGoing) && rxBufferEmpty)
+                ptMsg->ucMessageID ++;
+		ptMsg->ulData[2] = 0x0a;
+		ptMsg->usData[2] = 0x0b;
+   
+        UART_ReadBlocking(DEMO_UART, ch, 1);
+        UART_ReadBlocking(DEMO_UART, ch, 8);
+       
+          
+        UART_WriteBlocking(DEMO_UART, ch, 8);
+        printf("ch output .\r\n");
+        printf("ch=[7] %#x \r\n",ch[7]);
+        printf("ch=[6] %#x \r\n",ch[6]);
+        printf("ch=[5] %#x \r\n",ch[5]);
+        printf("ch=[4] %#x \r\n",ch[4]);
+        printf("ch=[3] %#x \r\n",ch[3]);
+        printf("ch=[2] %#x \r\n",ch[2]);
+        printf("ch=[1] %#x \r\n",ch[1]);
+        printf("ch=[0] %#x \r\n",ch[0]);
+        
+        
+#if 1
+          
+          if(ch[0] == 0x31)
+          if(ch[1]== 0x32 ) 
+            if(ch[2] == 0x33 ) 
+         
         {
-            rxOnGoing = true;
-            UART_ReceiveEDMA(DEMO_UART, &g_uartEdmaHandle, &receiveXfer);
+            ucCount= 10;
+            /* ?ò???￠?óáD·￠êy?Y￡?è?1????￠?óáD?úá?￡?μè′y10??ê±?ó?ú?? */
+            if( xQueueSend(xQueue1,
+                     (void *) &ucCount,
+                     (TickType_t)10) != pdPASS )
+            {
+             /* 发送失败，即使等待了10个时钟节拍 */
+	   printf("K6键按下，向xQueue2发送数据失败，即使等待了10个时钟节拍\r\n");
+            }
+            else
+            {
+             /* 发送成功 */
+		printf("K6键按下，向xQueue1发送数据成功\r\n");							
+            }
             
+            /* ?ò???￠?óáD·￠êy?Y￡?è?1????￠?óáD?úá?￡?μè′y10??ê±?ó?ú?? */
+            if( xQueueSend(xQueue2,
+                     (void *)&ptMsg,
+                     (TickType_t)10) != pdPASS )
+            {
+             /* 发送失败，即使等待了10个时钟节拍 */
+	   printf("vTaskDIR，即使等待了10个时钟节拍\r\n");
+            }
+            else
+            {
+             /* 发送成功 */
+		printf("DIR send ，向xQueue1发送数据成功\r\n");							
+            }
         }
-
-        /* If TX is idle and g_txBuffer is full, start to send data. */
-        if ((!txOnGoing) && txBufferFull)
-        {
-            txOnGoing = true;
-            UART_SendEDMA(DEMO_UART, &g_uartEdmaHandle, &sendXfer);
-        }
-
-        /* If g_txBuffer is empty and g_rxBuffer is full, copy g_rxBuffer to g_txBuffer. */
-        if ((!rxBufferEmpty) && (!txBufferFull))
-        {
-             memcpy(g_txBuffer, g_rxBuffer, ECHO_BUFFER_LENGTH);
-            rxBufferEmpty = true;
-            txBufferFull  = true;
-        }
-		vTaskDelay(100);
+        
+#endif 
+	vTaskDelay(200);
     }
 }
 /*********************************************************************************************************
@@ -217,43 +227,44 @@ static void vTaskTaskUSART(void *pvParameters)
 *	返 回 值: 无
 *   优 先 级: 2  
 *********************************************************************************************************/
+#if 1
 static void vTaskLED(void *pvParameters)
 {
    
     
-        MSG_T *ptMsg;
-	BaseType_t xResult;
-	const TickType_t xMaxBlockTime = pdMS_TO_TICKS(5); /* 设置最大等待时间为5ms */
-	
+    BaseType_t xResult;
+	const TickType_t xMaxBlockTime = pdMS_TO_TICKS(200); /* 设置最大等待时间为5ms */
+	uint8_t ucQueueMsgValue;
     while(1)
     {
-		xResult = xQueueReceive(xQueue2,                   /* 消息队列句柄 */
-		                        (void *)&ptMsg,  		   /* 这里获取的是结构体的地址 */
-		                        (TickType_t)xMaxBlockTime);/* 设置阻塞时间 */
-		
+	      printf("vTaskLED-2 \r\n");
+              xResult = xQueueReceive(xQueue1,                   /* ???￠?óáD??±ú */
+		                        (void *)&ucQueueMsgValue,  /* ′?′￠?óê?μ?μ?êy?Yμ?±?á?ucQueueMsgValue?D */
+		                        (TickType_t)xMaxBlockTime);/* éè??×èè?ê±?? */
 		
 		if(xResult == pdPASS)
 		{
 			/* 成功接收，并通过串口将数据打印出来 */
-			printf("接收到消息队列数据ptMsg->ucMessageID = %d\r\n", ptMsg->ucMessageID);
-			printf("接收到消息队列数据ptMsg->ulData[0] = %d\r\n", ptMsg->ulData[0]);
-			printf("接收到消息队列数据ptMsg->usData[0] = %d\r\n", ptMsg->usData[0]);
+			printf("接收到消息队列数据YucQueueMsgValue = %d\r\n", ucQueueMsgValue);
+			
 			LED1 = !LED1;
 			LED2 = !LED2;
 		}
 		else
 		{
 			 LED1 = !LED1;
+                        // DelayMs(500);
+                        // LED1=1;
+                        // DelayMs(500);
 			
 		}
-		taskYIELD();              //放弃时间片，把CPU让给同优先级的其它任务
+		//vTaskDelay(100);//taskYIELD();              //放弃时间片，把CPU让给同优先级的其它任务
     }
 
-    // TickType_t xLastWakeTime;
-    // const TickType_t xFrequency = 10; // 10 x 0.5Khz（Ticks）= 10 * 5ms = 50ms
-    // vTaskDelayUntil(&xLastWakeTime,xFrequency);//vTaskDelay(10);  //vTaskSuspend(NULL);
+  
 
 }
+#endif 
 
 /*********************************************************************************************************
 *	函 数 名: vTaskDIR
@@ -264,21 +275,23 @@ static void vTaskLED(void *pvParameters)
 *********************************************************************************************************/
 static void vTaskDIR(void *pvParameters)
 {
-   
+    MSG_T *ptMsg;
     BaseType_t xResult;
-	const TickType_t xMaxBlockTime = pdMS_TO_TICKS(5); /* 设置最大等待时间为300ms */
-	uint8_t ucQueueMsgValue;
+	const TickType_t xMaxBlockTime = pdMS_TO_TICKS(200); /* 设置最大等待时间为300ms */
+	//uint8_t ucQueueMsgValue;
 	
     while(1)
-    {
-		xResult = xQueueReceive(xQueue1,                   /* 消息队列句柄 */
-		                       (void *)&ucQueueMsgValue,  /* 存储接收到的数据到变量ucQueueMsgValue中 */
+    {           printf("vTaskDIR-3 \r\n");
+		xResult = xQueueReceive(xQueue2,                   /* 消息队列句柄 */
+		                       (void *)&ptMsg,  /* 存储接收到的数据到变量ucQueueMsgValue中 */
 		                       (TickType_t)xMaxBlockTime);/* 设置阻塞时间 */
 		
 		if(xResult == pdPASS)
 		{
 			/* 成功接收，并通过串口将数据打印出来 */
-			printf("接收到消息队列数据ucQueueMsgValue = %d\r\n", ucQueueMsgValue);
+			printf("接收到消息队列数据ptMsg->ucMessageID = %d\r\n", ptMsg->ucMessageID);
+			printf("接收到消息队列数据ptMsg->ulData[2] = %d\r\n", ptMsg->ulData[2]);
+			printf("接收到消息队列数据ptMsg->usData[2] = %d\r\n", ptMsg->usData[2]);
 			Dir = Dir;
 		}
 		else
@@ -290,6 +303,7 @@ static void vTaskDIR(void *pvParameters)
     } 
    
 }
+#if 0
 /*********************************************************************************************************
  *
  *	函 数 名: vTaskBLDC
@@ -307,7 +321,8 @@ static void vTaskBLDC(void *pvParameters)
 	
     while(1)
     {
-		xResult = xQueueReceive(xQueue3,                   /* 消息队列句柄 */
+	  printf("vTaskBLDC-4 \r\n");	
+          xResult = xQueueReceive(xQueue3,                   /* 消息队列句柄 */
 		                        (void *)&ptMsg,  		   /* 这里获取的是结构体的地址 */
 		                        (TickType_t)xMaxBlockTime);/* 设置阻塞时间 */
 		
@@ -347,12 +362,13 @@ static void vTaskBLDC(void *pvParameters)
 static void vTaskMsgPro(void *pvParameters)
 {
     BaseType_t xResult;
-	const TickType_t xMaxBlockTime = pdMS_TO_TICKS(5); /* 设置最大等待时间为300ms */
+	const TickType_t xMaxBlockTime = pdMS_TO_TICKS(200); /* 设置最大等待时间为300ms */
 	uint8_t ucQueueMsgValue;
 	
     while(1)
     {
-		xResult = xQueueReceive(xQueue1,                   /* 消息队列句柄 */
+	       printf("vTaskMSG-5 \r\n");
+               xResult = xQueueReceive(xQueue1,                   /* 消息队列句柄 */
 		                        (void *)&ucQueueMsgValue,  /* 存储接收到的数据到变量ucQueueMsgValue中 */
 		                        (TickType_t)xMaxBlockTime);/* 设置阻塞时间 */
 		
@@ -388,7 +404,7 @@ static void vTaskStart(void *pvParameters)
 	//uint8_t ch;
 	uint8_t ucCount = 0;
 	uint8_t ucKeyCode;
-        uint16_t sampleMask;
+    uint16_t sampleMask;
 	
 	/* 初始化结构体指针 */
 	ptMsg = &g_tMsg;
@@ -399,14 +415,15 @@ static void vTaskStart(void *pvParameters)
 	ptMsg->usData[0] = 0;
 	while(1)
     {
-		ucKeyCode = KEY_Scan(0);
+		printf("vTaskStart-6 \r\n");
+                ucKeyCode = KEY_Scan(0);
 		if (ucKeyCode != KEY_UP)
 		{
 			switch (ucKeyCode)
 			{
 				/* K1键按下 打印任务执行情况 */
 				case START_PRES:			 
-					ptMsg->ucMessageID++;
+					ptMsg->ucMessageID ++;
 					ptMsg->ulData[2] = 0x0a;
 					ptMsg->usData[2] = 0x0b;
 					
@@ -428,7 +445,7 @@ static void vTaskStart(void *pvParameters)
 				
 				/* K2键按下，向xQueue1发送数据 */
 				case DIR_PRES:
-					ucCount++;
+					ucCount ++ ;
 				 
 					/* 向消息队列发数据，如果消息队列满了，等待10个时钟节拍 */
 					if( xQueueSend(xQueue1,
@@ -488,7 +505,7 @@ static void vTaskStart(void *pvParameters)
 						/* 发送成功 */
 						printf("K3键按下，向xQueue2发送数据成功\r\n");						
 					}
-					taskYIELD();              //放弃时间片，把CPU让给同优先级的其它任务
+					//taskYIELD();              //放弃时间片，把CPU让给同优先级的其它任务
 					break;
 				case WIPERS_PRES :
 					ptMsg->ucMessageID++;
@@ -547,38 +564,37 @@ static void vTaskStart(void *pvParameters)
 	  vTaskDelay(20);
     }
 }
-/*
-*********************************************************************************************************
+#endif
+/********************************************************************************************************
 *	函 数 名: AppTaskCreate
 *	功能说明: 创建应用任务
 *	形    参：无
 *	返 回 值: 无
-*********************************************************************************************************
-*/
+*********************************************************************************************************/
 static void AppTaskCreate (void)
 {
-    xTaskCreate( vTaskTaskUSART,   	/* 任务函数  */
+    xTaskCreate( vTaskUSART,   	/* 任务函数  */
                  "vTaskUserIF",     	/* 任务名    */
                  512,               	/* 任务栈大小，单位word，也就是4字节 */
                  NULL,              	/* 任务参数  */
                  1,                 	/* 任务优先级 最低*/
-                 &xHandleTaskUserIF );  /* 任务句柄  */
-	
-	
+                 &xHandleTaskUSART );  /* 任务句柄  */
+#if 1	
 	xTaskCreate( vTaskLED,    		/* 任务函数  */
                  "vTaskLED",  		/* 任务名    */
                  512,         		/* stack大小，单位word，也就是4字节 */
                  NULL,        		/* 任务参数  */
                  2,           		/* 任务优先级*/
                  &xHandleTaskLED ); /* 任务句柄  */
+#endif 
 
 	xTaskCreate( vTaskDIR,    		/* 任务函数  */
                  "vTaskDIR",  		/* 任务名    */
                  512,         		/* stack大小，单位word，也就是4字节 */
                  NULL,        		/* 任务参数  */
                  3,           		/* 任务优先级*/
-                 &xHandleTaskLED2 ); /* 任务句柄  */
-
+                 &xHandleTaskDIR ); /* 任务句柄  */
+#if 0
 	xTaskCreate( vTaskBLDC,    		/* 任务函数  */
                  "vTaskBLDC",  		/* 任务名    */
                  512,         		/* stack大小，单位word，也就是4字节 */
@@ -600,6 +616,7 @@ static void AppTaskCreate (void)
                  NULL,           		/* 任务参数  */
                  6,              		/* 任务优先级 最高*/
                  &xHandleTaskStart );   /* 任务句柄  */
+#endif 
 }
 /********************************************************************
 *	函 数 名: AppObjCreate
@@ -635,14 +652,14 @@ static void AppObjCreate (void)
 }
 /******************************************************************************
  *
- * Function Name: 
+ * Function Name:BARKE_KEY_IRQ_HANDLER(void)
  * Function Active: Interrpt brake input key 
  * @brief Interrupt service fuction of switch.
  *
  * This function toggles the LED
  *
 ******************************************************************************/
-
+#if 0
 void BARKE_KEY_IRQ_HANDLER(void )//void BOARD_BRAKE_IRQ_HANDLER(void)
 {
     /* Clear external interrupt flag. */
@@ -655,5 +672,5 @@ void BARKE_KEY_IRQ_HANDLER(void )//void BOARD_BRAKE_IRQ_HANDLER(void)
     __DSB();
 #endif
 }
-
+#endif 
 
