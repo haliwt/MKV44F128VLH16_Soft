@@ -156,9 +156,7 @@ static void vTaskUSART(void *pvParameters)
   while(1)
     {
       
-        ptMsg->ucMessageID ++;
-		ptMsg->ulData[0]++;
-		ptMsg->usData[0]++;
+       
    
         UART_ReadBlocking(DEMO_UART, ch, 1);
         UART_ReadBlocking(DEMO_UART, ch, 8);
@@ -179,11 +177,11 @@ static void vTaskUSART(void *pvParameters)
 #if 1
           
           if(ch[0] == 0x31)
-          if(ch[1]== 0x32 ) 
+           if(ch[1]== 0x32 ) 
             if(ch[2] == 0x33 ) 
          
         {
-            ucCount= 10;
+            ucCount= ch[0];
             /* 队列发送1 */
             if( xQueueSend(xQueue1,
                      (void *) &ucCount,
@@ -197,6 +195,10 @@ static void vTaskUSART(void *pvParameters)
              /* 发送成功 */
 				printf("向xQueue1发送数据成功\r\n");							
             }
+
+			 ptMsg->ucMessageID = 1;
+		     ptMsg->ulData[0] =1;
+		     ptMsg->usData[0] =1;
             
             /* 消息队列实现指针变量传递 */
             if( xQueueSend(xQueue2,
@@ -230,14 +232,14 @@ static void vTaskLED(void *pvParameters)
    
     
     BaseType_t xResult;
-	const TickType_t xMaxBlockTime = pdMS_TO_TICKS(200); /* 设置最大等待时间为5ms */
+	const TickType_t xMaxBlockTime = pdMS_TO_TICKS(10); /* 设置最大等待时间为5ms */
 	uint8_t ucQueueMsgValue;
     while(1)
     {
 	      printf("vTaskLED-2 \r\n");
-         xResult = xQueueReceive(xQueue1,                   /* ???￠?óáD??±ú */
-		                        (void *)&ucQueueMsgValue,  /* ′?′￠?óê?μ?μ?êy?Yμ?±?á?ucQueueMsgValue?D */
-		                        (TickType_t)xMaxBlockTime);/* éè??×èè?ê±?? */
+         xResult = xQueueReceive(xQueue1,                   /* 消息队列句柄 */
+		                        (void *)&ucQueueMsgValue,  	/* 发送结构指针变量 */
+		                        (TickType_t)xMaxBlockTime);	/* 等待时间 */
 		
 		if(xResult == pdPASS)
 		{
@@ -248,19 +250,32 @@ static void vTaskLED(void *pvParameters)
 					printf("接收到消息队列数据YucQueueMsgValue = %d\r\n", ucQueueMsgValue);
 					
 					LED1 = !LED1;
-					LED2 = !LED2;
+					 
 					break;
 					
 					case 2 :
-						
+						LED2 = !LED2;
 					break;
+					case 3:
+						LED1 =0;
+						LED2=1;
+					break;
+					case 4:
+						LED1 =1;
+						LED2=0;
+						break;
+					case 5 :
+						LED1 = !LED1;
+						LED2 = !LED2;
+						break;
             	}
 		}
 		else
 		{
-			 LED1 = !LED1;
+			 LED1=0;
+			 LED2 =0;
         }
-		//vTaskDelay(100);//taskYIELD();//放弃时间片，把CPU让给同优先级的其它任务
+		 taskYIELD();//放弃时间片，把CPU让给同优先级的其它任务
     }
 
   
@@ -294,13 +309,21 @@ static void vTaskDIR(void *pvParameters)
             {
                 case 1 :
 				/* 成功接收，并通过串口将数据打印出来 */
+				printf("DIR success OK !!!! \r\n");
 				printf("接收到消息队列数据ptMsg->ucMessageID = %d\r\n", ptMsg->ucMessageID);
-				printf("接收到消息队列数据ptMsg->ulData[2] = %d\r\n", ptMsg->ulData[0]);
-				printf("接收到消息队列数据ptMsg->usData[2] = %d\r\n", ptMsg->usData[0]);
+				printf("接收到消息队列数据ptMsg->ulData[0] = %d\r\n", ptMsg->usData[0]);
+				if(ptMsg->ulData[0]==1)
 				Dir = Dir;
+				else 
+					Dir = -Dir;
                         
                break; 
 			   case 2:
+
+                   printf(" BLDC success OK !!\r\n");
+				   printf("接收到消息队列数据ptMsg->ucMessageID = %d\r\n", ptMsg->ucMessageID);
+				   
+				   printf("接收到消息队列数据ptMsg->usData[0] = %d\r\n", ptMsg->usData[0]);
 			   	   if(ptMsg->usData[0]== 1)
 			   	   {
                       PMW_AllClose_ABC_Channel();
@@ -349,7 +372,7 @@ static void vTaskStart(void *pvParameters)
 
      MSG_T   *ptMsg;
 	//uint8_t ch;
-	uint8_t ucCount = 0;
+	uint8_t ucCount = 0,ucValue;
 	uint8_t ucKeyCode;
     uint16_t sampleMask;
 	
@@ -370,9 +393,9 @@ static void vTaskStart(void *pvParameters)
 			{
 				/* K1键按下 打印任务执行情况 */
 				case START_PRES:			 
-					ptMsg->ucMessageID ++;
-					ptMsg->ulData[2] = 0x0a;
-					ptMsg->usData[2] = 0x0b;
+					ptMsg->ucMessageID =2;
+					ptMsg->usData[0] = 1;
+					
 					
 					/* 使用消息队列实现指针变量的传递 */
 					if(xQueueSend(xQueue2,                  /* 消息队列句柄 */
@@ -392,32 +415,37 @@ static void vTaskStart(void *pvParameters)
 				
 				/* K2键按下，向xQueue1发送数据 */
 				case DIR_PRES:
+					ptMsg->ucMessageID =1;
 					ucCount ++ ;
-				 
-					/* 向消息队列发数据，如果消息队列满了，等待10个时钟节拍 */
-					if( xQueueSend(xQueue1,
-								   (void *) &ucCount,
-								   (TickType_t)10) != pdPASS )
+				    if(ucCount == 1)
+				    {
+						ptMsg->ulData[0] = 1;
+					}
+					else
+					{
+                       ptMsg->ulData[0] = 0;
+					   ucCount =0;
+					}
+					/* 使用消息队列实现指针变量的传递 */
+					if(xQueueSend(xQueue2,                  /* 消息队列句柄 */
+						     (void *) &ptMsg,           /* 发送结构体指针变量ptMsg的地址 */
+						     (TickType_t)10) != pdPASS )
 					{
 						/* 发送失败，即使等待了10个时钟节拍 */
-						printf("K2键按下，向xQueue1发送数据失败，即使等待了10个时钟节拍\r\n");
+						printf("K6键按下，向xQueue2发送数据失败，即使等待了10个时钟节拍\r\n");
 					}
 					else
 					{
 						/* 发送成功 */
-						printf("K2键按下，向xQueue1发送数据成功\r\n");						
+						printf("K6键按下，向xQueue2发送数据成功\r\n");						
 					}
-					break;
-				
-				/* K3键按下，向xQueue2发送数据 */
+				   
+				break;
 				case DIGITAL_ADD_PRES:
-					ptMsg->ucMessageID++;
-					ptMsg->ulData[0]++;;
-					ptMsg->usData[0]++;
-					
+					 ucValue = 1;
 					/* 使用消息队列实现指针变量的传递 */
-					if(xQueueSend(xQueue2,                  /* 消息队列句柄 */
-								 (void *) &ptMsg,           /* 发送结构体指针变量ptMsg的地址 */
+					if(xQueueSend(xQueue1,                  /* 消息队列句柄 */
+								 (void *) &ucValue,           /* 发送数据地址 */
 								 (TickType_t)10) != pdPASS )
 					{
 						/* 发送失败，即使等待了10个时钟节拍 */
@@ -430,17 +458,28 @@ static void vTaskStart(void *pvParameters)
 					}
 					break;
 				case HALL_PRES :
-                     
-				    //UART_ReadBlocking(DEMO_UART, &ch, 1);
-                                       //UART_WriteBlocking(DEMO_UART, &ch, 1);
+                                     ucValue = 2;
+					/* 使用消息队列实现指针变量的传递 */
+					if(xQueueSend(xQueue1,                  /* 消息队列句柄 */
+								 (void *) &ucValue,           /* 发送数据地址 */
+								 (TickType_t)10) != pdPASS )
+					{
+						/* 发送失败，即使等待了10个时钟节拍 */
+						printf("K3键按下，向xQueue2发送数据失败，即使等待了10个时钟节拍\r\n");
+					}
+					else
+					{
+						/* 发送成功 */
+						printf("K3键按下，向xQueue2发送数据成功\r\n");						
+					}
+					break;
+				   
 					break;
 				case WHEEL_PRES :
-					ptMsg->ucMessageID++;
-					ptMsg->ulData[1]++;;
-					ptMsg->usData[1]++;
 					
+					ucValue = 3;
 					/* 使用消息队列实现指针变量的传递 */
-					if(xQueueSend(xQueue2,                  /* 消息队列句柄 */
+					if(xQueueSend(xQueue1,                  /* 消息队列句柄 */
 						     (void *) &ptMsg,           /* 发送结构体指针变量ptMsg的地址 */
 						     (TickType_t)10) != pdPASS )
 					{
@@ -455,13 +494,11 @@ static void vTaskStart(void *pvParameters)
 					//taskYIELD();              //放弃时间片，把CPU让给同优先级的其它任务
 					break;
 				case WIPERS_PRES :
-					ptMsg->ucMessageID++;
-					ptMsg->ulData[2]++;;
-					ptMsg->usData[2]++;
+					 ucValue = 4;
 					
 					/* 使用消息队列实现指针变量的传递 */
-					if(xQueueSend(xQueue2,                  /* 消息队列句柄 */
-						     (void *) &ptMsg,           /* 发送结构体指针变量ptMsg的地址 */
+					if(xQueueSend(xQueue1,                  /* 消息队列句柄 */
+						     (void *) &ucValue ,        /* 发送结构体指针变量ptMsg的地址 */
 						     (TickType_t)10) != pdPASS )
 					{
 						/* 发送失败，即使等待了10个时钟节拍 */
@@ -475,6 +512,23 @@ static void vTaskStart(void *pvParameters)
 					//taskYIELD();              //放弃时间片，把CPU让给同优先级的其它任务
 					break;
 				case AIR_PRES :
+					 ucValue = 5;
+					
+					/* 使用消息队列实现指针变量的传递 */
+					if(xQueueSend(xQueue1,                  /* 消息队列句柄 */
+						     (void *) &ucValue ,        /* 发送结构体指针变量ptMsg的地址 */
+						     (TickType_t)10) != pdPASS )
+					{
+						/* 发送失败，即使等待了10个时钟节拍 */
+						printf("K6键按下，向xQueue2发送数据失败，即使等待了10个时钟节拍\r\n");
+					}
+					else
+					{
+						/* 发送成功 */
+						printf("K6键按下，向xQueue2发送数据成功\r\n");						
+					}
+					//taskYIELD();              //放弃时间片，把CPU让给同优先级的其它任务
+					break;
 					break;
 				
 				/* 其他的键值不处理 */
