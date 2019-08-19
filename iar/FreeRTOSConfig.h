@@ -46,7 +46,7 @@
 #define configUSE_TICKLESS_IDLE                 0
 #define configCPU_CLOCK_HZ                      (SystemCoreClock)
 #define configTICK_RATE_HZ                      ((TickType_t)1000)//WT.EDIT ((TickType_t)200)  //系统节拍数  0.2Khz，即 5ms
-#define configMAX_PRIORITIES                    7 //WT.EDIT 5
+#define configMAX_PRIORITIES                    5
 #define configMINIMAL_STACK_SIZE                ((unsigned short)90)
 #define configMAX_TASK_NAME_LEN                 16
 #define configUSE_16_BIT_TICKS                  1 // WT.EDIT 0， 8bit
