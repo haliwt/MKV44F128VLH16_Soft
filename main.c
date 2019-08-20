@@ -56,9 +56,11 @@ static void vTaskUSART(void *pvParameters);
 static void vTaskLED(void *pvParameters);
 
 static void vTaskDIR(void *pvParameters);
-
+#if 0
+static void vTaskBLDC(void *pvParameters);
+static void vTaskMsgPro(void *pvParameters);
 static void vTaskStart(void *pvParameters);
-
+#endif 
 
 static void AppTaskCreate (void);
 static void AppObjCreate (void);
@@ -72,8 +74,11 @@ static TaskHandle_t xHandleTaskUSART = NULL;
 
 static TaskHandle_t xHandleTaskLED = NULL;
 static TaskHandle_t xHandleTaskDIR = NULL;
+//static TaskHandle_t xHandleTaskBLDC = NULL;
 
-static TaskHandle_t xHandleTaskStart = NULL;
+
+//static TaskHandle_t xHandleTaskMsgPro = NULL;
+//static TaskHandle_t xHandleTaskStart = NULL;
 static QueueHandle_t xQueue1 = NULL;
 static QueueHandle_t xQueue2 = NULL;
 
@@ -143,9 +148,7 @@ static void vTaskUSART(void *pvParameters)
   MSG_T *ptMsg;
   uint8_t ucCount;
   uint8_t ch[8];
-  
-  const TickType_t xDelay250ms = pdMS_TO_TICKS( 250UL );
-  
+  const TickType_t xMaxBlockTime = pdMS_TO_TICKS(300); /* 设置最大等待时间为5ms */
   /* 初始化结构体指针 */
 	ptMsg = &g_tMsg;
 	
@@ -156,7 +159,9 @@ static void vTaskUSART(void *pvParameters)
   while(1)
     {
       
-       
+                ptMsg->ucMessageID ++;
+		ptMsg->ulData[0]++ ;
+		ptMsg->usData[0] ++;
    
         UART_ReadBlocking(DEMO_UART, ch, 1);
         UART_ReadBlocking(DEMO_UART, ch, 8);
@@ -177,46 +182,42 @@ static void vTaskUSART(void *pvParameters)
 #if 1
           
           if(ch[0] == 0x31)
-           if(ch[1]== 0x32 ) 
+          if(ch[1]== 0x32 ) 
             if(ch[2] == 0x33 ) 
          
         {
-            ucCount= ch[0];
-            /* 队列发送1 */
+            ucCount= 10;
+            /* ?ò???￠?óáD·￠êy?Y￡?è?1????￠?óáD?úá?￡?μè′y10??ê±?ó?ú?? */
             if( xQueueSend(xQueue1,
                      (void *) &ucCount,
                      (TickType_t)10) != pdPASS )
             {
-               /* 发送失败，即使等待了10个时钟节拍 */
-	   			printf("向xQueue1发送数据失败，即使等待了10个时钟节拍\r\n");
+             /* 发送失败，即使等待了10个时钟节拍 */
+	   printf("K6键按下，向xQueue2发送数据失败，即使等待了10个时钟节拍\r\n");
             }
             else
             {
              /* 发送成功 */
-				printf("向xQueue1发送数据成功\r\n");							
+		printf("K6键按下，向xQueue1发送数据成功\r\n");							
             }
-
-			 ptMsg->ucMessageID = 1;
-		     ptMsg->ulData[0] =1;
-		     ptMsg->usData[0] =1;
             
-            /* 消息队列实现指针变量传递 */
+            /* ?ò???￠?óáD·￠êy?Y￡?è?1????￠?óáD?úá?￡?μè′y10??ê±?ó?ú?? */
             if( xQueueSend(xQueue2,
                      (void *)&ptMsg,
                      (TickType_t)10) != pdPASS )
             {
              /* 发送失败，即使等待了10个时钟节拍 */
-	   			printf("向xQueue2发送数据失败，即使等待了10个时钟节拍\r\n");
+	   printf("vTaskDIR，即使等待了10个时钟节拍\r\n");
             }
             else
             {
              /* 发送成功 */
-		     printf("xQueue2发送数据成功\r\n");							
+		printf("DIR send ，向xQueue1发送数据成功\r\n");							
             }
         }
         
 #endif 
-	vTaskDelay( xDelay250ms );
+	vTaskDelay(xMaxBlockTime);
     }
 }
 /*********************************************************************************************************
@@ -232,50 +233,32 @@ static void vTaskLED(void *pvParameters)
    
     
     BaseType_t xResult;
-	const TickType_t xMaxBlockTime = pdMS_TO_TICKS(10); /* 设置最大等待时间为5ms */
+	const TickType_t xMaxBlockTime = pdMS_TO_TICKS(200); /* 设置最大等待时间为5ms */
 	uint8_t ucQueueMsgValue;
     while(1)
     {
 	      printf("vTaskLED-2 \r\n");
-         xResult = xQueueReceive(xQueue1,                   /* 消息队列句柄 */
-		                        (void *)&ucQueueMsgValue,  	/* 发送结构指针变量 */
-		                        (TickType_t)xMaxBlockTime);	/* 等待时间 */
+              xResult = xQueueReceive(xQueue1,                   /* ???￠?óáD??±ú */
+		                        (void *)&ucQueueMsgValue,  /* ′?′￠?óê?μ?μ?êy?Yμ?±?á?ucQueueMsgValue?D */
+		                        (TickType_t)xMaxBlockTime);/* éè??×èè?ê±?? */
 		
 		if(xResult == pdPASS)
 		{
-            switch(ucQueueMsgValue )
-            	{
-                    case 1:
-				    /* 成功接收，并通过串口将数据打印出来 */
-					printf("接收到消息队列数据YucQueueMsgValue = %d\r\n", ucQueueMsgValue);
-					
-					LED1 = !LED1;
-					 
-					break;
-					
-					case 2 :
-						LED2 = !LED2;
-					break;
-					case 3:
-						LED1 =0;
-						LED2=1;
-					break;
-					case 4:
-						LED1 =1;
-						LED2=0;
-						break;
-					case 5 :
-						LED1 = !LED1;
-						LED2 = !LED2;
-						break;
-            	}
+			/* 成功接收，并通过串口将数据打印出来 */
+			printf("接收到消息队列数据YucQueueMsgValue = %d\r\n", ucQueueMsgValue);
+			
+			LED1 = !LED1;
+			LED2 = !LED2;
 		}
 		else
 		{
-			 LED1=0;
-			 LED2 =0;
-        }
-		 taskYIELD();//放弃时间片，把CPU让给同优先级的其它任务
+			 LED1 = !LED1;
+                        // DelayMs(500);
+                        // LED1=1;
+                        // DelayMs(500);
+			
+		}
+		//vTaskDelay(100);//taskYIELD();              //放弃时间片，把CPU让给同优先级的其它任务
     }
 
   
@@ -294,7 +277,7 @@ static void vTaskDIR(void *pvParameters)
 {
     MSG_T *ptMsg;
     BaseType_t xResult;
-	const TickType_t xMaxBlockTime = pdMS_TO_TICKS(200); /* 设置最大等待时间为300ms */
+	const TickType_t xMaxBlockTime = pdMS_TO_TICKS(400); /* 设置最大等待时间为300ms */
 	//uint8_t ucQueueMsgValue;
 	
     while(1)
@@ -303,59 +286,106 @@ static void vTaskDIR(void *pvParameters)
 		                       (void *)&ptMsg,  /* 存储接收到的数据到变量ucQueueMsgValue中 */
 		                       (TickType_t)xMaxBlockTime);/* 设置阻塞时间 */
 		
-	if(xResult == pdPASS)
-	{
-            switch(ptMsg->ucMessageID)
-            {
-                case 1 :
-				/* 成功接收，并通过串口将数据打印出来 */
-				printf("DIR success OK !!!! \r\n");
-				printf("接收到消息队列数据ptMsg->ucMessageID = %d\r\n", ptMsg->ucMessageID);
-				printf("接收到消息队列数据ptMsg->ulData[0] = %d\r\n", ptMsg->usData[0]);
-				if(ptMsg->ulData[0]==1)
-				Dir = Dir;
-				else 
-					Dir = -Dir;
-                        
-               break; 
-			   case 2:
-
-                   printf(" BLDC success OK !!\r\n");
-				   printf("接收到消息队列数据ptMsg->ucMessageID = %d\r\n", ptMsg->ucMessageID);
-				   
-				   printf("接收到消息队列数据ptMsg->usData[0] = %d\r\n", ptMsg->usData[0]);
-			   	   if(ptMsg->usData[0]== 1)
-			   	   {
-                      PMW_AllClose_ABC_Channel();
-					uwStep = HallSensor_GetPinState();
-			        PRINTF("ouread = %d \r\n",uwStep);
-			        HALLSensor_Detected_BLDC(uwStep);    
-                    
-				   }
-				   else 
-				   {
-				     PMW_AllClose_ABC_Channel();
-			         DelayMs(10U);
-			         PMW_AllClose_ABC_Channel();
-					 PWM_StopTimer(BOARD_PWM_BASEADDR,  kPWM_Control_Module_0);
-					 PWM_StopTimer(BOARD_PWM_BASEADDR,  kPWM_Control_Module_1);
-					 PWM_StopTimer(BOARD_PWM_BASEADDR,  kPWM_Control_Module_2);
-                    }
-			   
-
-			   break;
-	     }
-        }
-	 else
-	{
+		if(xResult == pdPASS)
+		{
+			/* 成功接收，并通过串口将数据打印出来 */
+			printf("接收到消息队列数据ptMsg->ucMessageID = %d\r\n", ptMsg->ucMessageID);
+			printf("接收到消息队列数据ptMsg->ulData[2] = %d\r\n", ptMsg->ulData[0]);
+			printf("接收到消息队列数据ptMsg->usData[2] = %d\r\n", ptMsg->usData[0]);
+			Dir = Dir;
+		}
+		else
+		{
 			/* 超时 */
 			LED2 =!LED2;
-	}
-	taskYIELD();              //放弃时间片，把CPU让给同优先级的其它任务
+		}
+		//taskYIELD();              //放弃时间片，把CPU让给同优先级的其它任务
     } 
    
 }
+#if 0
+/*********************************************************************************************************
+ *
+ *	函 数 名: vTaskBLDC
+ *	功能说明: 使用函数xQueueReceive接收任务vTaskTaskUserIF发送的消息队列数据(xQueue2)	
+ *	形    参: pvParameters 是在创建该任务时传递的形参
+ *	返 回 值: 无
+ *   优 先 级: 4 
+ *
+*********************************************************************************************************/
+static void vTaskBLDC(void *pvParameters)
+{
+         MSG_T *ptMsg;
+	BaseType_t xResult;
+	const TickType_t xMaxBlockTime = pdMS_TO_TICKS(200); /* 设置最大等待时间为200ms */
+	
+    while(1)
+    {
+	  printf("vTaskBLDC-4 \r\n");	
+          xResult = xQueueReceive(xQueue3,                   /* 消息队列句柄 */
+		                        (void *)&ptMsg,  		   /* 这里获取的是结构体的地址 */
+		                        (TickType_t)xMaxBlockTime);/* 设置阻塞时间 */
+		
+		
+		if(xResult == pdPASS)
+		{
+			/* 成功接收，并通过串口将数据打印出来 */
+			printf("接收到消息队列数据ptMsg->ucMessageID = %d\r\n", ptMsg->ucMessageID);
+			printf("接收到消息队列数据ptMsg->ulData[2] = %d\r\n", ptMsg->ulData[2]);
+			printf("接收到消息队列数据ptMsg->usData[2] = %d\r\n", ptMsg->usData[2]);
+			PMW_AllClose_ABC_Channel();
+            uwStep = HallSensor_GetPinState();
+            PRINTF("ouread = %d \r\n",uwStep);
+            HALLSensor_Detected_BLDC(uwStep);
+			
+		}
+		else
+		{
+			 LED2 = !LED2;
+			 LED1 = !LED1;
+			
+		}
+		taskYIELD();              //放弃时间片，把CPU让给同优先级的其它任务
+    }
 
+}
+
+
+/**********************************************************************************************************
+*	函 数 名: vTaskMsgPro
+*	功能说明: 使用函数xQueueReceive接收任务vTaskTaskUserIF发送的消息队列数据(xQueue1)
+*	形    参: pvParameters 是在创建该任务时传递的形参
+*	返 回 值: 无
+*   优 先 级: 5  
+**********************************************************************************************************/
+
+static void vTaskMsgPro(void *pvParameters)
+{
+    BaseType_t xResult;
+	const TickType_t xMaxBlockTime = pdMS_TO_TICKS(200); /* 设置最大等待时间为300ms */
+	uint8_t ucQueueMsgValue;
+	
+    while(1)
+    {
+	       printf("vTaskMSG-5 \r\n");
+               xResult = xQueueReceive(xQueue1,                   /* 消息队列句柄 */
+		                        (void *)&ucQueueMsgValue,  /* 存储接收到的数据到变量ucQueueMsgValue中 */
+		                        (TickType_t)xMaxBlockTime);/* 设置阻塞时间 */
+		
+		if(xResult == pdPASS)
+		{
+			/* 成功接收，并通过串口将数据打印出来 */
+			printf("接收到消息队列数据ucQueueMsgValue = %d\r\n", ucQueueMsgValue);
+		}
+		else
+		{
+			/* 超时 */
+			LED2 =!LED2;
+		}
+		//taskYIELD();              //放弃时间片，把CPU让给同优先级的其它任务
+    }
+
+}
 
 /*********************************************************************************************************
 *
@@ -363,7 +393,7 @@ static void vTaskDIR(void *pvParameters)
 *	功能说明: 启动任务，也就是最高优先级任务，这里用作按键扫描。
 *	形    参: pvParameters 是在创建该任务时传递的形参
 *	返 回 值: 无
-*   优 先 级: 4  (优先级最高)
+*   优 先 级: 6  (优先级最高)
 *
 *********************************************************************************************************
 */
@@ -372,7 +402,7 @@ static void vTaskStart(void *pvParameters)
 
      MSG_T   *ptMsg;
 	//uint8_t ch;
-	uint8_t ucCount = 0,ucValue;
+	uint8_t ucCount = 0;
 	uint8_t ucKeyCode;
     uint16_t sampleMask;
 	
@@ -385,20 +415,20 @@ static void vTaskStart(void *pvParameters)
 	ptMsg->usData[0] = 0;
 	while(1)
     {
-		printf("vTaskStart-4 \r\n");
-        ucKeyCode = KEY_Scan(0);
+		printf("vTaskStart-6 \r\n");
+                ucKeyCode = KEY_Scan(0);
 		if (ucKeyCode != KEY_UP)
 		{
 			switch (ucKeyCode)
 			{
 				/* K1键按下 打印任务执行情况 */
 				case START_PRES:			 
-					ptMsg->ucMessageID =2;
-					ptMsg->usData[0] = 1;
-					
+					ptMsg->ucMessageID ++;
+					ptMsg->ulData[2] = 0x0a;
+					ptMsg->usData[2] = 0x0b;
 					
 					/* 使用消息队列实现指针变量的传递 */
-					if(xQueueSend(xQueue2,                  /* 消息队列句柄 */
+					if(xQueueSend(xQueue3,                  /* 消息队列句柄 */
 						     (void *) &ptMsg,           /* 发送结构体指针变量ptMsg的地址 */
 						     (TickType_t)10) != pdPASS )
 					{
@@ -415,37 +445,32 @@ static void vTaskStart(void *pvParameters)
 				
 				/* K2键按下，向xQueue1发送数据 */
 				case DIR_PRES:
-					ptMsg->ucMessageID =1;
 					ucCount ++ ;
-				    if(ucCount == 1)
-				    {
-						ptMsg->ulData[0] = 1;
-					}
-					else
-					{
-                       ptMsg->ulData[0] = 0;
-					   ucCount =0;
-					}
-					/* 使用消息队列实现指针变量的传递 */
-					if(xQueueSend(xQueue2,                  /* 消息队列句柄 */
-						     (void *) &ptMsg,           /* 发送结构体指针变量ptMsg的地址 */
-						     (TickType_t)10) != pdPASS )
+				 
+					/* 向消息队列发数据，如果消息队列满了，等待10个时钟节拍 */
+					if( xQueueSend(xQueue1,
+								   (void *) &ucCount,
+								   (TickType_t)10) != pdPASS )
 					{
 						/* 发送失败，即使等待了10个时钟节拍 */
-						printf("K6键按下，向xQueue2发送数据失败，即使等待了10个时钟节拍\r\n");
+						printf("K2键按下，向xQueue1发送数据失败，即使等待了10个时钟节拍\r\n");
 					}
 					else
 					{
 						/* 发送成功 */
-						printf("K6键按下，向xQueue2发送数据成功\r\n");						
+						printf("K2键按下，向xQueue1发送数据成功\r\n");						
 					}
-				   
-				break;
+					break;
+				
+				/* K3键按下，向xQueue2发送数据 */
 				case DIGITAL_ADD_PRES:
-					 ucValue = 1;
+					ptMsg->ucMessageID++;
+					ptMsg->ulData[0]++;;
+					ptMsg->usData[0]++;
+					
 					/* 使用消息队列实现指针变量的传递 */
-					if(xQueueSend(xQueue1,                  /* 消息队列句柄 */
-								 (void *) &ucValue,           /* 发送数据地址 */
+					if(xQueueSend(xQueue2,                  /* 消息队列句柄 */
+								 (void *) &ptMsg,           /* 发送结构体指针变量ptMsg的地址 */
 								 (TickType_t)10) != pdPASS )
 					{
 						/* 发送失败，即使等待了10个时钟节拍 */
@@ -458,28 +483,17 @@ static void vTaskStart(void *pvParameters)
 					}
 					break;
 				case HALL_PRES :
-                                     ucValue = 2;
-					/* 使用消息队列实现指针变量的传递 */
-					if(xQueueSend(xQueue1,                  /* 消息队列句柄 */
-								 (void *) &ucValue,           /* 发送数据地址 */
-								 (TickType_t)10) != pdPASS )
-					{
-						/* 发送失败，即使等待了10个时钟节拍 */
-						printf("K3键按下，向xQueue2发送数据失败，即使等待了10个时钟节拍\r\n");
-					}
-					else
-					{
-						/* 发送成功 */
-						printf("K3键按下，向xQueue2发送数据成功\r\n");						
-					}
-					break;
-				   
+                     
+				    //UART_ReadBlocking(DEMO_UART, &ch, 1);
+                                       //UART_WriteBlocking(DEMO_UART, &ch, 1);
 					break;
 				case WHEEL_PRES :
+					ptMsg->ucMessageID++;
+					ptMsg->ulData[1]++;;
+					ptMsg->usData[1]++;
 					
-					ucValue = 3;
 					/* 使用消息队列实现指针变量的传递 */
-					if(xQueueSend(xQueue1,                  /* 消息队列句柄 */
+					if(xQueueSend(xQueue2,                  /* 消息队列句柄 */
 						     (void *) &ptMsg,           /* 发送结构体指针变量ptMsg的地址 */
 						     (TickType_t)10) != pdPASS )
 					{
@@ -494,11 +508,13 @@ static void vTaskStart(void *pvParameters)
 					//taskYIELD();              //放弃时间片，把CPU让给同优先级的其它任务
 					break;
 				case WIPERS_PRES :
-					 ucValue = 4;
+					ptMsg->ucMessageID++;
+					ptMsg->ulData[2]++;;
+					ptMsg->usData[2]++;
 					
 					/* 使用消息队列实现指针变量的传递 */
-					if(xQueueSend(xQueue1,                  /* 消息队列句柄 */
-						     (void *) &ucValue ,        /* 发送结构体指针变量ptMsg的地址 */
+					if(xQueueSend(xQueue3,                  /* 消息队列句柄 */
+						     (void *) &ptMsg,           /* 发送结构体指针变量ptMsg的地址 */
 						     (TickType_t)10) != pdPASS )
 					{
 						/* 发送失败，即使等待了10个时钟节拍 */
@@ -512,59 +528,43 @@ static void vTaskStart(void *pvParameters)
 					//taskYIELD();              //放弃时间片，把CPU让给同优先级的其它任务
 					break;
 				case AIR_PRES :
-					 ucValue = 5;
-					
-					/* 使用消息队列实现指针变量的传递 */
-					if(xQueueSend(xQueue1,                  /* 消息队列句柄 */
-						     (void *) &ucValue ,        /* 发送结构体指针变量ptMsg的地址 */
-						     (TickType_t)10) != pdPASS )
-					{
-						/* 发送失败，即使等待了10个时钟节拍 */
-						printf("K6键按下，向xQueue2发送数据失败，即使等待了10个时钟节拍\r\n");
-					}
-					else
-					{
-						/* 发送成功 */
-						printf("K6键按下，向xQueue2发送数据成功\r\n");						
-					}
-					//taskYIELD();              //放弃时间片，把CPU让给同优先级的其它任务
-					break;
 					break;
 				
 				/* 其他的键值不处理 */
 				default:
-					{
-								
-								CADC_DoSoftwareTriggerConverter(CADC_BASEADDR, kCADC_ConverterA);
-									 /* Wait the conversion to be done. */
-								 while (kCADC_ConverterAEndOfScanFlag !=
-									   (kCADC_ConverterAEndOfScanFlag & CADC_GetStatusFlags(CADC_BASEADDR)))
-								{
-								}
-					
-								/* Read the result value. */
-								if (sampleMask == (sampleMask & CADC_GetSampleReadyStatusFlags(CADC_BASEADDR)))
-								{
-									 PWM_Duty =(int16_t)CADC_GetSampleResultValue(CADC_BASEADDR, 1U);
-								   PRINTF("%d\t\t",PWM_Duty );
-								   //PRINTF("%d\t\t", (int16_t)CADC_GetSampleResultValue(CADC_BASEADDR, 1U));
-								   DelayMs(50U);
-								   PWM_Duty = (uint16_t)((CADC_GetSampleResultValue(CADC_BASEADDR, 1U))/ 330);
-								   PRINTF("PWM_Duty = %d\r\n", PWM_Duty);
-								   DelayMs(200U);
-									//PRINTF("%d", (int16_t)CADC_GetSampleResultValue(CADC_BASEADDR, 3U));
-							}
-							CADC_ClearStatusFlags(CADC_BASEADDR, kCADC_ConverterAEndOfScanFlag);
-					
-					}
-						   
-				    break;
+				           
+			     	{
+			            
+					    CADC_DoSoftwareTriggerConverter(CADC_BASEADDR, kCADC_ConverterA);
+				             /* Wait the conversion to be done. */
+				         while (kCADC_ConverterAEndOfScanFlag !=
+				               (kCADC_ConverterAEndOfScanFlag & CADC_GetStatusFlags(CADC_BASEADDR)))
+				        {
+				        }
+
+				        /* Read the result value. */
+				        if (sampleMask == (sampleMask & CADC_GetSampleReadyStatusFlags(CADC_BASEADDR)))
+				        {
+			                 PWM_Duty =(int16_t)CADC_GetSampleResultValue(CADC_BASEADDR, 1U);
+					       PRINTF("%d\t\t",PWM_Duty );
+				           //PRINTF("%d\t\t", (int16_t)CADC_GetSampleResultValue(CADC_BASEADDR, 1U));
+						   DelayMs(50U);
+			               PWM_Duty = (uint16_t)((CADC_GetSampleResultValue(CADC_BASEADDR, 1U))/ 330);
+				           PRINTF("PWM_Duty = %d\r\n", PWM_Duty);
+						   DelayMs(200U);
+				            //PRINTF("%d", (int16_t)CADC_GetSampleResultValue(CADC_BASEADDR, 3U));
+			        }
+			        CADC_ClearStatusFlags(CADC_BASEADDR, kCADC_ConverterAEndOfScanFlag);
+
+			     	}
+       
+					break;
 			}
 		}
 	  vTaskDelay(20);
     }
 }
-
+#endif
 /********************************************************************************************************
 *	函 数 名: AppTaskCreate
 *	功能说明: 创建应用任务
@@ -582,7 +582,7 @@ static void AppTaskCreate (void)
 #if 1	
 	xTaskCreate( vTaskLED,    		/* 任务函数  */
                  "vTaskLED",  		/* 任务名    */
-                 512,         		/* stack大小，单位word，也就是4字节 */
+                 1024,         		/* stack大小，单位word，也就是4字节 */
                  NULL,        		/* 任务参数  */
                  2,           		/* 任务优先级*/
                  &xHandleTaskLED ); /* 任务句柄  */
@@ -590,19 +590,33 @@ static void AppTaskCreate (void)
 
 	xTaskCreate( vTaskDIR,    		/* 任务函数  */
                  "vTaskDIR",  		/* 任务名    */
-                 512,         		/* stack大小，单位word，也就是4字节 */
+                 1024,         		/* stack大小，单位word，也就是4字节 */
                  NULL,        		/* 任务参数  */
                  3,           		/* 任务优先级*/
                  &xHandleTaskDIR ); /* 任务句柄  */
-
+#if 0
+	xTaskCreate( vTaskBLDC,    		/* 任务函数  */
+                 "vTaskBLDC",  		/* 任务名    */
+                 512,         		/* stack大小，单位word，也就是4字节 */
+                 NULL,        		/* 任务参数  */
+                 4,           		/* 任务优先级*/
+                 &xHandleTaskBLDC ); /* 任务句柄  */
+	
+	xTaskCreate( vTaskMsgPro,     		/* 任务函数  */
+                 "vTaskMsgPro",   		/* 任务名    */
+                 512,             		/* 任务栈大小，单位word，也就是4字节 */
+                 NULL,           		/* 任务参数  */
+                 5,               		/* 任务优先级*/
+                 &xHandleTaskMsgPro );  /* 任务句柄  */
+	
 	
 	xTaskCreate( vTaskStart,     		/* 任务函数  */
                  "vTaskStart",   		/* 任务名    */
                  512,            		/* 任务栈大小，单位word，也就是4字节 */
                  NULL,           		/* 任务参数  */
-                 4,              		/* 任务优先级 最高*/
+                 6,              		/* 任务优先级 最高*/
                  &xHandleTaskStart );   /* 任务句柄  */
-
+#endif 
 }
 /********************************************************************
 *	函 数 名: AppObjCreate
@@ -622,14 +636,12 @@ static void AppObjCreate (void)
        /* 没有创建成功，用户可以在这里加入创建失败的处理机制 */
     }
      /* 创建10个存储指针变量的消息队列，由于CM3/CM4内核是32位机，一个指针变量占用4个字节 */
-	xQueue2 = xQueueCreate(10, sizeof(struct Msg *));
+	xQueue2 = xQueueCreate(50, sizeof(struct Msg *));
     if( xQueue2 == 0 )
     {
          printf("xQueue2 set up fail!!!!"); /* 没有创建成功，用户可以在这里加入创建失败的处理机制 */
     }
-	/* 创建10个存储指针变量的消息队列，由于CM3/CM4内核是32位机，一个指针变量占用4个字节 */
-	
-	
+
 }
 /******************************************************************************
  *
