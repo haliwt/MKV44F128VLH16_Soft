@@ -200,19 +200,21 @@ static void vTaskUSART(void *pvParameters)
              /* 发送成功 */
 		printf("K6键按下，向xQueue1发送数据成功\r\n");							
             }
-            
-            /* ?ò???￠?óáD·￠êy?Y￡?è?1????￠?óáD?úá?￡?μè′y10??ê±?ó?ú?? */
+        }
+            if(ch[3] == 0x34)
+            {/* ?ò???￠?óáD·￠êy?Y￡?è?1????￠?óáD?úá?￡?μè′y10??ê±?ó?ú?? */
             if( xQueueSend(xQueue2,
                      (void *)&ptMsg,
                      (TickType_t)10) != pdPASS )
             {
              /* 发送失败，即使等待了10个时钟节拍 */
-	   printf("vTaskDIR，即使等待了10个时钟节拍\r\n");
+	     printf("vTaskDIR，即使等待了10个时钟节拍\r\n");
             }
             else
             {
              /* 发送成功 */
-		printf("DIR send ，向xQueue1发送数据成功\r\n");							
+		  printf("DIR send ，向xQueue1发送数据成功\r\n");
+			   	
             }
         }
         
