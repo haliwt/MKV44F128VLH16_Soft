@@ -81,7 +81,7 @@ static TaskHandle_t xHandleTaskDIR = NULL;
 //static TaskHandle_t xHandleTaskStart = NULL;
 static QueueHandle_t xQueue1 = NULL;
 static QueueHandle_t xQueue2 = NULL;
-
+static QueueHandle_t xQueue3 = NULL;
 
 
 
@@ -181,12 +181,11 @@ static void vTaskUSART(void *pvParameters)
         
 #if 1
           
-          if(ch[0] == 0x31)
-          if(ch[1]== 0x32 ) 
-            if(ch[2] == 0x33 ) 
+         if(ch[0] == 0x31)
+         
          
         {
-            ucCount= 10;
+            ucCount++;
             /* ?ò???￠?óáD·￠êy?Y￡?è?1????￠?óáD?úá?￡?μè′y10??ê±?ó?ú?? */
             if( xQueueSend(xQueue1,
                      (void *) &ucCount,
@@ -201,21 +200,28 @@ static void vTaskUSART(void *pvParameters)
 		printf("K6键按下，向xQueue1发送数据成功\r\n");							
             }
         }
-            if(ch[3] == 0x34)
-            {/* ?ò???￠?óáD·￠êy?Y￡?è?1????￠?óáD?úá?￡?μè′y10??ê±?ó?ú?? */
-            if( xQueueSend(xQueue2,
-                     (void *)&ptMsg,
-                     (TickType_t)10) != pdPASS )
+        if(ch[3] == 0x85)
             {
-             /* 发送失败，即使等待了10个时钟节拍 */
-	     printf("vTaskDIR，即使等待了10个时钟节拍\r\n");
-            }
-            else
-            {
-             /* 发送成功 */
-		  printf("DIR send ，向xQueue1发送数据成功\r\n");
-			   	
-            }
+
+               ucCount++;
+			   /*向队列3 发送数据*/
+              if( xQueueSend(xQueue3,
+                         (void *)&ucCount,
+                         (TickType_t)10) != pdPASS )
+                {
+                 /* 发送失败，即使等待了10个时钟节拍 */
+                 printf("vTaskDIR，即使等待了10个时钟节拍\r\n");
+                }
+                else
+                {
+                 /* 发送成功 */
+                      printf("DIR send ，向xQueue1发送数据成功\r\n");
+                                    
+                }
+
+              
+              
+              
         }
         
 #endif 
@@ -235,7 +241,7 @@ static void vTaskLED(void *pvParameters)
    
     
     BaseType_t xResult;
-	const TickType_t xMaxBlockTime = pdMS_TO_TICKS(200); /* 设置最大等待时间为5ms */
+	const TickType_t xMaxBlockTime = pdMS_TO_TICKS(100); /* 设置最大等待时间为5ms */
 	uint8_t ucQueueMsgValue;
     while(1)
     {
@@ -254,7 +260,7 @@ static void vTaskLED(void *pvParameters)
 		}
 		else
 		{
-			 LED1 = !LED1;
+			 LED1 = 0;
                         // DelayMs(500);
                         // LED1=1;
                         // DelayMs(500);
@@ -277,31 +283,44 @@ static void vTaskLED(void *pvParameters)
 *********************************************************************************************************/
 static void vTaskDIR(void *pvParameters)
 {
-    MSG_T *ptMsg;
-    BaseType_t xResult;
-	const TickType_t xMaxBlockTime = pdMS_TO_TICKS(400); /* 设置最大等待时间为300ms */
-	//uint8_t ucQueueMsgValue;
+   
+    
+	const TickType_t xMaxBlockTime = pdMS_TO_TICKS(300); /* 设置最大等待时间为300ms */
+	uint8_t ucKeyCode;
 	
     while(1)
-    {           printf("vTaskDIR-3 \r\n");
-		xResult = xQueueReceive(xQueue2,                   /* 消息队列句柄 */
-		                       (void *)&ptMsg,  /* 存储接收到的数据到变量ucQueueMsgValue中 */
-		                       (TickType_t)xMaxBlockTime);/* 设置阻塞时间 */
-		
-		if(xResult == pdPASS)
+    {       
+      printf("vTaskStart-3 \r\n");   
+       KEY_Init();
+      ucKeyCode = KEY_Scan(0);
+		if (ucKeyCode != KEY_UP)
 		{
-			/* 成功接收，并通过串口将数据打印出来 */
-			printf("接收到消息队列数据ptMsg->ucMessageID = %d\r\n", ptMsg->ucMessageID);
-			printf("接收到消息队列数据ptMsg->ulData[2] = %d\r\n", ptMsg->ulData[0]);
-			printf("接收到消息队列数据ptMsg->usData[2] = %d\r\n", ptMsg->usData[0]);
-			Dir = Dir;
-		}
-		else
-		{
-			/* 超时 */
-			LED2 =!LED2;
-		}
-		//taskYIELD();              //放弃时间片，把CPU让给同优先级的其它任务
+			switch (ucKeyCode)
+			{
+                  case AIR_PRES : //PE29
+                    LED1 =0;
+					LED2 =0;
+				   DelayMs(500);
+				    LED1 =1;
+					LED2 =1;
+					DelayMs(500);
+					LED1 =0;
+					LED2 =0;
+				
+					break;
+				case WIPERS_PRES:
+                                      LED1 =0 ;
+					 LED2 =!LED2;
+				
+					break;
+				case DIR_PRES:
+					 LED2 =0 ;
+					 LED1 =!LED1;
+					break;
+			}
+                }  
+    vTaskDelay(xMaxBlockTime);
+	
     } 
    
 }
@@ -577,24 +596,24 @@ static void AppTaskCreate (void)
 {
     xTaskCreate( vTaskUSART,   	/* 任务函数  */
                  "vTaskUserIF",     	/* 任务名    */
-                 512,               	/* 任务栈大小，单位word，也就是4字节 */
+                 configMINIMAL_STACK_SIZE + 166,               	/* 任务栈大小，单位word，也就是4字节 */
                  NULL,              	/* 任务参数  */
-                 1,                 	/* 任务优先级 最低*/
+                 tskIDLE_PRIORITY+1,                 	/* 任务优先级 最低*/
                  &xHandleTaskUSART );  /* 任务句柄  */
 #if 1	
 	xTaskCreate( vTaskLED,    		/* 任务函数  */
                  "vTaskLED",  		/* 任务名    */
-                 1024,         		/* stack大小，单位word，也就是4字节 */
+                 configMINIMAL_STACK_SIZE + 422,         		/* stack大小，单位word，也就是4字节 */
                  NULL,        		/* 任务参数  */
-                 2,           		/* 任务优先级*/
+                 tskIDLE_PRIORITY+2,           		/* 任务优先级*/
                  &xHandleTaskLED ); /* 任务句柄  */
 #endif 
 
 	xTaskCreate( vTaskDIR,    		/* 任务函数  */
                  "vTaskDIR",  		/* 任务名    */
-                 1024,         		/* stack大小，单位word，也就是4字节 */
+                 configMINIMAL_STACK_SIZE + 934,         		/* stack大小，单位word，也就是4字节 */
                  NULL,        		/* 任务参数  */
-                 3,           		/* 任务优先级*/
+                 tskIDLE_PRIORITY+2,           		/* 任务优先级*/
                  &xHandleTaskDIR ); /* 任务句柄  */
 #if 0
 	xTaskCreate( vTaskBLDC,    		/* 任务函数  */
@@ -638,10 +657,17 @@ static void AppObjCreate (void)
        /* 没有创建成功，用户可以在这里加入创建失败的处理机制 */
     }
      /* 创建10个存储指针变量的消息队列，由于CM3/CM4内核是32位机，一个指针变量占用4个字节 */
-	xQueue2 = xQueueCreate(50, sizeof(struct Msg *));
+	xQueue2 = xQueueCreate(10, sizeof(struct Msg *));
     if( xQueue2 == 0 )
     {
          printf("xQueue2 set up fail!!!!"); /* 没有创建成功，用户可以在这里加入创建失败的处理机制 */
+    }
+    
+     /* 创建10个存储指针变量的消息队列，由于CM3/CM4内核是32位机，一个指针变量占用4个字节 */
+      xQueue3 = xQueueCreate(10, sizeof(uint8_t));
+    if( xQueue3 == 0 )
+    {
+         printf("xQueue3 set up fail!!!!"); /* 没有创建成功，用户可以在这里加入创建失败的处理机制 */
     }
 
 }

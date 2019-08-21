@@ -607,6 +607,8 @@ void GPIO_Init(GPIO_InitTypeDef * GPIO_InitStruct);
 
 
 uint8_t GPIO_QuickInit(uint32_t instance, uint32_t pinx, GPIO_Mode_Type mode);
+void PORT_PinPullConfig(uint32_t instance, uint8_t pin, port_pull pull);
+
 
 #define GPIO_BASES                               { PTA, PTB, PTC, PTD, PTE }
 #define PORT_BASES                               { PORTA, PORTB, PORTC, PORTD, PORTE }

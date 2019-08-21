@@ -1416,6 +1416,8 @@ status_t CLOCK_SetMcgConfig(mcg_config_t const *config);
 void SDK_DelayAtLeastUs(uint32_t delay_us);
 
 /*@}*/
+/********************WT.EDIT ADD TIMER FUNCTION**************************/
+
 
 #if defined(__cplusplus)
 }
