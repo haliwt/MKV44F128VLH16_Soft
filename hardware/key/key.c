@@ -21,7 +21,7 @@ void KEY_Init(void)
 	//PORT_SetMultiplePinsConfig();
 
     /* PORTD0 (pin 93) is configured as PTD0, */
-        PORT_SetPinMux(PORTE, 30U, kPORT_MuxAsGpio);
+               PORT_SetPinMux(PORTE, 30U, kPORT_MuxAsGpio);
 		PORT_SetPinMux(PORTE, 29U, kPORT_MuxAsGpio);
 		PORT_SetPinMux(PORTE, 24U, kPORT_MuxAsGpio);
 		PORT_SetPinMux(PORTE, 25U, kPORT_MuxAsGpio);
@@ -35,16 +35,16 @@ void KEY_Init(void)
 		//PORT_SetPinMux(PORTA, 13U, kPORT_MuxAsGpio);
 	
 
-        GPIO_PinInit(BRAKE_KEY_GPIO,    BRAKE_KEY_GPIO_PIN, 		&key_config);
-        GPIO_PinInit(START_KEY_GPIO,    START_KEY_GPIO_PIN, 		&key_config);
+                GPIO_PinInit(BRAKE_KEY_GPIO,    BRAKE_KEY_GPIO_PIN, 		&key_config);
+                GPIO_PinInit(START_KEY_GPIO,    START_KEY_GPIO_PIN, 		&key_config);
 		GPIO_PinInit(DIR_GPIO,      	DIR_GPIO_PIN, 		    	&key_config);
 		GPIO_PinInit(KEY4_GPIO,     	KEY4_GPIO_PIN, 		    	&key_config);
 		GPIO_PinInit(KEY5_GPIO,     	KEY5_GPIO_PIN, 		    	&key_config);
 		GPIO_PinInit(KEY6_GPIO,     	KEY6_GPIO_PIN, 		    	&key_config);
-        GPIO_PinInit(KEY7_GPIO,     	KEY7_GPIO_PIN, 		    	&key_config);
+                GPIO_PinInit(KEY7_GPIO,     	KEY7_GPIO_PIN, 		    	&key_config);
 		GPIO_PinInit(KEY8_GPIO,     	KEY8_GPIO_PIN, 		    	&key_config);
 		GPIO_PinInit(KEY9_GPIO,     	KEY9_GPIO_PIN,   	    	&key_config);
-		GPIO_PinInit(KEY10_GPIO,    	KEY10_GPIO_PIN, 	    	&key_config);
+		GPIO_PinInit(AIR_GPIO,    	AIR_GPIO_PIN, 	    	&key_config);
         
         PORT_PinPullConfig(HW_GPIOE, 29, kPORT_PullDown);
         PORT_PinPullConfig(HW_GPIOE, 30, kPORT_PullDown);

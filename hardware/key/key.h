@@ -24,7 +24,7 @@ typedef enum
 #define KEY7_GPIO             		GPIOA
 #define KEY8_GPIO             		GPIOA
 #define KEY9_GPIO             		GPIOE
-#define KEY10_GPIO            		GPIOE
+#define AIR_GPIO            		GPIOE
 
 #define BRAKE_KEY_GPIO_PIN              1//29
 #define START_KEY_GPIO_PIN              25//30
@@ -35,29 +35,29 @@ typedef enum
 #define KEY7_GPIO_PIN              4
 #define KEY8_GPIO_PIN              5
 #define KEY9_GPIO_PIN              30
-#define KEY10_GPIO_PIN             29
+#define AIR_GPIO_PIN             29
 
 #define BRAKE_KEY               PAin(1)   //刹车按键 - 按一次刹车，再按一次解除刹车
 #define START_KEY               PEin(25)  //起停按键，电机 //PEin(30)  //雨刷器按键，按一次一档，再按一次二档，再按一下关闭
 #define DIR_KEY                 PEin(24)  //方向按键，电机 DIR_KEY3
 #define DIGITAL_ADD_KEY         PAin(12)  //数字加速     DIGITAL_ADD_KEY
 #define DIGITAL_REDUCE_KEY      PAin(13)  //数字减速
-#define DOOR_KEY          		PAin(2)   //车门按键，
+#define DOOR_KEY          	PAin(2)   //车门按键，
 #define HALL_SWITCH_KEY         PAin(4)   //有无霍尔切换，按键
-#define WHEEL_KEY          		PAin(5)   //车轮探测按键
+#define WHEEL_KEY          	PAin(5)   //车轮探测按键
 #define WIPERS_KEY          	PEin(30)  //雨刷器按键，按一次一档，再按一次二档，再按一下关闭
-#define AIR_KEY         		PEin(29)  //空调按键，按一次开，再按一次关闭//PAin(13)  
+#define AIR_KEY         	PEin(29)  //空调按键，按一次开，再按一次关闭//PAin(13)  
 
-#define BRAKE_PRES      1      //PTA1
-#define START_PRES      2      //PTE25
-#define DIR_PRES        3      //PTE24, DIR KEY
-#define DIGITAL_ADD_PRES       4      //PTA12,
-#define DIGITAL_REDUCE_PRES       5      //PTA13,
-#define DOOR_PRES       6      //PTA2,
-#define HALL_PRES       7      //PTA4,
-#define WHEEL_PRES       8      //PTA5,
-#define WIPERS_PRES       9      //PTE30,
-#define AIR_PRES     10      //PTE29,
+#define BRAKE_PRES              1      //PTA1
+#define START_PRES              2      //PTE25
+#define DIR_PRES                3      //PTE24, DIR KEY
+#define DIGITAL_ADD_PRES        4      //PTA12,
+#define DIGITAL_REDUCE_PRES     5      //PTA13,
+#define DOOR_PRES               6      //PTA2,
+#define HALL_PRES               7      //PTA4,
+#define WHEEL_PRES              8      //PTA5,
+#define WIPERS_PRES             9      //PTE30,
+#define AIR_PRES                10      //PTE29,
 
 
 #define BRAKE_KEY_IRQ           PORTA_IRQn  //interrupt number

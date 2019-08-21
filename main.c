@@ -185,10 +185,10 @@ static void vTaskUSART(void *pvParameters)
          
          
         {
-            ucCount++;
+            
             /* ?ò???￠?óáD·￠êy?Y￡?è?1????￠?óáD?úá?￡?μè′y10??ê±?ó?ú?? */
-            if( xQueueSend(xQueue1,
-                     (void *) &ucCount,
+            if( xQueueSend(xQueue2,
+                     (void *) &ptMsg,
                      (TickType_t)10) != pdPASS )
             {
              /* 发送失败，即使等待了10个时钟节拍 */
@@ -200,7 +200,7 @@ static void vTaskUSART(void *pvParameters)
 		printf("K6键按下，向xQueue1发送数据成功\r\n");							
             }
         }
-        if(ch[3] == 0x85)
+        if(ch[3] == 0x34)
             {
 
                ucCount++;
@@ -238,35 +238,62 @@ static void vTaskUSART(void *pvParameters)
 #if 1
 static void vTaskLED(void *pvParameters)
 {
-   
-    
+     uint16_t sampleMask;
+     MSG_T *ptMsg;
     BaseType_t xResult;
 	const TickType_t xMaxBlockTime = pdMS_TO_TICKS(100); /* 设置最大等待时间为5ms */
-	uint8_t ucQueueMsgValue;
+	//uint8_t ucQueueMsgValue;
     while(1)
     {
 	      printf("vTaskLED-2 \r\n");
-              xResult = xQueueReceive(xQueue1,                   /* ???￠?óáD??±ú */
-		                        (void *)&ucQueueMsgValue,  /* ′?′￠?óê?μ?μ?êy?Yμ?±?á?ucQueueMsgValue?D */
+              xResult = xQueueReceive(xQueue2,                   /* ???￠?óáD??±ú */
+		                        (void *)&ptMsg,  /* ′?′￠?óê?μ?μ?êy?Yμ?±?á?ucQueueMsgValue?D */
 		                        (TickType_t)xMaxBlockTime);/* éè??×èè?ê±?? */
 		
 		if(xResult == pdPASS)
 		{
 			/* 成功接收，并通过串口将数据打印出来 */
-			printf("接收到消息队列数据YucQueueMsgValue = %d\r\n", ucQueueMsgValue);
-			
+			printf("接收到消息队列数据vTaskLED = %d\r\n", ptMsg->ucMessageID);
+			printf("接收到消息队列数据ulData[0] = %d\r\n", ptMsg->ulData[0]);
+                        printf("接收到消息队列数据vsData[0] = %d\r\n", ptMsg->usData[0]);
 			LED1 = !LED1;
 			LED2 = !LED2;
+                        
+                        {
+			            
+					    CADC_DoSoftwareTriggerConverter(CADC_BASEADDR, kCADC_ConverterA);
+				             /* Wait the conversion to be done. */
+				         while (kCADC_ConverterAEndOfScanFlag !=
+				               (kCADC_ConverterAEndOfScanFlag & CADC_GetStatusFlags(CADC_BASEADDR)))
+				        {
+				        }
+
+				        /* Read the result value. */
+				        if (sampleMask == (sampleMask & CADC_GetSampleReadyStatusFlags(CADC_BASEADDR)))
+				        {
+			                 PWM_Duty =(int16_t)CADC_GetSampleResultValue(CADC_BASEADDR, 1U);
+					       PRINTF("%d\t\t",PWM_Duty );
+				           //PRINTF("%d\t\t", (int16_t)CADC_GetSampleResultValue(CADC_BASEADDR, 1U));
+						   DelayMs(50U);
+			               PWM_Duty = (uint16_t)((CADC_GetSampleResultValue(CADC_BASEADDR, 1U))/ 330);
+				           PRINTF("PWM_Duty = %d\r\n", PWM_Duty);
+						   DelayMs(200U);
+				            //PRINTF("%d", (int16_t)CADC_GetSampleResultValue(CADC_BASEADDR, 3U));
+			        }
+			        CADC_ClearStatusFlags(CADC_BASEADDR, kCADC_ConverterAEndOfScanFlag);
+
+			     	}
 		}
 		else
 		{
 			 LED1 = 0;
+                         LED2=0;
                         // DelayMs(500);
                         // LED1=1;
                         // DelayMs(500);
 			
 		}
-		//vTaskDelay(100);//taskYIELD();              //放弃时间片，把CPU让给同优先级的其它任务
+		vTaskDelay(xMaxBlockTime);            //放弃时间片，把CPU让给同优先级的其它任务
     }
 
   
@@ -285,29 +312,19 @@ static void vTaskDIR(void *pvParameters)
 {
    
     
-	const TickType_t xMaxBlockTime = pdMS_TO_TICKS(300); /* 设置最大等待时间为300ms */
+	const TickType_t xMaxBlockTime = pdMS_TO_TICKS(200); /* 设置最大等待时间为300ms */
 	uint8_t ucKeyCode;
 	
     while(1)
     {       
-      printf("vTaskStart-3 \r\n");   
+      printf("vTaskDIR-3 \r\n");   
        KEY_Init();
       ucKeyCode = KEY_Scan(0);
 		if (ucKeyCode != KEY_UP)
 		{
 			switch (ucKeyCode)
 			{
-                  case AIR_PRES : //PE29
-                    LED1 =0;
-					LED2 =0;
-				   DelayMs(500);
-				    LED1 =1;
-					LED2 =1;
-					DelayMs(500);
-					LED1 =0;
-					LED2 =0;
-				
-					break;
+                          
 				case WIPERS_PRES:
                                       LED1 =0 ;
 					 LED2 =!LED2;
@@ -315,11 +332,25 @@ static void vTaskDIR(void *pvParameters)
 					break;
 				case DIR_PRES:
 					 LED2 =0 ;
-					 LED1 =!LED1;
+					 LED1 =0;
+                                         DelayMs(500);
+                                          LED1 =1;
+                                          LED2 =1;
+                                           DelayMs(500);
+                                            LED2 =0 ;
+					 LED1 =0;
+					break;
+                                  case AIR_PRES : //PE29
+                                       
+                                       
+                                        LED1 =!LED1;
+                                        LED2 =!LED2;
+					
+				
 					break;
 			}
                 }  
-    vTaskDelay(xMaxBlockTime);
+   vTaskDelay(xMaxBlockTime); 
 	
     } 
    
@@ -336,24 +367,23 @@ static void vTaskDIR(void *pvParameters)
 *********************************************************************************************************/
 static void vTaskBLDC(void *pvParameters)
 {
-         MSG_T *ptMsg;
+         //MSG_T *ptMsg;
 	BaseType_t xResult;
-	const TickType_t xMaxBlockTime = pdMS_TO_TICKS(200); /* 设置最大等待时间为200ms */
-	
+	const TickType_t xMaxBlockTime = pdMS_TO_TICKS(300); /* 设置最大等待时间为200ms */
+	uint8_t ucQueueMsgValue;
     while(1)
     {
 	  printf("vTaskBLDC-4 \r\n");	
-          xResult = xQueueReceive(xQueue3,                   /* 消息队列句柄 */
-		                        (void *)&ptMsg,  		   /* 这里获取的是结构体的地址 */
+          xResult = xQueueReceive(xQueue1,                   /* 消息队列句柄 */
+		                        (void *)ucQueueMsgValue,  		   /* 这里获取的是结构体的地址 */
 		                        (TickType_t)xMaxBlockTime);/* 设置阻塞时间 */
 		
 		
 		if(xResult == pdPASS)
 		{
 			/* 成功接收，并通过串口将数据打印出来 */
-			printf("接收到消息队列数据ptMsg->ucMessageID = %d\r\n", ptMsg->ucMessageID);
-			printf("接收到消息队列数据ptMsg->ulData[2] = %d\r\n", ptMsg->ulData[2]);
-			printf("接收到消息队列数据ptMsg->usData[2] = %d\r\n", ptMsg->usData[2]);
+			printf("接收到消息队列数据vTaskBLDC = %d\r\n", ucQueueMsgValue);
+			
 			PMW_AllClose_ABC_Channel();
             uwStep = HallSensor_GetPinState();
             PRINTF("ouread = %d \r\n",uwStep);
@@ -366,7 +396,7 @@ static void vTaskBLDC(void *pvParameters)
 			 LED1 = !LED1;
 			
 		}
-		taskYIELD();              //放弃时间片，把CPU让给同优先级的其它任务
+	vTaskDelay(xMaxBlockTime);             //放弃时间片，把CPU让给同优先级的其它任务
     }
 
 }
@@ -382,7 +412,7 @@ static void vTaskBLDC(void *pvParameters)
 
 static void vTaskMsgPro(void *pvParameters)
 {
-    BaseType_t xResult;
+   // BaseType_t xResult;
 	const TickType_t xMaxBlockTime = pdMS_TO_TICKS(200); /* 设置最大等待时间为300ms */
 	uint8_t ucQueueMsgValue;
 	
@@ -600,27 +630,27 @@ static void AppTaskCreate (void)
                  NULL,              	/* 任务参数  */
                  tskIDLE_PRIORITY+1,                 	/* 任务优先级 最低*/
                  &xHandleTaskUSART );  /* 任务句柄  */
-#if 1	
+	
 	xTaskCreate( vTaskLED,    		/* 任务函数  */
                  "vTaskLED",  		/* 任务名    */
                  configMINIMAL_STACK_SIZE + 422,         		/* stack大小，单位word，也就是4字节 */
                  NULL,        		/* 任务参数  */
                  tskIDLE_PRIORITY+2,           		/* 任务优先级*/
                  &xHandleTaskLED ); /* 任务句柄  */
-#endif 
+ 
 
 	xTaskCreate( vTaskDIR,    		/* 任务函数  */
                  "vTaskDIR",  		/* 任务名    */
                  configMINIMAL_STACK_SIZE + 934,         		/* stack大小，单位word，也就是4字节 */
                  NULL,        		/* 任务参数  */
-                 tskIDLE_PRIORITY+2,           		/* 任务优先级*/
+                 tskIDLE_PRIORITY+3,           		/* 任务优先级*/
                  &xHandleTaskDIR ); /* 任务句柄  */
 #if 0
 	xTaskCreate( vTaskBLDC,    		/* 任务函数  */
                  "vTaskBLDC",  		/* 任务名    */
-                 512,         		/* stack大小，单位word，也就是4字节 */
+                 configMINIMAL_STACK_SIZE + 934,         		/* stack大小，单位word，也就是4字节 */
                  NULL,        		/* 任务参数  */
-                 4,           		/* 任务优先级*/
+                 tskIDLE_PRIORITY+4,           		/* 任务优先级*/
                  &xHandleTaskBLDC ); /* 任务句柄  */
 	
 	xTaskCreate( vTaskMsgPro,     		/* 任务函数  */
