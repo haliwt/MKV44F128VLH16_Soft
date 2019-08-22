@@ -54,13 +54,7 @@ output_t recoder_number;
  
 static void vTaskUSART(void *pvParameters);
 static void vTaskCOTL(void *pvParameters);
-
 static void vTaskBLDC(void *pvParameters);
-#if 0
-static void vTaskBLDC(void *pvParameters);
-static void vTaskMsgPro(void *pvParameters);
-static void vTaskStart(void *pvParameters);
-#endif 
 
 static void AppTaskCreate (void);
 static void AppObjCreate (void);
@@ -76,9 +70,6 @@ static TaskHandle_t xHandleTaskDIR = NULL;
 
 static QueueHandle_t xQueue1 = NULL;
 static QueueHandle_t xQueue2 = NULL;
-static QueueHandle_t xQueue3 = NULL;
-
-
 
 typedef struct Msg
 {
@@ -88,7 +79,7 @@ typedef struct Msg
 }MSG_T;
 
 MSG_T   g_tMsg; /* 定义一个结构体用于消息队列 */
-//uint8_t ch[8];
+
 
 /*******************************************************************************
  *
@@ -141,7 +132,7 @@ static void vTaskUSART(void *pvParameters)
 {
   
   MSG_T *ptMsg;
-  uint8_t ucCount;
+  uint8_t ucCount,i;
   uint8_t ch[8];
   const TickType_t xMaxBlockTime = pdMS_TO_TICKS(300); /* 设置最大等待时间为5ms */
   /* 初始化结构体指针 */
@@ -153,11 +144,6 @@ static void vTaskUSART(void *pvParameters)
 	ptMsg->usData[0] = 0;
   while(1)
     {
-      
-                ptMsg->ucMessageID ++;
-		ptMsg->ulData[0]++ ;
-		ptMsg->usData[0] ++;
-   
         UART_ReadBlocking(DEMO_UART, ch, 1);
         UART_ReadBlocking(DEMO_UART, ch, 8);
        
@@ -172,55 +158,49 @@ static void vTaskUSART(void *pvParameters)
         printf("ch=[2] %#x \r\n",ch[2]);
         printf("ch=[1] %#x \r\n",ch[1]);
         printf("ch=[0] %#x \r\n",ch[0]);
+
+		for(i=0;i<8;i++)
+		{
+          ptMsg->ulData[i]=ch[i];
+		  ptMsg->usData[i]=ch[i];
+
+		}
         
-        
-#if 1
-          
-         if(ch[0] == 0x31)
-         
-         
-        {
-            
-            /* ?ò???￠?óáD·￠êy?Y￡?è?1????￠?óáD?úá?￡?μè′y10??ê±?ó?ú?? */
+        if(ch[0] == 1)
+         {
+            /* 向消息队列发送数据，如果消息队列满，等待10个时钟节拍 */
             if( xQueueSend(xQueue2,
                      (void *) &ptMsg,
                      (TickType_t)10) != pdPASS )
             {
              /* 发送失败，即使等待了10个时钟节拍 */
-	   printf("K6键按下，向xQueue2发送数据失败，即使等待了10个时钟节拍\r\n");
+	       		printf("向xQueue-2发送数据失败??????????\r\n");
             }
             else
             {
              /* 发送成功 */
-		printf("K6键按下，向xQueue1发送数据成功\r\n");							
+		      printf("发送数据xQueue-2成功！\r\n");							
             }
         }
-        if(ch[3] == 0x34)
-            {
-
-               ucCount++;
-			   /*向队列3 发送数据*/
-              if( xQueueSend(xQueue3,
-                         (void *)&ucCount,
-                         (TickType_t)10) != pdPASS )
-                {
-                 /* 发送失败，即使等待了10个时钟节拍 */
-                 printf("vTaskDIR，即使等待了10个时钟节拍\r\n");
-                }
-                else
-                {
-                 /* 发送成功 */
-                      printf("DIR send ，向xQueue1发送数据成功\r\n");
-                                    
-                }
-
-              
-              
-              
+		if(ch[0]== 'a')
+		{
+            ucCount= ptMsg->ucMessageID=ch[5];
+			if( xQueueSend(xQueue1,
+								   (void *) &ucCount,
+								   (TickType_t)10) != pdPASS )
+			{
+				/*发送失败，等待10个时钟节拍*/
+				printf("发送数据xQueue-l失败??????????\r\n");
+			}
+			else
+			{
+				/*发送数据成功*/
+				printf("发送数据xQueue-1成功！\r\n");						
+			}
         }
-        
-#endif 
-	vTaskDelay(xMaxBlockTime);
+
+ 
+		vTaskDelay(xMaxBlockTime);
     }
 }
 /*********************************************************************************************************
@@ -255,8 +235,7 @@ static void vTaskCOTL(void *pvParameters)
 			LED1 = !LED1;
 			LED2 = !LED2;
                         
-                   
-		}
+        }
 		else
 		{
 			 LED1 = 0;
@@ -269,18 +248,33 @@ static void vTaskCOTL(void *pvParameters)
 			switch (ucKeyCode || ptMsg->ucMessageID)
 			{
                           
-               case BRAKE_PRES:
-			   	break;
-
-			   case START_PRES :
+              case START_PRES :
 			   	   recoder_number.start_number=1;
 				   LED1=0;
 			       LED2=0;
-			   	break;
-			   case DIR_PRES:
-			   	break;
+			  break;
+			  
+			  case DIR_PRES:
+
+			    recoder_number.dir_change=recoder_number.dir_change + 1;
+	  			PRINTF(" DIR_change = %d  \r\n", recoder_number.dir_change);
+	  			 if(recoder_number.dir_change == 1)
+	   				{
+            
+						Dir = Dir;
+				    }
+				 else 
+				   {
+				       Dir = -Dir;
+				       recoder_number.dir_change =0;
+				   }
+       
+           		LED2 = !LED2 ;
+			  break;
+				
 				case DIGITAL_ADD_PRES :
 					break;
+					
 				case DIGITAL_REDUCE_PRES :
 					break;
 				case DOOR_PRES :
@@ -288,14 +282,48 @@ static void vTaskCOTL(void *pvParameters)
 				case HALL_PRES:
 					break;
 				case WIPERS_PRES:
-                     LED1 =0 ;
+					recoder_number.wiper_number ++;
+					LED1 =!LED1;
+			        LED2 =!LED2;
+        			DelayMs(100U);
+					if(recoder_number.wiper_number ==1)
+					{
+				           WIPER_2  = 0;  
+				           WIPER_1 = 1;
+					}
+					else if(recoder_number.wiper_number >=2 )
+					{
+				           WIPER_1 = 0;
+				           WIPER_2  = 1;
+					   recoder_number.wiper_number =0;
+				            
+					}
+	                 LED1 =0 ;
 					 LED2 =!LED2;
 				
 				break;
 				
                 case AIR_PRES : //PE29
-                    LED1 =!LED1;
-                    LED2 =!LED2;
+	                recoder_number.air_number++;
+					        
+					if(recoder_number.air_number==1)
+					{
+				           AIR = 1;
+						   LED2=1;
+				           DelayMs(500U);
+				           LED2=0;
+					}
+				    else if( recoder_number.air_number==2 || recoder_number.air_number> 2)
+				    {
+			           AIR = 0;
+					   LED1=1;
+			           DelayMs(500U);
+			           LED1=0;
+			           recoder_number.air_number =0;
+					   
+				    }
+	                LED1 =!LED1;
+	                LED2 =!LED2;
 				break;
 			}
          }  
@@ -424,13 +452,7 @@ static void AppObjCreate (void)
     {
          printf("xQueue2 set up fail!!!!"); /* 没有创建成功，用户可以在这里加入创建失败的处理机制 */
     }
-    
-     /* 创建10个存储指针变量的消息队列，由于CM3/CM4内核是32位机，一个指针变量占用4个字节 */
-      xQueue3 = xQueueCreate(10, sizeof(uint8_t));
-    if( xQueue3 == 0 )
-    {
-         printf("xQueue3 set up fail!!!!"); /* 没有创建成功，用户可以在这里加入创建失败的处理机制 */
-    }
+   
 
 }
 /******************************************************************************

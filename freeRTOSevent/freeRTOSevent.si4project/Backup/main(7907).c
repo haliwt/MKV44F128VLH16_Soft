@@ -625,7 +625,7 @@ static void AppTaskCreate (void)
 
 	xTaskCreate( vTaskDIR,    		/* 任务函数  */
                  "vTaskDIR",  		/* 任务名    */
-                 512,         		/* stack大小，单位word，也就是4字节 */
+                 1024,         		/* stack大小，单位word，也就是4字节 */
                  NULL,        		/* 任务参数  */
                  3,           		/* 任务优先级*/
                  &xHandleTaskDIR ); /* 任务句柄  */
