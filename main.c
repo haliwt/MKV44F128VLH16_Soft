@@ -53,9 +53,9 @@ output_t recoder_number;
 /* Application API */
  
 static void vTaskUSART(void *pvParameters);
-static void vTaskLED(void *pvParameters);
+static void vTaskCOTL(void *pvParameters);
 
-static void vTaskDIR(void *pvParameters);
+static void vTaskBLDC(void *pvParameters);
 #if 0
 static void vTaskBLDC(void *pvParameters);
 static void vTaskMsgPro(void *pvParameters);
@@ -71,14 +71,9 @@ static void AppObjCreate (void);
 **********************************************************************************************************
 */
 static TaskHandle_t xHandleTaskUSART = NULL;
-
 static TaskHandle_t xHandleTaskLED = NULL;
 static TaskHandle_t xHandleTaskDIR = NULL;
-//static TaskHandle_t xHandleTaskBLDC = NULL;
 
-
-//static TaskHandle_t xHandleTaskMsgPro = NULL;
-//static TaskHandle_t xHandleTaskStart = NULL;
 static QueueHandle_t xQueue1 = NULL;
 static QueueHandle_t xQueue2 = NULL;
 static QueueHandle_t xQueue3 = NULL;
@@ -229,24 +224,25 @@ static void vTaskUSART(void *pvParameters)
     }
 }
 /*********************************************************************************************************
-*	函 数 名: vTaskLED
+*	函 数 名: vTaskCOTL
 *	功能说明: 使用函数xQueueReceive接收任务vTaskTaskUserIF发送的消息队列数据(xQueue2)	
 *	形    参: pvParameters 是在创建该任务时传递的形参
 *	返 回 值: 无
 *   优 先 级: 2  
 *********************************************************************************************************/
-#if 1
-static void vTaskLED(void *pvParameters)
+static void vTaskCOTL(void *pvParameters)
 {
-     uint16_t sampleMask;
+     
+	 uint8_t ucKeyCode;
      MSG_T *ptMsg;
     BaseType_t xResult;
 	const TickType_t xMaxBlockTime = pdMS_TO_TICKS(100); /* 设置最大等待时间为5ms */
 	//uint8_t ucQueueMsgValue;
     while(1)
     {
-	      printf("vTaskLED-2 \r\n");
-              xResult = xQueueReceive(xQueue2,                   /* ???￠?óáD??±ú */
+	      printf("vTaskCOTL-2 \r\n");
+		  ucKeyCode = KEY_Scan(0);
+          xResult = xQueueReceive(xQueue2,                   /* ???￠?óáD??±ú */
 		                        (void *)&ptMsg,  /* ′?′￠?óê?μ?μ?êy?Yμ?±?á?ucQueueMsgValue?D */
 		                        (TickType_t)xMaxBlockTime);/* éè??×èè?ê±?? */
 		
@@ -255,34 +251,11 @@ static void vTaskLED(void *pvParameters)
 			/* 成功接收，并通过串口将数据打印出来 */
 			printf("接收到消息队列数据vTaskLED = %d\r\n", ptMsg->ucMessageID);
 			printf("接收到消息队列数据ulData[0] = %d\r\n", ptMsg->ulData[0]);
-                        printf("接收到消息队列数据vsData[0] = %d\r\n", ptMsg->usData[0]);
+            printf("接收到消息队列数据vsData[0] = %d\r\n", ptMsg->usData[0]);
 			LED1 = !LED1;
 			LED2 = !LED2;
                         
-                        {
-			            
-					    CADC_DoSoftwareTriggerConverter(CADC_BASEADDR, kCADC_ConverterA);
-				             /* Wait the conversion to be done. */
-				         while (kCADC_ConverterAEndOfScanFlag !=
-				               (kCADC_ConverterAEndOfScanFlag & CADC_GetStatusFlags(CADC_BASEADDR)))
-				        {
-				        }
-
-				        /* Read the result value. */
-				        if (sampleMask == (sampleMask & CADC_GetSampleReadyStatusFlags(CADC_BASEADDR)))
-				        {
-			                 PWM_Duty =(int16_t)CADC_GetSampleResultValue(CADC_BASEADDR, 1U);
-					       PRINTF("%d\t\t",PWM_Duty );
-				           //PRINTF("%d\t\t", (int16_t)CADC_GetSampleResultValue(CADC_BASEADDR, 1U));
-						   DelayMs(50U);
-			               PWM_Duty = (uint16_t)((CADC_GetSampleResultValue(CADC_BASEADDR, 1U))/ 330);
-				           PRINTF("PWM_Duty = %d\r\n", PWM_Duty);
-						   DelayMs(200U);
-				            //PRINTF("%d", (int16_t)CADC_GetSampleResultValue(CADC_BASEADDR, 3U));
-			        }
-			        CADC_ClearStatusFlags(CADC_BASEADDR, kCADC_ConverterAEndOfScanFlag);
-
-			     	}
+                   
 		}
 		else
 		{
@@ -293,38 +266,24 @@ static void vTaskLED(void *pvParameters)
                         // DelayMs(500);
 			
 		}
-		vTaskDelay(xMaxBlockTime);            //放弃时间片，把CPU让给同优先级的其它任务
-    }
 
-  
-
-}
-#endif 
-
-/*********************************************************************************************************
-*	函 数 名: vTaskDIR
-*	功能说明: 使用函数xQueueReceive接收任务vTaskTaskUserIF发送的消息队列数据(xQueue2)	
-*	形    参: pvParameters 是在创建该任务时传递的形参
-*	返 回 值: 无
-*   优 先 级: 3  
-*********************************************************************************************************/
-static void vTaskDIR(void *pvParameters)
-{
-   
-    
-	const TickType_t xMaxBlockTime = pdMS_TO_TICKS(200); /* 设置最大等待时间为300ms */
-	uint8_t ucKeyCode;
-	
-    while(1)
-    {       
-      printf("vTaskDIR-3 \r\n");   
-       KEY_Init();
-      ucKeyCode = KEY_Scan(0);
+		
 		if (ucKeyCode != KEY_UP)
 		{
 			switch (ucKeyCode)
 			{
                           
+               case START_PRES   :
+			   	PMW_AllClose_ABC_Channel();
+	            uwStep = HallSensor_GetPinState();
+                PRINTF("ouread = %d \r\n",uwStep);
+                HALLSensor_Detected_BLDC(uwStep);
+			   	break;
+
+
+
+
+
 				case WIPERS_PRES:
                                       LED1 =0 ;
 					 LED2 =!LED2;
@@ -333,289 +292,90 @@ static void vTaskDIR(void *pvParameters)
 				case DIR_PRES:
 					 LED2 =0 ;
 					 LED1 =0;
-                                         DelayMs(500);
-                                          LED1 =1;
-                                          LED2 =1;
-                                           DelayMs(500);
-                                            LED2 =0 ;
+                     DelayMs(500);
+                      LED1 =1;
+                      LED2 =1;
+                       DelayMs(500);
+                        LED2 =0 ;
 					 LED1 =0;
 					break;
-                                  case AIR_PRES : //PE29
-                                       
-                                       
-                                        LED1 =!LED1;
-                                        LED2 =!LED2;
-					
-				
-					break;
+                case AIR_PRES : //PE29
+                    LED1 =!LED1;
+                    LED2 =!LED2;
+				break;
 			}
                 }  
-   vTaskDelay(xMaxBlockTime); 
-	
-    } 
-   
+		vTaskDelay(xMaxBlockTime);            //放弃时间片，把CPU让给同优先级的其它任务
+    }
+
+  
+
 }
-#if 0
+
+
 /*********************************************************************************************************
- *
- *	函 数 名: vTaskBLDC
- *	功能说明: 使用函数xQueueReceive接收任务vTaskTaskUserIF发送的消息队列数据(xQueue2)	
- *	形    参: pvParameters 是在创建该任务时传递的形参
- *	返 回 值: 无
- *   优 先 级: 4 
- *
+*	函 数 名: vTaskBLDC
+*	功能说明: 使用函数xQueueReceive接收任务vTaskTaskUserIF发送的消息队列数据(xQueue2)	
+*	形    参: pvParameters 是在创建该任务时传递的形参
+*	返 回 值: 无
+*   优 先 级: 3  
 *********************************************************************************************************/
 static void vTaskBLDC(void *pvParameters)
 {
-         //MSG_T *ptMsg;
-	BaseType_t xResult;
-	const TickType_t xMaxBlockTime = pdMS_TO_TICKS(300); /* 设置最大等待时间为200ms */
-	uint8_t ucQueueMsgValue;
-    while(1)
-    {
-	  printf("vTaskBLDC-4 \r\n");	
-          xResult = xQueueReceive(xQueue1,                   /* 消息队列句柄 */
-		                        (void *)ucQueueMsgValue,  		   /* 这里获取的是结构体的地址 */
-		                        (TickType_t)xMaxBlockTime);/* 设置阻塞时间 */
-		
-		
-		if(xResult == pdPASS)
-		{
-			/* 成功接收，并通过串口将数据打印出来 */
-			printf("接收到消息队列数据vTaskBLDC = %d\r\n", ucQueueMsgValue);
-			
-			PMW_AllClose_ABC_Channel();
-            uwStep = HallSensor_GetPinState();
-            PRINTF("ouread = %d \r\n",uwStep);
-            HALLSensor_Detected_BLDC(uwStep);
-			
-		}
-		else
-		{
-			 LED2 = !LED2;
-			 LED1 = !LED1;
-			
-		}
-	vTaskDelay(xMaxBlockTime);             //放弃时间片，把CPU让给同优先级的其它任务
-    }
-
-}
-
-
-/**********************************************************************************************************
-*	函 数 名: vTaskMsgPro
-*	功能说明: 使用函数xQueueReceive接收任务vTaskTaskUserIF发送的消息队列数据(xQueue1)
-*	形    参: pvParameters 是在创建该任务时传递的形参
-*	返 回 值: 无
-*   优 先 级: 5  
-**********************************************************************************************************/
-
-static void vTaskMsgPro(void *pvParameters)
-{
-   // BaseType_t xResult;
+   
+     uint16_t sampleMask;
 	const TickType_t xMaxBlockTime = pdMS_TO_TICKS(200); /* 设置最大等待时间为300ms */
-	uint8_t ucQueueMsgValue;
+	
 	
     while(1)
-    {
-	       printf("vTaskMSG-5 \r\n");
-               xResult = xQueueReceive(xQueue1,                   /* 消息队列句柄 */
-		                        (void *)&ucQueueMsgValue,  /* 存储接收到的数据到变量ucQueueMsgValue中 */
-		                        (TickType_t)xMaxBlockTime);/* 设置阻塞时间 */
-		
-		if(xResult == pdPASS)
-		{
-			/* 成功接收，并通过串口将数据打印出来 */
-			printf("接收到消息队列数据ucQueueMsgValue = %d\r\n", ucQueueMsgValue);
-		}
-		else
-		{
-			/* 超时 */
-			LED2 =!LED2;
-		}
-		//taskYIELD();              //放弃时间片，把CPU让给同优先级的其它任务
-    }
+    {       
+      printf("vTaskBLDC-3 \r\n");   
 
-}
+	  if(recoder_number.start_number==0)//刹车
+	  {
+         PMW_AllClose_ABC_Channel();
+         DelayMs(10U);
+         PMW_AllClose_ABC_Channel();
+		 PWM_StopTimer(BOARD_PWM_BASEADDR,  kPWM_Control_Module_0);
+		 PWM_StopTimer(BOARD_PWM_BASEADDR,  kPWM_Control_Module_1);
+		 PWM_StopTimer(BOARD_PWM_BASEADDR,  kPWM_Control_Module_2);
+       }
+	  else 
+	 {
+            /**********************adjust frequency ****************************/
+			CADC_DoSoftwareTriggerConverter(CADC_BASEADDR, kCADC_ConverterA);
+	             /* Wait the conversion to be done. */
+	         while (kCADC_ConverterAEndOfScanFlag !=
+	               (kCADC_ConverterAEndOfScanFlag & CADC_GetStatusFlags(CADC_BASEADDR)))
+	        		{
+	        		}
 
-/*********************************************************************************************************
-*
-*	函 数 名: vTaskStart
-*	功能说明: 启动任务，也就是最高优先级任务，这里用作按键扫描。
-*	形    参: pvParameters 是在创建该任务时传递的形参
-*	返 回 值: 无
-*   优 先 级: 6  (优先级最高)
-*
-*********************************************************************************************************
-*/
-static void vTaskStart(void *pvParameters)
-{
+	        /* Read the result value. */
+	        if (sampleMask == (sampleMask & CADC_GetSampleReadyStatusFlags(CADC_BASEADDR)))
+	        {
+                 PWM_Duty =(int16_t)CADC_GetSampleResultValue(CADC_BASEADDR, 1U);
+		       PRINTF("%d\t\t",PWM_Duty );
+	           //PRINTF("%d\t\t", (int16_t)CADC_GetSampleResultValue(CADC_BASEADDR, 1U));
+			   DelayMs(50U);
+               PWM_Duty = (uint16_t)((CADC_GetSampleResultValue(CADC_BASEADDR, 1U))/ 330);
+	           PRINTF("PWM_Duty = %d\r\n", PWM_Duty);
+			   DelayMs(200U);
+	            //PRINTF("%d", (int16_t)CADC_GetSampleResultValue(CADC_BASEADDR, 3U));
+            }
+        	CADC_ClearStatusFlags(CADC_BASEADDR, kCADC_ConverterAEndOfScanFlag);
 
-     MSG_T   *ptMsg;
-	//uint8_t ch;
-	uint8_t ucCount = 0;
-	uint8_t ucKeyCode;
-    uint16_t sampleMask;
-	
-	/* 初始化结构体指针 */
-	ptMsg = &g_tMsg;
-	
-	/* 初始化数组 */
-	ptMsg->ucMessageID = 0;
-	ptMsg->ulData[0] = 0;
-	ptMsg->usData[0] = 0;
-	while(1)
-    {
-		printf("vTaskStart-6 \r\n");
-                ucKeyCode = KEY_Scan(0);
-		if (ucKeyCode != KEY_UP)
-		{
-			switch (ucKeyCode)
-			{
-				/* K1键按下 打印任务执行情况 */
-				case START_PRES:			 
-					ptMsg->ucMessageID ++;
-					ptMsg->ulData[2] = 0x0a;
-					ptMsg->usData[2] = 0x0b;
-					
-					/* 使用消息队列实现指针变量的传递 */
-					if(xQueueSend(xQueue3,                  /* 消息队列句柄 */
-						     (void *) &ptMsg,           /* 发送结构体指针变量ptMsg的地址 */
-						     (TickType_t)10) != pdPASS )
-					{
-						/* 发送失败，即使等待了10个时钟节拍 */
-						printf("K6键按下，向xQueue2发送数据失败，即使等待了10个时钟节拍\r\n");
-					}
-					else
-					{
-						/* 发送成功 */
-						printf("K6键按下，向xQueue2发送数据成功\r\n");						
-					}
-				
-					break;
-				
-				/* K2键按下，向xQueue1发送数据 */
-				case DIR_PRES:
-					ucCount ++ ;
-				 
-					/* 向消息队列发数据，如果消息队列满了，等待10个时钟节拍 */
-					if( xQueueSend(xQueue1,
-								   (void *) &ucCount,
-								   (TickType_t)10) != pdPASS )
-					{
-						/* 发送失败，即使等待了10个时钟节拍 */
-						printf("K2键按下，向xQueue1发送数据失败，即使等待了10个时钟节拍\r\n");
-					}
-					else
-					{
-						/* 发送成功 */
-						printf("K2键按下，向xQueue1发送数据成功\r\n");						
-					}
-					break;
-				
-				/* K3键按下，向xQueue2发送数据 */
-				case DIGITAL_ADD_PRES:
-					ptMsg->ucMessageID++;
-					ptMsg->ulData[0]++;;
-					ptMsg->usData[0]++;
-					
-					/* 使用消息队列实现指针变量的传递 */
-					if(xQueueSend(xQueue2,                  /* 消息队列句柄 */
-								 (void *) &ptMsg,           /* 发送结构体指针变量ptMsg的地址 */
-								 (TickType_t)10) != pdPASS )
-					{
-						/* 发送失败，即使等待了10个时钟节拍 */
-						printf("K3键按下，向xQueue2发送数据失败，即使等待了10个时钟节拍\r\n");
-					}
-					else
-					{
-						/* 发送成功 */
-						printf("K3键按下，向xQueue2发送数据成功\r\n");						
-					}
-					break;
-				case HALL_PRES :
-                     
-				    //UART_ReadBlocking(DEMO_UART, &ch, 1);
-                                       //UART_WriteBlocking(DEMO_UART, &ch, 1);
-					break;
-				case WHEEL_PRES :
-					ptMsg->ucMessageID++;
-					ptMsg->ulData[1]++;;
-					ptMsg->usData[1]++;
-					
-					/* 使用消息队列实现指针变量的传递 */
-					if(xQueueSend(xQueue2,                  /* 消息队列句柄 */
-						     (void *) &ptMsg,           /* 发送结构体指针变量ptMsg的地址 */
-						     (TickType_t)10) != pdPASS )
-					{
-						/* 发送失败，即使等待了10个时钟节拍 */
-						printf("K3键按下，向xQueue2发送数据失败，即使等待了10个时钟节拍\r\n");
-					}
-					else
-					{
-						/* 发送成功 */
-						printf("K3键按下，向xQueue2发送数据成功\r\n");						
-					}
-					//taskYIELD();              //放弃时间片，把CPU让给同优先级的其它任务
-					break;
-				case WIPERS_PRES :
-					ptMsg->ucMessageID++;
-					ptMsg->ulData[2]++;;
-					ptMsg->usData[2]++;
-					
-					/* 使用消息队列实现指针变量的传递 */
-					if(xQueueSend(xQueue3,                  /* 消息队列句柄 */
-						     (void *) &ptMsg,           /* 发送结构体指针变量ptMsg的地址 */
-						     (TickType_t)10) != pdPASS )
-					{
-						/* 发送失败，即使等待了10个时钟节拍 */
-						printf("K6键按下，向xQueue2发送数据失败，即使等待了10个时钟节拍\r\n");
-					}
-					else
-					{
-						/* 发送成功 */
-						printf("K6键按下，向xQueue2发送数据成功\r\n");						
-					}
-					//taskYIELD();              //放弃时间片，把CPU让给同优先级的其它任务
-					break;
-				case AIR_PRES :
-					break;
-				
-				/* 其他的键值不处理 */
-				default:
-				           
-			     	{
-			            
-					    CADC_DoSoftwareTriggerConverter(CADC_BASEADDR, kCADC_ConverterA);
-				             /* Wait the conversion to be done. */
-				         while (kCADC_ConverterAEndOfScanFlag !=
-				               (kCADC_ConverterAEndOfScanFlag & CADC_GetStatusFlags(CADC_BASEADDR)))
-				        {
-				        }
 
-				        /* Read the result value. */
-				        if (sampleMask == (sampleMask & CADC_GetSampleReadyStatusFlags(CADC_BASEADDR)))
-				        {
-			                 PWM_Duty =(int16_t)CADC_GetSampleResultValue(CADC_BASEADDR, 1U);
-					       PRINTF("%d\t\t",PWM_Duty );
-				           //PRINTF("%d\t\t", (int16_t)CADC_GetSampleResultValue(CADC_BASEADDR, 1U));
-						   DelayMs(50U);
-			               PWM_Duty = (uint16_t)((CADC_GetSampleResultValue(CADC_BASEADDR, 1U))/ 330);
-				           PRINTF("PWM_Duty = %d\r\n", PWM_Duty);
-						   DelayMs(200U);
-				            //PRINTF("%d", (int16_t)CADC_GetSampleResultValue(CADC_BASEADDR, 3U));
-			        }
-			        CADC_ClearStatusFlags(CADC_BASEADDR, kCADC_ConverterAEndOfScanFlag);
+			/***********Motor Run**************/
+            PMW_AllClose_ABC_Channel();
+			uwStep = HallSensor_GetPinState();
+        	PRINTF("ouread = %d \r\n",uwStep);
+        	HALLSensor_Detected_BLDC(uwStep); 
 
-			     	}
-       
-					break;
-			}
-		}
-	  vTaskDelay(20);
-    }
-}
-#endif
+        }
+        vTaskDelay(xMaxBlockTime);         
+     }  
+ } 
+   
 /********************************************************************************************************
 *	函 数 名: AppTaskCreate
 *	功能说明: 创建应用任务
@@ -624,50 +384,28 @@ static void vTaskStart(void *pvParameters)
 *********************************************************************************************************/
 static void AppTaskCreate (void)
 {
-    xTaskCreate( vTaskUSART,   	/* 任务函数  */
-                 "vTaskUserIF",     	/* 任务名    */
+    xTaskCreate( vTaskUSART,   									/* 任务函数  */
+                 "vTaskUserIF",     							/* 任务名    */
                  configMINIMAL_STACK_SIZE + 166,               	/* 任务栈大小，单位word，也就是4字节 */
-                 NULL,              	/* 任务参数  */
-                 tskIDLE_PRIORITY+1,                 	/* 任务优先级 最低*/
-                 &xHandleTaskUSART );  /* 任务句柄  */
+                 NULL,              							/* 任务参数  */
+                 tskIDLE_PRIORITY+1,                 			/* 任务优先级 最低*/
+                 &xHandleTaskUSART );  							/* 任务句柄  */
 	
-	xTaskCreate( vTaskLED,    		/* 任务函数  */
-                 "vTaskLED",  		/* 任务名    */
+	xTaskCreate( vTaskCOTL,    									/* 任务函数  */
+                 "vTaskCOTL",  									/* 任务名    */
                  configMINIMAL_STACK_SIZE + 422,         		/* stack大小，单位word，也就是4字节 */
-                 NULL,        		/* 任务参数  */
-                 tskIDLE_PRIORITY+2,           		/* 任务优先级*/
-                 &xHandleTaskLED ); /* 任务句柄  */
+                 NULL,        									/* 任务参数  */
+                 tskIDLE_PRIORITY+2,           					/* 任务优先级*/
+                 &xHandleTaskLED ); 							/* 任务句柄  */
  
 
-	xTaskCreate( vTaskDIR,    		/* 任务函数  */
-                 "vTaskDIR",  		/* 任务名    */
+	xTaskCreate( vTaskBLDC,    									/* 任务函数  */
+                 "vTaskBLDC",  									/* 任务名    */
                  configMINIMAL_STACK_SIZE + 934,         		/* stack大小，单位word，也就是4字节 */
-                 NULL,        		/* 任务参数  */
-                 tskIDLE_PRIORITY+3,           		/* 任务优先级*/
-                 &xHandleTaskDIR ); /* 任务句柄  */
-#if 0
-	xTaskCreate( vTaskBLDC,    		/* 任务函数  */
-                 "vTaskBLDC",  		/* 任务名    */
-                 configMINIMAL_STACK_SIZE + 934,         		/* stack大小，单位word，也就是4字节 */
-                 NULL,        		/* 任务参数  */
-                 tskIDLE_PRIORITY+4,           		/* 任务优先级*/
-                 &xHandleTaskBLDC ); /* 任务句柄  */
-	
-	xTaskCreate( vTaskMsgPro,     		/* 任务函数  */
-                 "vTaskMsgPro",   		/* 任务名    */
-                 512,             		/* 任务栈大小，单位word，也就是4字节 */
-                 NULL,           		/* 任务参数  */
-                 5,               		/* 任务优先级*/
-                 &xHandleTaskMsgPro );  /* 任务句柄  */
-	
-	
-	xTaskCreate( vTaskStart,     		/* 任务函数  */
-                 "vTaskStart",   		/* 任务名    */
-                 512,            		/* 任务栈大小，单位word，也就是4字节 */
-                 NULL,           		/* 任务参数  */
-                 6,              		/* 任务优先级 最高*/
-                 &xHandleTaskStart );   /* 任务句柄  */
-#endif 
+                 NULL,        									/* 任务参数  */
+                 tskIDLE_PRIORITY+3,           					/* 任务优先级*/
+                 &xHandleTaskDIR ); 							/* 任务句柄  */
+
 }
 /********************************************************************
 *	函 数 名: AppObjCreate
@@ -710,7 +448,7 @@ static void AppObjCreate (void)
  * This function toggles the LED
  *
 ******************************************************************************/
-#if 0
+#if 1
 void BARKE_KEY_IRQ_HANDLER(void )//void BOARD_BRAKE_IRQ_HANDLER(void)
 {
     /* Clear external interrupt flag. */
