@@ -53,8 +53,9 @@ output_t recoder_number;
 /* Application API */
  
 static void vTaskUSART(void *pvParameters);
-static void vTaskCOTL(void *pvParameters);
 static void vTaskBLDC(void *pvParameters);
+static void vTaskCOTL(void *pvParameters);
+
 
 static void AppTaskCreate (void);
 static void AppObjCreate (void);
@@ -65,8 +66,8 @@ static void AppObjCreate (void);
 **********************************************************************************************************
 */
 static TaskHandle_t xHandleTaskUSART = NULL;
-static TaskHandle_t xHandleTaskLED = NULL;
-static TaskHandle_t xHandleTaskDIR = NULL;
+static TaskHandle_t xHandleTaskBLDC = NULL;
+static TaskHandle_t xHandleTaskCOTL = NULL;
 
 static QueueHandle_t xQueue1 = NULL;
 static QueueHandle_t xQueue2 = NULL;
@@ -203,153 +204,20 @@ static void vTaskUSART(void *pvParameters)
 		vTaskDelay(xMaxBlockTime);
     }
 }
-/*********************************************************************************************************
-*	函 数 名: vTaskCOTL
-*	功能说明: 使用函数xQueueReceive接收任务vTaskTaskUserIF发送的消息队列数据(xQueue2)	
-*	形    参: pvParameters 是在创建该任务时传递的形参
-*	返 回 值: 无
-*   优 先 级: 2  
-*********************************************************************************************************/
-static void vTaskCOTL(void *pvParameters)
-{
-     
-	uint8_t ucKeyCode;
-    MSG_T *ptMsg;
-    BaseType_t xResult;
-	const TickType_t xMaxBlockTime = pdMS_TO_TICKS(100); /* 设置最大等待时间为5ms */
-	//uint8_t ucQueueMsgValue;
-    while(1)
-    {
-	      printf("vTaskCOTL-2 \r\n");
-		  ucKeyCode = KEY_Scan(0);
-          xResult = xQueueReceive(xQueue2,                   	/* 队列句柄 */
-		                        (void *)&ptMsg,  				/*接收到的数据地址 */
-		                        (TickType_t)xMaxBlockTime);		/* éè??×èè?ê±?? */
-		
-		if(xResult == pdPASS)
-		{
-			/* 成功接收，并通过串口将数据打印出来 */
-			printf("接收到消息队列数据vTaskLED = %d\r\n", ptMsg->ucMessageID);
-			printf("接收到消息队列数据ulData[0] = %d\r\n", ptMsg->ulData[0]);
-            printf("接收到消息队列数据vsData[0] = %d\r\n", ptMsg->usData[0]);
-			LED1 = !LED1;
-			LED2 = !LED2;
-                        
-        }
-		else
-		{
-			 LED1 = 0;
-             LED2=0;
-                        
-        }
-		
-		if (ucKeyCode != KEY_UP||xResult ==pdPASS)
-		{
-			switch (ucKeyCode || ptMsg->ucMessageID)
-			{
-                          
-              case START_PRES :
-			   	   recoder_number.start_number=1;
-				   LED1=0;
-			       LED2=0;
-			  break;
-			  
-			  case DIR_PRES:
-
-			    recoder_number.dir_change=recoder_number.dir_change + 1;
-	  			PRINTF(" DIR_change = %d  \r\n", recoder_number.dir_change);
-	  			 if(recoder_number.dir_change == 1)
-	   				{
-            
-						Dir = Dir;
-				    }
-				 else 
-				   {
-				       Dir = -Dir;
-				       recoder_number.dir_change =0;
-				   }
-       
-           		LED2 = !LED2 ;
-			  break;
-				
-				case DIGITAL_ADD_PRES :
-					break;
-					
-				case DIGITAL_REDUCE_PRES :
-					break;
-				case DOOR_PRES :
-					break;
-				case HALL_PRES:
-					break;
-				case WIPERS_PRES:
-					recoder_number.wiper_number ++;
-					LED1 =!LED1;
-			        LED2 =!LED2;
-        			DelayMs(100U);
-					if(recoder_number.wiper_number ==1)
-					{
-				           WIPER_2  = 0;  
-				           WIPER_1 = 1;
-					}
-					else if(recoder_number.wiper_number >=2 )
-					{
-				           WIPER_1 = 0;
-				           WIPER_2  = 1;
-					   recoder_number.wiper_number =0;
-				            
-					}
-	                 LED1 =0 ;
-					 LED2 =!LED2;
-				
-				break;
-				
-                case AIR_PRES : //PE29
-	                recoder_number.air_number++;
-					        
-					if(recoder_number.air_number==1)
-					{
-				           AIR = 1;
-						   LED2=1;
-				           DelayMs(500U);
-				           LED2=0;
-					}
-				    else if( recoder_number.air_number==2 || recoder_number.air_number> 2)
-				    {
-			           AIR = 0;
-					   LED1=1;
-			           DelayMs(500U);
-			           LED1=0;
-			           recoder_number.air_number =0;
-					   
-				    }
-	                LED1 =!LED1;
-	                LED2 =!LED2;
-				break;
-			}
-         }  
-		vTaskDelay(xMaxBlockTime);            //放弃时间片，把CPU让给同优先级的其它任务
-    }
-
-  
-
-}
-
 
 /*********************************************************************************************************
 *	函 数 名: vTaskBLDC
 *	功能说明: 使用函数xQueueReceive接收任务vTaskTaskUserIF发送的消息队列数据(xQueue2)	
 *	形    参: pvParameters 是在创建该任务时传递的形参
 *	返 回 值: 无
-*   优 先 级: 3  
+*   优 先 级: 2  
 *********************************************************************************************************/
 static void vTaskBLDC(void *pvParameters)
 {
-   
-     uint16_t sampleMask;
-	const TickType_t xMaxBlockTime = pdMS_TO_TICKS(200); /* 设置最大等待时间为300ms */
+    uint16_t sampleMask;
+	const TickType_t xMaxBlockTime = pdMS_TO_TICKS(100); /* 设置最大等待时间为300ms */
 	
-	
-    while(1)
+	while(1)
     {       
       printf("vTaskBLDC-3 \r\n");   
 
@@ -397,6 +265,139 @@ static void vTaskBLDC(void *pvParameters)
         vTaskDelay(xMaxBlockTime);         
      }  
  } 
+
+/*********************************************************************************************************
+*	函 数 名: vTaskCOTL
+*	功能说明: 使用函数xQueueReceive接收任务vTaskTaskUserIF发送的消息队列数据(xQueue2)	
+*	形    参: pvParameters 是在创建该任务时传递的形参
+*	返 回 值: 无
+*   优 先 级: 3  
+*********************************************************************************************************/
+static void vTaskCOTL(void *pvParameters)
+{
+     
+	uint8_t ucKeyCode;
+    MSG_T *ptMsg;
+    BaseType_t xResult;
+	const TickType_t xMaxBlockTime = pdMS_TO_TICKS(200); /* 设置最大等待时间为5ms */
+	//uint8_t ucQueueMsgValue;
+    while(1)
+    {
+	      printf("vTaskCOTL-2 \r\n");
+		  ucKeyCode = KEY_Scan(0);
+          xResult = xQueueReceive(xQueue2,                   	/* 队列句柄 */
+		                        (void *)&ptMsg,  				/*接收到的数据地址 */
+		                        (TickType_t)xMaxBlockTime);		/* éè??×èè?ê±?? */
+		
+		if(xResult == pdPASS)
+		{
+			/* 成功接收，并通过串口将数据打印出来 */
+			printf("接收到消息队列数据vTaskLED = %d\r\n", ptMsg->ucMessageID);
+			printf("接收到消息队列数据ulData[0] = %d\r\n", ptMsg->ulData[0]);
+            printf("接收到消息队列数据vsData[0] = %d\r\n", ptMsg->usData[0]);
+			LED1 = !LED1;
+			LED2 = !LED2;
+                        
+        }
+		else
+		{
+			 LED1 = 0;
+	         LED2=0;
+        }
+		
+		if (ucKeyCode != KEY_UP||xResult ==pdPASS)
+		{
+			switch (ucKeyCode || ptMsg->ucMessageID)
+			{
+                          
+              case START_PRES :
+			   	   recoder_number.start_number=1;
+				   LED1=0;
+			       LED2=0;
+			  break;
+			  
+			  case DIR_PRES:
+
+			    recoder_number.dir_change=recoder_number.dir_change + 1;
+	  			PRINTF(" DIR_change = %d  \r\n", recoder_number.dir_change);
+	  			 if(recoder_number.dir_change == 1)
+	   				{
+            
+						Dir = Dir;
+				    }
+				 else 
+				   {
+				       Dir = -Dir;
+				       recoder_number.dir_change =0;
+				   }
+       
+           		LED2 = !LED2 ;
+			 break;
+				
+			 case DIGITAL_ADD_PRES :
+				break;
+				
+			 case DIGITAL_REDUCE_PRES :
+				break;
+			 case DOOR_PRES :
+				break;
+			 case HALL_PRES:
+				break;
+			 case WIPERS_PRES:
+				recoder_number.wiper_number ++;
+				LED1 =!LED1;
+		        LED2 =!LED2;
+    			DelayMs(100U);
+				if(recoder_number.wiper_number ==1)
+				{
+			           WIPER_2  = 0;  
+			           WIPER_1 = 1;
+				}
+				else if(recoder_number.wiper_number >=2 )
+				{
+			           WIPER_1 = 0;
+			           WIPER_2  = 1;
+				   recoder_number.wiper_number =0;
+			            
+				}
+                 LED1 =0 ;
+				 LED2 =!LED2;
+			
+			 break;
+				
+	         case AIR_PRES : //PE29
+	            recoder_number.air_number++;
+				        
+				if(recoder_number.air_number==1)
+				{
+			           AIR = 1;
+					   LED2=1;
+			           DelayMs(500U);
+			           LED2=0;
+				}
+			    else if( recoder_number.air_number==2 || recoder_number.air_number> 2)
+			    {
+		           AIR = 0;
+				   LED1=1;
+		           DelayMs(500U);
+		           LED1=0;
+		           recoder_number.air_number =0;
+				   
+			    }
+	            LED1 =!LED1;
+	            LED2 =!LED2;
+			 break;
+			}
+         }  
+		vTaskDelay(xMaxBlockTime);            //放弃时间片，把CPU让给同优先级的其它任务
+    }
+
+  
+
+}
+
+
+
    
 /********************************************************************************************************
 *	函 数 名: AppTaskCreate
@@ -413,20 +414,19 @@ static void AppTaskCreate (void)
                  tskIDLE_PRIORITY+1,                 			/* 任务优先级 最低*/
                  &xHandleTaskUSART );  							/* 任务句柄  */
 	
-	xTaskCreate( vTaskCOTL,    									/* 任务函数  */
-                 "vTaskCOTL",  									/* 任务名    */
-                 configMINIMAL_STACK_SIZE + 422,         		/* stack大小，单位word，也就是4字节 */
-                 NULL,        									/* 任务参数  */
-                 tskIDLE_PRIORITY+2,           					/* 任务优先级*/
-                 &xHandleTaskLED ); 							/* 任务句柄  */
- 
-
 	xTaskCreate( vTaskBLDC,    									/* 任务函数  */
                  "vTaskBLDC",  									/* 任务名    */
                  configMINIMAL_STACK_SIZE + 934,         		/* stack大小，单位word，也就是4字节 */
                  NULL,        									/* 任务参数  */
+                 tskIDLE_PRIORITY+2,           					/* 任务优先级*/
+                 &xHandleTaskBLDC); 							/* 任务句柄  */
+
+	xTaskCreate( vTaskCOTL,    									/* 任务函数  */
+                 "vTaskCOTL",  									/* 任务名    */
+                 configMINIMAL_STACK_SIZE + 422,         		/* stack大小，单位word，也就是4字节 */
+                 NULL,        									/* 任务参数  */
                  tskIDLE_PRIORITY+3,           					/* 任务优先级*/
-                 &xHandleTaskDIR ); 							/* 任务句柄  */
+                 &xHandleTaskCOTL); 							/* 任务句柄  */
 
 }
 /********************************************************************

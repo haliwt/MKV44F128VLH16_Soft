@@ -10,7 +10,7 @@ __IO int32_t uwStep = 0;      //六步引脚状态
 
 __IO uint32_t Lock_Time = 0;  // 堵转电流
 
-__IO int8_t Dir = CCW;       //
+__IO int8_t Dir = CCW;       //方向
 
 __IO int16_t  PWM_Duty= 10;	 //占空比
 
