@@ -61,7 +61,7 @@ static TaskHandle_t xHandleTaskCOTL = NULL;
 
 static QueueHandle_t xQueue1 = NULL;
 static QueueHandle_t xQueue2 = NULL;
-static QueueHandle_t xQueue3 = NULL;
+
 
 
 typedef struct Msg
@@ -128,7 +128,7 @@ static void vTaskUSART(void *pvParameters)
   MSG_T *ptMsg;
   uint8_t ucCount,i;
   uint8_t ch[8];
-  const TickType_t xMaxBlockTime = pdMS_TO_TICKS(100); /* 设置最大等待时间为5ms */
+  const TickType_t xMaxBlockTime = pdMS_TO_TICKS(300); /* 设置最大等待时间为5ms */
   /* 初始化结构体指针 */
 	ptMsg = &g_tMsg;
 	
@@ -161,9 +161,10 @@ static void vTaskUSART(void *pvParameters)
 
 		}
         
-        if(ch[0] == 1)
+        if(ch[0] == 0x31)
          {
             /* 向消息队列发送数据，如果消息队列满，等待10个时钟节拍 */
+		    ptMsg->ucMessageID = ch[1];
             if( xQueueSend(xQueue2,
                      (void *) &ptMsg,
                      (TickType_t)10) != pdPASS )
@@ -217,23 +218,23 @@ static void vTaskBLDC(void *pvParameters)
 	while(1)
     {       
       printf("vTaskBLDC-2 \r\n");  
-	  xResult = xQueueReceive(xQueue3,                   	/* 消息队列句柄3 */
-		                        (void *)ucQueueMsgValue,  	/* 存储到接收到数据变量ucQueueMsgValue */
+	  xResult = xQueueReceive(xQueue1,                   	/* 消息队列句柄3 */
+		                        (void *)&ucQueueMsgValue,  	/* 存储到接收到数据变量ucQueueMsgValue */
 		                        (TickType_t)xMaxBlockTime);	/*设置阻塞时间*/
 		
 		if(xResult == pdPASS)
 		{
 			/* 接收数据成功 */
-			printf("vTaskBLDC ucQueueMsgValue = %d\r\n", ucQueueMsgValue);
+          printf("vTaskBLDC ucQueueMsgValue = %#x\r\n", ucQueueMsgValue);
 		}
 		else
 		{
 			/* 超时 */
-			LED1= !LED1;
-			LED2= !LED2;
+			LED1= 0;
+			LED2= 0;
 		}
 
-	  if(ucQueueMsgValue==0)//刹车
+	  if(ucQueueMsgValue==0) //|| (recoder_number.start_number ==0))//刹车
 	  {
          PMW_AllClose_ABC_Channel();
          DelayMs(10U);
@@ -241,6 +242,7 @@ static void vTaskBLDC(void *pvParameters)
 		 PWM_StopTimer(BOARD_PWM_BASEADDR,  kPWM_Control_Module_0);
 		 PWM_StopTimer(BOARD_PWM_BASEADDR,  kPWM_Control_Module_1);
 		 PWM_StopTimer(BOARD_PWM_BASEADDR,  kPWM_Control_Module_2);
+		 printf("Break is OK !!!!\r\n");
        }
 	 else 
 	 {
@@ -269,10 +271,12 @@ static void vTaskBLDC(void *pvParameters)
             if(ucQueueMsgValue== 0x11) 
             {
                   Dir = Dir ;
+				  printf("Dir = Dir is OK !!!!\r\n");
 			}
 			else if(ucQueueMsgValue== 0x10) 
 			{
 			    Dir = -Dir;
+				printf("Dir = - Dir is OK !!!!\r\n");
 			}
 			/***********Motor Run**************/
             PMW_AllClose_ABC_Channel();
@@ -301,12 +305,12 @@ static void vTaskCOTL(void *pvParameters)
    
     BaseType_t xResult;
 	const TickType_t xMaxBlockTime = pdMS_TO_TICKS(300); /* 设置最大等待时间为5ms */
-	uint8_t ucControl;
+	uint8_t ucControl,r_s,r_data;
 	
     while(1)
     {
 	      printf("vTaskCOTL-3 \r\n");
-		  ucKeyCode = KEY_Scan(0);
+		  ucKeyCode = KEY_Scan(1);
           xResult = xQueueReceive(xQueue2,                   	/* 队列句柄 */
 		                        (void *)&ptMsg,  				/*接收到的数据地址 */
 		                        (TickType_t)xMaxBlockTime);		/* 设置阻塞时间*/
@@ -314,11 +318,14 @@ static void vTaskCOTL(void *pvParameters)
 		if(xResult == pdPASS)
 		{
 			/* 成功接收，并通过串口将数据打印出来 */
-			printf("接收到消息队列数据vTaskLED = %d\r\n", ptMsg->ucMessageID);
-			printf("接收到消息队列数据ulData[0] = %d\r\n", ptMsg->ulData[0]);
-            printf("接收到消息队列数据vsData[0] = %d\r\n", ptMsg->usData[0]);
-			LED1 = !LED1;
-			LED2 = !LED2;
+          printf("接收到消息队列数据vTaskCOTL = %#x\r\n", ptMsg->ucMessageID);
+          printf("接收到消息队列数据ulData[0] = %#x\r\n", ptMsg->ulData[0]);
+          printf("接收到消息队列数据vsData[0] = %#x\r\n", ptMsg->usData[0]);
+		  LED1 = !LED1;
+		  LED2 = !LED2;
+		  r_s =1; 
+		  r_data++;
+			
                         
         }
 		else
@@ -326,13 +333,34 @@ static void vTaskCOTL(void *pvParameters)
 			 LED1 = 0;
 	         LED2 = 0;
         }
-		
-		if (ucKeyCode != KEY_UP||xResult ==pdPASS)
+		if(r_s==1)
 		{
-			switch (ucKeyCode || ptMsg->ucMessageID)
+          r_s =0; 
+          ucControl = 0;
+
+		         /* 向消息队列发送数据 */
+					if( xQueueSend(xQueue1,
+								   (void *) &ucControl,
+								   (TickType_t)10) != pdPASS )
+					{
+						/* 发送数据失败，等待10个节拍 */
+						printf("START_PRES is fail?????????\r\n");
+					}
+					else
+					{
+						/* 发送数据成功 */
+						printf("START_PRES is OK \r\n");						
+					}
+
+		}
+      
+		
+		if (ucKeyCode != KEY_UP )
+		{
+			switch (ucKeyCode )
 			{
                           
-              case START_PRES : //2
+              case 2 ://START_PRES : //2
                     PRINTF("START_PRES key \r\n");
                     recoder_number.start_number++;
 					if(recoder_number.start_number ==1)
@@ -347,8 +375,9 @@ static void vTaskCOTL(void *pvParameters)
 				       LED2=0;
 			
 				    }
+					
 					/* 向消息队列发送数据 */
-					if( xQueueSend(xQueue3,
+					if( xQueueSend(xQueue1,
 								   (void *) &ucControl,
 								   (TickType_t)10) != pdPASS )
 					{
@@ -363,7 +392,7 @@ static void vTaskCOTL(void *pvParameters)
 				   
 			  break;
 			  
-			  case DIR_PRES://3
+			  case DIR_PRES: //3
 
 			    recoder_number.dir_change++;
 	  			PRINTF(" DIR_change = %d  \r\n", recoder_number.dir_change);
@@ -380,8 +409,9 @@ static void vTaskCOTL(void *pvParameters)
 				       recoder_number.dir_change =0;
 					   LED1=0;
 				   }
+				 #if 0
 				 /* 向消息队列发送数据 */
-					if( xQueueSend(xQueue3,
+					if( xQueueSend(xQueue1,
 								   (void *) &ucControl,
 								   (TickType_t)10) != pdPASS )
 					{
@@ -393,14 +423,14 @@ static void vTaskCOTL(void *pvParameters)
 						/* 发送数据成功 */
 						printf("DIR_PRES is OK \r\n");						
 					}
-       
+                  #endif 
            		
 			 break;
 				
 			 case DIGITAL_ADD_PRES ://4
 				PRINTF("DIGITAL_ADD_PRES key \r\n");
 				 /* 向消息队列发送数据 */
-					if( xQueueSend(xQueue3,
+					if( xQueueSend(xQueue1,
 								   (void *) &ucControl,
 								   (TickType_t)10) != pdPASS )
 					{
@@ -550,14 +580,6 @@ static void AppObjCreate (void)
     {
          printf("xQueue2 set up fail!!!!"); /* 没有创建成功，用户可以在这里加入创建失败的处理机制 */
     }
-	/* 创建10个uint8_t型消息队列 */
-	xQueue3 = xQueueCreate(10, sizeof(struct Msg *));
-    if( xQueue3 == 0 )
-    {
-       printf("xQueuel set up fail!!!!"); 
-       /* 没有创建成功，用户可以在这里加入创建失败的处理机制 */
-    }
-   
 
 }
 /******************************************************************************
