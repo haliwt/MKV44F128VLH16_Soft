@@ -43,7 +43,7 @@
 /* Application API */
  
 static void vTaskTaskUSART(void *pvParameters);
-static void vTaskLED(void *pvParameters);
+static void vTaskCOTL(void *pvParameters);
 static void vTaskMsgPro(void *pvParameters);
 static void vTaskStart(void *pvParameters);
 
@@ -289,8 +289,8 @@ static void AppTaskCreate (void)
                  &xHandleTaskUserIF );  /* 任务句柄  */
 	
 	
-	xTaskCreate( vTaskLED,    		/* 任务函数  */
-                 "vTaskLED",  		/* 任务名    */
+	xTaskCreate( vTaskCOTL,    		/* 任务函数  */
+                 "vTaskCOTL",  		/* 任务名    */
                  512,         		/* stack大小，单位word，也就是4字节 */
                  NULL,        		/* 任务参数  */
                  2,           		/* 任务优先级*/
