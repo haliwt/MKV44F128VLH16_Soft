@@ -233,8 +233,8 @@ static void vTaskUSART(void *pvParameters)
 static void vTaskCOTL(void *pvParameters)
 {
      
-	 uint8_t ucKeyCode;
-     MSG_T *ptMsg;
+	uint8_t ucKeyCode;
+    MSG_T *ptMsg;
     BaseType_t xResult;
 	const TickType_t xMaxBlockTime = pdMS_TO_TICKS(100); /* 设置最大等待时间为5ms */
 	//uint8_t ucQueueMsgValue;
@@ -242,9 +242,9 @@ static void vTaskCOTL(void *pvParameters)
     {
 	      printf("vTaskCOTL-2 \r\n");
 		  ucKeyCode = KEY_Scan(0);
-          xResult = xQueueReceive(xQueue2,                   /* ???￠?óáD??±ú */
-		                        (void *)&ptMsg,  /* ′?′￠?óê?μ?μ?êy?Yμ?±?á?ucQueueMsgValue?D */
-		                        (TickType_t)xMaxBlockTime);/* éè??×èè?ê±?? */
+          xResult = xQueueReceive(xQueue2,                   	/* 队列句柄 */
+		                        (void *)&ptMsg,  				/*接收到的数据地址 */
+		                        (TickType_t)xMaxBlockTime);		/* éè??×èè?ê±?? */
 		
 		if(xResult == pdPASS)
 		{
@@ -260,51 +260,45 @@ static void vTaskCOTL(void *pvParameters)
 		else
 		{
 			 LED1 = 0;
-                         LED2=0;
-                        // DelayMs(500);
-                        // LED1=1;
-                        // DelayMs(500);
-			
-		}
-
+             LED2=0;
+                        
+        }
 		
-		if (ucKeyCode != KEY_UP)
+		if (ucKeyCode != KEY_UP||xResult ==pdPASS)
 		{
-			switch (ucKeyCode)
+			switch (ucKeyCode || ptMsg->ucMessageID)
 			{
                           
-               case START_PRES   :
-			   	PMW_AllClose_ABC_Channel();
-	            uwStep = HallSensor_GetPinState();
-                PRINTF("ouread = %d \r\n",uwStep);
-                HALLSensor_Detected_BLDC(uwStep);
+               case BRAKE_PRES:
 			   	break;
 
-
-
-
-
+			   case START_PRES :
+			   	   recoder_number.start_number=1;
+				   LED1=0;
+			       LED2=0;
+			   	break;
+			   case DIR_PRES:
+			   	break;
+				case DIGITAL_ADD_PRES :
+					break;
+				case DIGITAL_REDUCE_PRES :
+					break;
+				case DOOR_PRES :
+					break;
+				case HALL_PRES:
+					break;
 				case WIPERS_PRES:
-                                      LED1 =0 ;
+                     LED1 =0 ;
 					 LED2 =!LED2;
 				
-					break;
-				case DIR_PRES:
-					 LED2 =0 ;
-					 LED1 =0;
-                     DelayMs(500);
-                      LED1 =1;
-                      LED2 =1;
-                       DelayMs(500);
-                        LED2 =0 ;
-					 LED1 =0;
-					break;
+				break;
+				
                 case AIR_PRES : //PE29
                     LED1 =!LED1;
                     LED2 =!LED2;
 				break;
 			}
-                }  
+         }  
 		vTaskDelay(xMaxBlockTime);            //放弃时间片，把CPU让给同优先级的其它任务
     }
 
