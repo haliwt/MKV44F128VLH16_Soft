@@ -101,6 +101,7 @@ int main(void)
     DelayInit();
     
     HallSensor_GetPinState();
+    OUTPUT_Fucntion_Init();
     ADC_CADC_Init();
 	
     /* Set the PWM Fault inputs to a low value */
@@ -135,7 +136,7 @@ static void vTaskUSART(void *pvParameters)
   MSG_T *ptMsg;
   uint8_t ucCount,i;
   uint8_t ch[8];
-  const TickType_t xMaxBlockTime = pdMS_TO_TICKS(300); /* 设置最大等待时间为5ms */
+  const TickType_t xMaxBlockTime = pdMS_TO_TICKS(100); /* 设置最大等待时间为5ms */
   /* 初始化结构体指针 */
 	ptMsg = &g_tMsg;
 	
@@ -148,7 +149,6 @@ static void vTaskUSART(void *pvParameters)
         UART_ReadBlocking(DEMO_UART, ch, 1);
         UART_ReadBlocking(DEMO_UART, ch, 8);
        
-          
         UART_WriteBlocking(DEMO_UART, ch, 8);
         printf("ch output .\r\n");
         printf("ch=[7] %#x \r\n",ch[7]);
@@ -267,11 +267,13 @@ static void vTaskBLDC(void *pvParameters)
  } 
 
 /*********************************************************************************************************
+*
 *	函 数 名: vTaskCOTL
-*	功能说明: 使用函数xQueueReceive接收任务vTaskTaskUserIF发送的消息队列数据(xQueue2)	
+*	功能说明: 接收物理按键和数字按键的命令
 *	形    参: pvParameters 是在创建该任务时传递的形参
 *	返 回 值: 无
 *   优 先 级: 3  
+*
 *********************************************************************************************************/
 static void vTaskCOTL(void *pvParameters)
 {
@@ -279,7 +281,7 @@ static void vTaskCOTL(void *pvParameters)
 	uint8_t ucKeyCode;
     MSG_T *ptMsg;
     BaseType_t xResult;
-	const TickType_t xMaxBlockTime = pdMS_TO_TICKS(200); /* 设置最大等待时间为5ms */
+	const TickType_t xMaxBlockTime = pdMS_TO_TICKS(300); /* 设置最大等待时间为5ms */
 	//uint8_t ucQueueMsgValue;
     while(1)
     {
@@ -302,7 +304,7 @@ static void vTaskCOTL(void *pvParameters)
 		else
 		{
 			 LED1 = 0;
-	         LED2=0;
+	         LED2 = 0;
         }
 		
 		if (ucKeyCode != KEY_UP||xResult ==pdPASS)
@@ -338,27 +340,44 @@ static void vTaskCOTL(void *pvParameters)
 				break;
 				
 			 case DIGITAL_REDUCE_PRES :
+			 	
 				break;
+				
 			 case DOOR_PRES :
+			 	   recoder_number.door_number ++ ;
+				   if(recoder_number.door_number ==1)
+				   {
+                       DOOR_OUTPUT =1;//door open
+				   }
+				   else
+				   {
+                      DOOR_OUTPUT = 0; //door close
+                       recoder_number.door_number=0;
+				   }
+			 	   
 				break;
 			 case HALL_PRES:
+			 	
 				break;
-			 case WIPERS_PRES:
+				
+			 case WIPERS_PRES: //雨刮器
 				recoder_number.wiper_number ++;
-				LED1 =!LED1;
-		        LED2 =!LED2;
-    			DelayMs(100U);
 				if(recoder_number.wiper_number ==1)
 				{
-			           WIPER_2  = 0;  
-			           WIPER_1 = 1;
+                   WIPER_OUTPUT_2 = 0;
+				   WIPER_OUTPUT_1 = 1;
 				}
-				else if(recoder_number.wiper_number >=2 )
+				else if(recoder_number.wiper_number ==2)
 				{
-			           WIPER_1 = 0;
-			           WIPER_2  = 1;
-				   recoder_number.wiper_number =0;
-			            
+			       WIPER_OUTPUT_1 = 0;   
+			       WIPER_OUTPUT_2  = 1;
+				   
+			    }
+				else
+			    {
+					WIPER_OUTPUT_1 = 0;
+					WIPER_OUTPUT_2 = 0;
+               		recoder_number.wiper_number =0;    
 				}
                  LED1 =0 ;
 				 LED2 =!LED2;
@@ -370,14 +389,14 @@ static void vTaskCOTL(void *pvParameters)
 				        
 				if(recoder_number.air_number==1)
 				{
-			           AIR = 1;
+			           AIR_OUTPUT = 1;
 					   LED2=1;
 			           DelayMs(500U);
 			           LED2=0;
 				}
-			    else if( recoder_number.air_number==2 || recoder_number.air_number> 2)
+			    else 
 			    {
-		           AIR = 0;
+		           AIR_OUTPUT = 0;
 				   LED1=1;
 		           DelayMs(500U);
 		           LED1=0;
@@ -395,10 +414,6 @@ static void vTaskCOTL(void *pvParameters)
   
 
 }
-
-
-
-   
 /********************************************************************************************************
 *	函 数 名: AppTaskCreate
 *	功能说明: 创建应用任务

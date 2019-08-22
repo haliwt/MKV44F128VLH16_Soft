@@ -5,11 +5,11 @@
 #include "fsl_gpio.h"
 #include "fsl_port.h"
 
-#define AIR               PEout(19)   //空调输出 
-#define WIPER_2           PEout(18)   //雨刮器输出二档
-#define WIPER_1           PEout(17)   //雨刮器输出一档
-#define DOOR              PAout(19)   //车门输出
-#define WHEEL             PBout(0)    //车轮输出
+#define AIR_OUTPUT               PEout(19)   //空调输出 
+#define WIPER_OUTPUT_2           PEout(18)   //雨刮器输出二档
+#define WIPER_OUTPUT_1           PEout(17)   //雨刮器输出一档
+#define DOOR_OUTPUT              PAout(19)   //车门输出
+#define WHEEL_OUTPUT             PBout(0)    //车轮输出
 
 
 #define OUTPUT_AIR_GPIO          GPIOE
