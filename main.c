@@ -68,10 +68,12 @@ typedef struct Msg
 {
 	uint8_t  ucMessageID;
 	uint8_t  usData[8];
-	uint8_t  ulData[8];
+	
 }MSG_T;
 
 MSG_T   g_tMsg; /* 定义一个结构体用于消息队列 */
+
+
 
 
 /*******************************************************************************
@@ -126,7 +128,7 @@ static void vTaskUSART(void *pvParameters)
 {
   
   MSG_T *ptMsg;
-  uint8_t ucCount,i;
+  uint8_t i;
   uint8_t ch[8];
   const TickType_t xMaxBlockTime = pdMS_TO_TICKS(300); /* 设置最大等待时间为5ms */
   /* 初始化结构体指针 */
@@ -134,7 +136,6 @@ static void vTaskUSART(void *pvParameters)
 	
 	/* 初始化数组 */
 	ptMsg->ucMessageID = 0;
-	ptMsg->ulData[0] = 0;
 	ptMsg->usData[0] = 0;
   while(1)
     {
@@ -154,9 +155,8 @@ static void vTaskUSART(void *pvParameters)
 
 		for(i=0;i<8;i++)
 		{
-          ptMsg->ulData[i]=ch[i];
+          
 		  ptMsg->usData[i]=ch[i];
-		  printf("ptMsg[i]= %#x \r\n",ptMsg->ulData[i]);
 		  printf("ptMsg->usDta[i]= %#x \r\n",ptMsg->usData[i]);
 
 		}
@@ -178,6 +178,7 @@ static void vTaskUSART(void *pvParameters)
 		      printf("发送数据xQueue-2成功！\r\n");							
             }
         }
+		#if 0
 		if(ch[0]== 0x30 )
 		{
             ucCount= ptMsg->ucMessageID=ch[5];
@@ -195,7 +196,7 @@ static void vTaskUSART(void *pvParameters)
 			}
         }
 
- 
+      #endif 
 		vTaskDelay(xMaxBlockTime);
     }
 }
@@ -209,7 +210,7 @@ static void vTaskUSART(void *pvParameters)
 *********************************************************************************************************/
 static void vTaskBLDC(void *pvParameters)
 {
-
+   
     
 	uint16_t sampleMask;
 	BaseType_t xResult;
@@ -225,7 +226,7 @@ static void vTaskBLDC(void *pvParameters)
 		if(xResult == pdPASS)
 		{
 			/* 接收数据成功 */
-          printf("vTaskBLDC ucQueueMsgValue = %#x\r\n", ucQueueMsgValue);
+          printf("vTaskBLDC ConmessageID = %#x\r\n",ucQueueMsgValue);
 		}
 		else
 		{
@@ -233,7 +234,8 @@ static void vTaskBLDC(void *pvParameters)
 			LED1= 0;
 			LED2= 0;
 		}
-
+	
+     
 	  if(ucQueueMsgValue==0) //|| (recoder_number.start_number ==0))//刹车
 	  {
          PMW_AllClose_ABC_Channel();
@@ -301,14 +303,15 @@ static void vTaskBLDC(void *pvParameters)
 *********************************************************************************************************/
 static void vTaskCOTL(void *pvParameters)
 {
-    MSG_T *ptMsg; 
+   
+	MSG_T  *ptMsg; 
 	uint8_t ucKeyCode;
    
     BaseType_t xResult;
 	const TickType_t xMaxBlockTime = pdMS_TO_TICKS(300); /* 设置最大等待时间为5ms */
 	uint8_t ucControl;
-	
-    while(1)
+
+	while(1)
     {
 	      printf("vTaskCOTL-3 \r\n");
 		  ucKeyCode = KEY_Scan(0);
@@ -320,7 +323,6 @@ static void vTaskCOTL(void *pvParameters)
 				{
 					/* 成功接收，并通过串口将数据打印出来 */
 		          printf("接收到消息队列数据vTaskCOTL = %#x\r\n", ptMsg->ucMessageID);
-		          printf("接收到消息队列数据ulData[0] = %#x\r\n", ptMsg->ulData[0]);
 		          printf("接收到消息队列数据vsData[0] = %#x\r\n", ptMsg->usData[0]);
 				  LED1 = !LED1;
 				  LED2 = !LED2;
@@ -331,20 +333,22 @@ static void vTaskCOTL(void *pvParameters)
 					 LED1 = 0;
 			         LED2 = 0;
 		        }
-				if(ptMsg->ucMessageID==0x32 || ucKeyCode==START_PRES)
+				
+				if(ptMsg->ucMessageID==0x32 || ucKeyCode==START_PRES) // '2' = 0x32
 				{
-		          recoder_number.dir_change ++;
+                  PRINTF("START_PRES key \r\n");
+				  recoder_number.dir_change ++;
 		          if(recoder_number.dir_change == 1)
 		          {
-                     ucControl = 1;
+                     ucControl =1;
 				  }
 				  else 
 				  {
-                     ucControl =0;
+                     ucControl = 0;
 					 recoder_number.dir_change =0;
 				  }
 
-		         		/* 向消息队列发送数据 */
+		         	/* 向消息队列发送数据 */
 					if( xQueueSend(xQueue1,
 								   (void *) &ucControl,
 								   (TickType_t)10) != pdPASS )
@@ -360,20 +364,32 @@ static void vTaskCOTL(void *pvParameters)
 
 				}
       
-				if(ptMsg->ucMessageID==0x33 || ucKeyCode==DIR_PRES) //driection
+				if(ptMsg->ucMessageID==0x33 || ucKeyCode==DIR_PRES) //'3'=0x33 driection
 				{
-				     /* 向消息队列发送数据 */
+						PRINTF("DIR_PRES key \r\n");
+						recoder_number.dir_change ++;
+						if(recoder_number.dir_change == 1)
+						{
+                          ucControl = 0x11;
+						}
+						else 
+						{
+						   ucControl = 0x10;
+                           recoder_number.dir_change =0;
+						}
+
+				           /* 向消息队列发送数据 */
 							if( xQueueSend(xQueue1,
 										   (void *) &ucControl,
 										   (TickType_t)10) != pdPASS )
 							{
 								/* 发送数据失败，等待10个节拍 */
-								printf("START_PRES is fail?????????\r\n");
+								printf("DIR_PRES is fail?????????\r\n");
 							}
 							else
 							{
 								/* 发送数据成功 */
-								printf("START_PRES is OK \r\n");						
+								printf("DIR_SEND is OK \r\n");						
 							} 
 				}
 				
@@ -428,7 +444,8 @@ static void vTaskCOTL(void *pvParameters)
 				}
 				if(ptMsg->ucMessageID==0x37 || ucKeyCode==HALL_PRES)
 				{ 
-				/* 向消息队列发送数据 */
+						PRINTF("DIR_PRES key \r\n");
+						/* 向消息队列发送数据 */
 						if( xQueueSend(xQueue1,
 									   (void *) &ucControl,
 									   (TickType_t)10) != pdPASS )
