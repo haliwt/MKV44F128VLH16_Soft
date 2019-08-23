@@ -23,4 +23,59 @@ void USART_POLLING_Init(void)
    
 
  }
-
+/************************************************
+  *
+  *Function Name:
+  *Function: 函数功能是把‘bHex’ ASCII 转换成16进制数，
+  *          0~f数。
+  * 
+  *
+  *
+************************************************/
+ unsigned char ASCIIToHex(unsigned char bHex)
+ {
+   if((bHex >= 0x30)&&(bHex<= 0x39))
+   {
+      bHex -= 0x30;
+   }
+   else if((bHex >= 0x41)&&(bHex<= 0x46))
+   {
+       bHex -=0x37;
+   }
+   else if((bHex >= 0x61)&&(bHex<=0x66))
+   {
+       bHex -= 0x57;
+   }
+   else
+    {
+       bHex = 0xff;
+    }
+   return bHex;
+ }
+ /************************************************
+   *
+   *Function Name:
+   *Function: 16进制数转换成 字母：a~f(10~15
+   *		  
+   * 
+   *
+   *
+ ************************************************/
+ #if 0
+unsigned char charToHex(unsigned char bHex)
+ {
+	 if((bHex >= 0)&&(bHex<=9))
+	 {
+	   bHex += 0x30;
+	 }
+	 else if((bHex >= 10)&&(bHex <= 15))
+	 {
+	   bHex += 0x37;
+	 }
+	 else
+	 {
+		bHex = 0xff;
+	 }
+	 return bHex;
+ }
+#endif 
