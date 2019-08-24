@@ -220,7 +220,7 @@ static void vTaskBLDC(void *pvParameters)
 		}
 	
  #endif     
-	  if(ucQueueMsgValue==0) //|| (recoder_number.start_number ==0))//刹车
+	  if((ucQueueMsgValue==0)|| (recoder_number.break_f ==1))//刹车
 	  {
          PMW_AllClose_ABC_Channel();
          DelayMs(10U);
@@ -299,8 +299,8 @@ static void vTaskCOTL(void *pvParameters)
 	uint8_t ucKeyCode=0;
    
     BaseType_t xResult;
-	const TickType_t xMaxBlockTime = pdMS_TO_TICKS(400); /* 设置最大等待时间为5ms */
-	uint8_t ucControl;
+	const TickType_t xMaxBlockTime = pdMS_TO_TICKS(200); /* 设置最大等待时间为5ms */
+	uint8_t ucControl=0;
 
 	while(1)
     {
@@ -330,7 +330,7 @@ static void vTaskCOTL(void *pvParameters)
 				
 				if(xResult == pdPASS || ucKeyCode != KEY_UP)
                 {
-                 if((ptMsg->ucMessageID)||(ucKeyCode == START_PRES))//if(ptMsg->ucMessageID == 0x32)
+                 if((ptMsg->ucMessageID==0x32)||(ucKeyCode == START_PRES))//if(ptMsg->ucMessageID == 0x32)
                  { 
                 
                  //case 0x32:
@@ -339,13 +339,14 @@ static void vTaskCOTL(void *pvParameters)
 		          if(recoder_number.dir_change == 1)
 		          {
                      ucControl =1;
+					 recoder_number.break_f =0;
 				  }
 				  else 
 				  {
                      ucControl = 0;
 					 recoder_number.dir_change =0;
 				  }
-
+                   #if 1
 		         	/* 向消息队列发送数据 */
 					if( xQueueSend(xQueue1,
 								   (void *) &ucControl,
@@ -359,7 +360,7 @@ static void vTaskCOTL(void *pvParameters)
 						/* 发送数据成功 */
 						printf("START_PRES is OK \r\n");						
 					}
-                  // break;
+                  #endif 
                  }
 
 				}
@@ -733,17 +734,19 @@ static void AppTaskCreate (void)
 
 	xTaskCreate( vTaskCOTL,    									/* 任务函数  */
                  "vTaskCOTL",  									/* 任务名    */
-                 configMINIMAL_STACK_SIZE + 166,//422,         		/* stack大小，单位word，也就是4字节 */
+                 configMINIMAL_STACK_SIZE + 422,         		/* stack大小，单位word，也就是4字节 */
                  NULL,        									/* 任务参数  */
                  tskIDLE_PRIORITY+3,           					/* 任务优先级*/
                  &xHandleTaskCOTL); 							/* 任务句柄  */
 
 }
 /********************************************************************
-*	函 数 名: AppObjCreate
-*	功能说明: 创建任务通信机制
-*	形    参: 无
-*	返 回 值: 无
+ *
+ *	函 数 名: AppObjCreate
+ *	功能说明: 创建任务通信机制
+ *	形    参: 无
+ *	返 回 值: 无
+ *
 ********************************************************************/
 //void log_init(uint32_t queue_length, uint32_t max_log_lenght)
 static void AppObjCreate (void)
@@ -776,10 +779,13 @@ static void AppObjCreate (void)
 #if 1
 void BARKE_KEY_IRQ_HANDLER(void )//void BOARD_BRAKE_IRQ_HANDLER(void)
 {
+  
     /* Clear external interrupt flag. */
     GPIO_PortClearInterruptFlags(BRAKE_KEY_GPIO, 1U << BRAKE_KEY_GPIO_PIN );
     /* Change state of button. */
-     recoder_number.start_number=0;
+
+	recoder_number.break_f =1;
+	                  
 /* Add for ARM errata 838869, affects Cortex-M4, Cortex-M4F Store immediate overlapping
   exception return operation might vector to incorrect interrupt */
 #if defined __CORTEX_M && (__CORTEX_M == 4U)

@@ -34,6 +34,7 @@ typedef struct _output_t_
   uint8_t door_number;
   uint8_t wheel_number;
   uint8_t dir_change;
+  uint8_t break_f;
 
 }output_t;
 
