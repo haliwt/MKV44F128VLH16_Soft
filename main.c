@@ -93,11 +93,12 @@ int main(void)
     LED_Init();
     KEY_Init();
     DelayInit();
+    HALL_Init();
     
     HallSensor_GetPinState();
     OUTPUT_Fucntion_Init();
     ADC_CADC_Init();
-	
+
     /* Set the PWM Fault inputs to a low value */
     PWM_BLDC_Init();
     
@@ -193,14 +194,15 @@ static void vTaskUSART(void *pvParameters)
 static void vTaskBLDC(void *pvParameters)
 {
    
-    
+  
 	uint16_t sampleMask;
 	BaseType_t xResult;
-    const TickType_t xMaxBlockTime = pdMS_TO_TICKS(200); /* 设置最大等待时间为300ms */
+    const TickType_t xMaxBlockTime = pdMS_TO_TICKS(100); /* 设置最大等待时间为300ms */
 	uint8_t ucQueueMsgValue;
 	while(1)
     {       
       printf("vTaskBLDC-2 \r\n");  
+	  #if 1
 	  xResult = xQueueReceive(xQueue1,                   	/* 消息队列句柄3 */
 		                        (void *)&ucQueueMsgValue,  	/* 存储到接收到数据变量ucQueueMsgValue */
 		                        (TickType_t)xMaxBlockTime);	/*设置阻塞时间*/
@@ -218,7 +220,7 @@ static void vTaskBLDC(void *pvParameters)
 			
 		}
 	
-     
+ #endif     
 	  if(ucQueueMsgValue==0) //|| (recoder_number.start_number ==0))//刹车
 	  {
          PMW_AllClose_ABC_Channel();
@@ -268,9 +270,9 @@ static void vTaskBLDC(void *pvParameters)
 			/***********Motor Run**************/
             PMW_AllClose_ABC_Channel();
 			uwStep = HallSensor_GetPinState();
-        	 PRINTF("ouread = %d \r\n",uwStep);
+        	PRINTF("ouread = %d \r\n",uwStep);
         	HALLSensor_Detected_BLDC(uwStep); 
-            PRINTF("ouread = %d \r\n",uwStep);
+           
 #endif
         }
         vTaskDelay(xMaxBlockTime);         

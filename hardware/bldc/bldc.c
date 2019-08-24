@@ -237,7 +237,7 @@ void HALLSensor_Detected_BLDC(uint32_t uvw)
   
   /*---- six step changed phase */
   /*---- 1(001,U),IC2(010,V),IC3(100,W) ----*/
-  PRINTF("uwStep = %d\n",uvw);
+ // PRINTF("uwStep = %d\n",uvw);
  switch(uvw)//switch(BLDCMotor.uwStep)
  {
     case 1://B+ A-
@@ -307,7 +307,6 @@ void HALLSensor_Detected_BLDC(uint32_t uvw)
       
      
       PRINTF("uwStep = %d\n",uvw);
- 
       break;
  default :
         break;
