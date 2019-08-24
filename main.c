@@ -247,12 +247,12 @@ static void vTaskBLDC(void *pvParameters)
 	        /* Read the result value. */
 	        if (sampleMask == (sampleMask & CADC_GetSampleReadyStatusFlags(CADC_BASEADDR)))
 	        {
-                pwm_f =(int16_t)CADC_GetSampleResultValue(CADC_BASEADDR, 1U);
-		         PRINTF("%d\t\t",pwm_f );
+              //  pwm_f =(int16_t)CADC_GetSampleResultValue(CADC_BASEADDR, 1U);
+		      //   PRINTF("%d\t\t",pwm_f );
 	           
 			 // DelayMs(100U);
               pwm_f = (uint16_t)((CADC_GetSampleResultValue(CADC_BASEADDR, 1U))/ 330);
-	          PRINTF("PWM_Duty = %d\r\n",pwm_f);
+	        //  PRINTF("PWM_Duty = %d\r\n",pwm_f);
 			 //  DelayMs(200U);
 	           
             }
@@ -330,10 +330,10 @@ static void vTaskCOTL(void *pvParameters)
 				
 				if(xResult == pdPASS || ucKeyCode != KEY_UP)
                 {
-                 switch(ptMsg->ucMessageID)//if(ptMsg->ucMessageID == 0x32)
+                 if((ptMsg->ucMessageID)||(ucKeyCode == START_PRES))//if(ptMsg->ucMessageID == 0x32)
                  { 
                 
-                 case 0x32:
+                 //case 0x32:
                    PRINTF("START_PRES key \r\n");
 				  recoder_number.dir_change ++;
 		          if(recoder_number.dir_change == 1)
@@ -359,7 +359,7 @@ static void vTaskCOTL(void *pvParameters)
 						/* 发送数据成功 */
 						printf("START_PRES is OK \r\n");						
 					}
-                   break;
+                  // break;
                  }
 
 				}
