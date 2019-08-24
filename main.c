@@ -178,25 +178,7 @@ static void vTaskUSART(void *pvParameters)
 		      printf("发送数据xQueue-2成功！\r\n");							
             }
         }
-		#if 0
-		if(ch[0]== 0x30 )
-		{
-            ucCount= ptMsg->ucMessageID=ch[5];
-			if( xQueueSend(xQueue1,
-								   (void *) &ucCount,
-								   (TickType_t)10) != pdPASS )
-			{
-				/*发送失败，等待10个时钟节拍*/
-				printf("发送数据xQueue-l失败??????????\r\n");
-			}
-			else
-			{
-				/*发送数据成功*/
-				printf("发送数据xQueue-1成功！\r\n");						
-			}
-        }
-
-      #endif 
+		
 		vTaskDelay(xMaxBlockTime);
     }
 }
@@ -231,8 +213,9 @@ static void vTaskBLDC(void *pvParameters)
 		else
 		{
 			/* 超时 */
-			LED1= 0;
-			LED2= 0;
+			LED1= !LED1;
+			DelayMs(100);
+			
 		}
 	
      
@@ -244,11 +227,12 @@ static void vTaskBLDC(void *pvParameters)
 		 PWM_StopTimer(BOARD_PWM_BASEADDR,  kPWM_Control_Module_0);
 		 PWM_StopTimer(BOARD_PWM_BASEADDR,  kPWM_Control_Module_1);
 		 PWM_StopTimer(BOARD_PWM_BASEADDR,  kPWM_Control_Module_2);
-		 printf("Break is OK !!!!\r\n");
+		 printf("Break is OK $$$$$$$$$$$$$\r\n");
        }
 	 else 
 	 {
              printf("Motor Run is OK !!!!\r\n");
+#if 1
 	       /**********************adjust frequency ****************************/
 			CADC_DoSoftwareTriggerConverter(CADC_BASEADDR, kCADC_ConverterA);
 	             /* Wait the conversion to be done. */
@@ -262,12 +246,12 @@ static void vTaskBLDC(void *pvParameters)
 	        {
                  PWM_Duty =(int16_t)CADC_GetSampleResultValue(CADC_BASEADDR, 1U);
 		       PRINTF("%d\t\t",PWM_Duty );
-	           //PRINTF("%d\t\t", (int16_t)CADC_GetSampleResultValue(CADC_BASEADDR, 1U));
+	           PRINTF("%d\t\t", (int16_t)CADC_GetSampleResultValue(CADC_BASEADDR, 1U));
 			   DelayMs(50U);
                PWM_Duty = (uint16_t)((CADC_GetSampleResultValue(CADC_BASEADDR, 1U))/ 330);
 	           PRINTF("PWM_Duty = %d\r\n", PWM_Duty);
 			   DelayMs(200U);
-	            //PRINTF("%d", (int16_t)CADC_GetSampleResultValue(CADC_BASEADDR, 3U));
+	            PRINTF("%d", (int16_t)CADC_GetSampleResultValue(CADC_BASEADDR, 3U));
             }
         	CADC_ClearStatusFlags(CADC_BASEADDR, kCADC_ConverterAEndOfScanFlag);
 
@@ -284,9 +268,10 @@ static void vTaskBLDC(void *pvParameters)
 			/***********Motor Run**************/
             PMW_AllClose_ABC_Channel();
 			uwStep = HallSensor_GetPinState();
-        	PRINTF("ouread = %d \r\n",uwStep);
+        	 PRINTF("ouread = %d \r\n",uwStep);
         	HALLSensor_Detected_BLDC(uwStep); 
-
+            PRINTF("ouread = %d \r\n",uwStep);
+#endif
         }
         vTaskDelay(xMaxBlockTime);         
      }  
@@ -305,15 +290,16 @@ static void vTaskCOTL(void *pvParameters)
 {
    
 	MSG_T  *ptMsg; 
-	uint8_t ucKeyCode;
+	uint8_t ucKeyCode=0;
    
     BaseType_t xResult;
-	const TickType_t xMaxBlockTime = pdMS_TO_TICKS(300); /* 设置最大等待时间为5ms */
+	const TickType_t xMaxBlockTime = pdMS_TO_TICKS(400); /* 设置最大等待时间为5ms */
 	uint8_t ucControl;
 
 	while(1)
     {
 	      printf("vTaskCOTL-3 \r\n");
+		 
 		  ucKeyCode = KEY_Scan(0);
           xResult = xQueueReceive(xQueue2,                   	/* 队列句柄 */
 		                        (void *)&ptMsg,  				/*接收到的数据地址 */
@@ -326,6 +312,8 @@ static void vTaskCOTL(void *pvParameters)
 		          printf("接收到消息队列数据vsData[0] = %#x\r\n", ptMsg->usData[0]);
 				  LED1 = !LED1;
 				  LED2 = !LED2;
+				 
+				  
 				  
 				}
 				else
@@ -334,9 +322,13 @@ static void vTaskCOTL(void *pvParameters)
 			         LED2 = 0;
 		        }
 				
-				if(ptMsg->ucMessageID==0x32 || ucKeyCode==START_PRES) // '2' = 0x32
-				{
-                  PRINTF("START_PRES key \r\n");
+				if(xResult == pdPASS || ucKeyCode != KEY_UP)
+                {
+                 switch(ptMsg->ucMessageID)//if(ptMsg->ucMessageID == 0x32)
+                 { 
+                
+                 case 0x32:
+                   PRINTF("START_PRES key \r\n");
 				  recoder_number.dir_change ++;
 		          if(recoder_number.dir_change == 1)
 		          {
@@ -361,9 +353,11 @@ static void vTaskCOTL(void *pvParameters)
 						/* 发送数据成功 */
 						printf("START_PRES is OK \r\n");						
 					}
+                   break;
+                 }
 
 				}
-      
+ #if 0    
 				if(ptMsg->ucMessageID==0x33 || ucKeyCode==DIR_PRES) //'3'=0x33 driection
 				{
 						PRINTF("DIR_PRES key \r\n");
@@ -533,6 +527,7 @@ static void vTaskCOTL(void *pvParameters)
 							} 
 
 				  }
+				#endif 
 		#if 0
 		if (ucKeyCode != KEY_UP ||xResult == pdPASS )
 		{
@@ -732,7 +727,7 @@ static void AppTaskCreate (void)
 
 	xTaskCreate( vTaskCOTL,    									/* 任务函数  */
                  "vTaskCOTL",  									/* 任务名    */
-                 configMINIMAL_STACK_SIZE + 422,         		/* stack大小，单位word，也就是4字节 */
+                 configMINIMAL_STACK_SIZE + 166,//422,         		/* stack大小，单位word，也就是4字节 */
                  NULL,        									/* 任务参数  */
                  tskIDLE_PRIORITY+3,           					/* 任务优先级*/
                  &xHandleTaskCOTL); 							/* 任务句柄  */

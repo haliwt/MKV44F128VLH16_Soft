@@ -6,13 +6,13 @@ static void PWM_DRV_Init3PhPwm(void);
 
 
 
-__IO int32_t uwStep = 0;      //Áù²½Òı½Å×´Ì¬
+__IO int32_t uwStep = 0;      //å…­æ­¥å¼•è„šçŠ¶æ€
 
-__IO uint32_t Lock_Time = 0;  // ¶Â×ªµçÁ÷
+__IO uint32_t Lock_Time = 0;  // å µè½¬ç”µæµ
 
-__IO int8_t Dir = CCW;       //·½Ïò
+__IO int8_t Dir = CCW;       //
 
-__IO int16_t  PWM_Duty= 10;	 //Õ¼¿Õ±È
+__IO int16_t  PWM_Duty= 10;	 //å ç©ºæ¯”
 
 
 /**********************************************************
@@ -231,7 +231,7 @@ void HALLSensor_Detected_BLDC(uint32_t uvw)
 
  if(Dir == CCW)
   {
-    uvw = (uint32_t)7 - uvw;        // ÄæÊ±Õë CW = 7 - CCW;
+    uvw = (uint32_t)7 - uvw;        // é€†æ—¶é’ˆ CW = 7 - CCW;
   }
  
   
@@ -314,7 +314,7 @@ void HALLSensor_Detected_BLDC(uint32_t uvw)
   }
  
   
-  /* Á¢¿Ì´¥·¢»»Ïò*/
+  /* ç«‹åˆ»è§¦å‘æ¢å‘*/
  // HAL_TIM_GenerateEvent(&htimx_BLDC, TIM_EVENTSOURCE_COM);
  // __HAL_TIM_CLEAR_IT(htim, TIM_FLAG_COM);
   
@@ -517,5 +517,6 @@ void PMW_AllClose_ABC_Channel(void)
  
   
 }
+
 
 
