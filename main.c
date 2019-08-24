@@ -193,11 +193,10 @@ static void vTaskUSART(void *pvParameters)
 *********************************************************************************************************/
 static void vTaskBLDC(void *pvParameters)
 {
-   
-  
+    volatile uint16_t pwm_f=0;
 	uint16_t sampleMask;
 	BaseType_t xResult;
-    const TickType_t xMaxBlockTime = pdMS_TO_TICKS(100); /* 设置最大等待时间为300ms */
+    const TickType_t xMaxBlockTime = pdMS_TO_TICKS(200); /* 设置最大等待时间为300ms */
 	uint8_t ucQueueMsgValue;
 	while(1)
     {       
@@ -216,7 +215,7 @@ static void vTaskBLDC(void *pvParameters)
 		{
 			/* 超时 */
 			LED1= !LED1;
-			DelayMs(100);
+			
 			
 		}
 	
@@ -236,28 +235,33 @@ static void vTaskBLDC(void *pvParameters)
              printf("Motor Run is OK !!!!\r\n");
 #if 1
 	       /**********************adjust frequency ****************************/
-			CADC_DoSoftwareTriggerConverter(CADC_BASEADDR, kCADC_ConverterA);
+			{
+            
+		    CADC_DoSoftwareTriggerConverter(CADC_BASEADDR, kCADC_ConverterA);
 	             /* Wait the conversion to be done. */
 	         while (kCADC_ConverterAEndOfScanFlag !=
 	               (kCADC_ConverterAEndOfScanFlag & CADC_GetStatusFlags(CADC_BASEADDR)))
-	        		{
-	        		}
+	        {
+	        }
 
 	        /* Read the result value. */
 	        if (sampleMask == (sampleMask & CADC_GetSampleReadyStatusFlags(CADC_BASEADDR)))
 	        {
-                 PWM_Duty =(int16_t)CADC_GetSampleResultValue(CADC_BASEADDR, 1U);
-		       PRINTF("%d\t\t",PWM_Duty );
-	           PRINTF("%d\t\t", (int16_t)CADC_GetSampleResultValue(CADC_BASEADDR, 1U));
-			   DelayMs(50U);
-               PWM_Duty = (uint16_t)((CADC_GetSampleResultValue(CADC_BASEADDR, 1U))/ 330);
-	           PRINTF("PWM_Duty = %d\r\n", PWM_Duty);
-			   DelayMs(200U);
-	            PRINTF("%d", (int16_t)CADC_GetSampleResultValue(CADC_BASEADDR, 3U));
+                pwm_f =(int16_t)CADC_GetSampleResultValue(CADC_BASEADDR, 1U);
+		         PRINTF("%d\t\t",pwm_f );
+	           
+			 // DelayMs(100U);
+              pwm_f = (uint16_t)((CADC_GetSampleResultValue(CADC_BASEADDR, 1U))/ 330);
+	          PRINTF("PWM_Duty = %d\r\n",pwm_f);
+			 //  DelayMs(200U);
+	           
             }
-        	CADC_ClearStatusFlags(CADC_BASEADDR, kCADC_ConverterAEndOfScanFlag);
+        CADC_ClearStatusFlags(CADC_BASEADDR, kCADC_ConverterAEndOfScanFlag);
 
-            if(ucQueueMsgValue== 0x11) 
+     	}
+
+            pwm_f = (uint16_t)((CADC_GetSampleResultValue(CADC_BASEADDR, 1U))/ 330);
+			if(ucQueueMsgValue== 0x11) 
             {
                   Dir = Dir ;
 				  printf("Dir = Dir is OK !!!!\r\n");
@@ -271,7 +275,7 @@ static void vTaskBLDC(void *pvParameters)
             PMW_AllClose_ABC_Channel();
 			uwStep = HallSensor_GetPinState();
         	PRINTF("ouread = %d \r\n",uwStep);
-        	HALLSensor_Detected_BLDC(uwStep); 
+        	HALLSensor_Detected_BLDC(uwStep,pwm_f); 
            
 #endif
         }

@@ -221,7 +221,7 @@ static void PWM_DRV_Init3PhPwm(void)
  *
  *
 *********************************************************/
-void HALLSensor_Detected_BLDC(uint32_t uvw)
+void HALLSensor_Detected_BLDC(uint32_t uvw,uint16_t pwmf)
 {
       
 
@@ -245,7 +245,7 @@ void HALLSensor_Detected_BLDC(uint32_t uvw)
        PWMA_Close_ABC_Channel(2);  //close C channel 
       
       /*  PWM_A1 and PWM_B1 output */
-       PWMA_Select_BC_Channel(0);
+       PWMA_Select_BC_Channel(0,pwmf);
      
       PRINTF("uwStep = %d\n",uvw);
       break;
@@ -256,7 +256,7 @@ void HALLSensor_Detected_BLDC(uint32_t uvw)
    
     
       /*  Channel configuration A+ */
-         PWMA_Select_AB_Channel(1);
+         PWMA_Select_AB_Channel(1,pwmf);
       
     
       PRINTF("uwStep = %d\n",uvw);
@@ -267,7 +267,7 @@ void HALLSensor_Detected_BLDC(uint32_t uvw)
          PWMA_Close_ABC_Channel(0); //close A0 B0 channel 
      
       /*  Channe3 configuration B+  */
-         PWMA_Select_BC_Channel(1);
+         PWMA_Select_BC_Channel(1,pwmf);
     
       
         PRINTF("uwStep = %d\n",uvw);
@@ -278,7 +278,7 @@ void HALLSensor_Detected_BLDC(uint32_t uvw)
           PWMA_Close_ABC_Channel(0); //close A channel 
       
         /*  Channe2 configuration */
-         PWMA_Select_CA_Channel(1);
+         PWMA_Select_CA_Channel(1,pwmf);
       
       
          PRINTF("uwStep = %d\n",uvw);
@@ -290,7 +290,7 @@ void HALLSensor_Detected_BLDC(uint32_t uvw)
         PWMA_Close_ABC_Channel(1); //close C channel 
        //  DelayMs(500U);
       /*  Channe2 configuration */
-         PWMA_Select_CA_Channel(0);
+         PWMA_Select_CA_Channel(0,pwmf);
       
       /*  Channel configuration */
         // PWMA_Select_A_Channel(1);
@@ -303,7 +303,7 @@ void HALLSensor_Detected_BLDC(uint32_t uvw)
          PWMA_Close_ABC_Channel(2); //close B channel 
        //DelayMs(500U);
         /*  Channel configuration A+*/
-         PWMA_Select_AB_Channel(0);
+         PWMA_Select_AB_Channel(0,pwmf);
       
      
       PRINTF("uwStep = %d\n",uvw);
@@ -332,7 +332,7 @@ void HALLSensor_Detected_BLDC(uint32_t uvw)
  *
  *
 **************************************************************/
-void PWMA_Select_AB_Channel(uint8_t s_pwma)
+void PWMA_Select_AB_Channel(uint8_t s_pwma,uint16_t PWM_Duty)
 {
      if(s_pwma == 0)  //A + B -
      	{
@@ -367,7 +367,7 @@ void PWMA_Select_AB_Channel(uint8_t s_pwma)
  *
 **************************************************************/
 
-void PWMA_Select_BC_Channel(uint8_t s_pwmb)
+void PWMA_Select_BC_Channel(uint8_t s_pwmb,uint16_t PWM_Duty)
 {
   
      if(s_pwmb==0) //B+ A -
@@ -404,7 +404,7 @@ void PWMA_Select_BC_Channel(uint8_t s_pwmb)
  *
 **************************************************************/
 
-void PWMA_Select_CA_Channel(uint8_t s_pwmc)
+void PWMA_Select_CA_Channel(uint8_t s_pwmc,uint16_t PWM_Duty)
 {
  
      if(s_pwmc == 0) //C + A -
