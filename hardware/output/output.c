@@ -30,6 +30,16 @@ void OUTPUT_Fucntion_Init(void)
  *
  *
 *******************************************/
+void ABC_POWER_OUTPUT_Init(void)
+{
+   GPIO_QuickInit(HW_GPIOC,  10, kGPIO_Mode_OPP);
+   GPIO_QuickInit(HW_GPIOC,  11, kGPIO_Mode_OPP);
+   GPIO_QuickInit(HW_GPIOC,  0, kGPIO_Mode_OPP);
+   A_POWER_OUTPUT =0;
+   B_POWER_OUTPUT =0;
+   C_POWER_OUTPUT =0;
+
+}
 
 
 

@@ -17,11 +17,12 @@ void KEY_Init(void)
     CLOCK_EnableClock(kCLOCK_PortE);
     
     CLOCK_EnableClock(kCLOCK_PortA);
+	 CLOCK_EnableClock(kCLOCK_PortC);
 
 	//PORT_SetMultiplePinsConfig();
 
     /* PORTD0 (pin 93) is configured as PTD0, */
-               PORT_SetPinMux(PORTE, 30U, kPORT_MuxAsGpio);
+        PORT_SetPinMux(PORTE, 30U, kPORT_MuxAsGpio);
 		PORT_SetPinMux(PORTE, 29U, kPORT_MuxAsGpio);
 		PORT_SetPinMux(PORTE, 24U, kPORT_MuxAsGpio);
 		PORT_SetPinMux(PORTE, 25U, kPORT_MuxAsGpio);
@@ -33,6 +34,8 @@ void KEY_Init(void)
 		PORT_SetPinMux(PORTA, 5U,  kPORT_MuxAsGpio);
         PORT_SetPinMux(PORTA, 12U, kPORT_MuxAsGpio);
 		PORT_SetPinMux(PORTA, 13U, kPORT_MuxAsGpio);
+
+		PORT_SetPinMux(PORTC, 3U, kPORT_MuxAsGpio);
 	
 
         GPIO_PinInit(BRAKE_KEY_GPIO,    BRAKE_KEY_GPIO_PIN, 		&key_config);
@@ -45,6 +48,7 @@ void KEY_Init(void)
 		GPIO_PinInit(KEY8_GPIO,     	KEY8_GPIO_PIN, 		    	&key_config);
 		GPIO_PinInit(KEY9_GPIO,     	KEY9_GPIO_PIN,   	    	&key_config);
 		GPIO_PinInit(AIR_GPIO,    	AIR_GPIO_PIN, 	    	        &key_config);
+		GPIO_PinInit(ABC_POWER_GPIO,    	ABC_POWER_GPIO_PIN, 	    	        &key_config);
         
         PORT_PinPullConfig(HW_GPIOE, 29, kPORT_PullDown);
         PORT_PinPullConfig(HW_GPIOE, 30, kPORT_PullDown);
@@ -57,6 +61,8 @@ void KEY_Init(void)
         PORT_PinPullConfig(HW_GPIOA, 5,  kPORT_PullDown);
         PORT_PinPullConfig(HW_GPIOA, 12, kPORT_PullDown);
         PORT_PinPullConfig(HW_GPIOA, 13, kPORT_PullDown);
+
+		 PORT_PinPullConfig(HW_GPIOC, 3, kPORT_PullDown);
 		
                 
      /* Brake_Key Init input interrupt switch GPIO. */
@@ -88,23 +94,23 @@ void KEY_Init(void)
 	{
 	   static uint8_t key_up = 1; //按键松开标志
 	   if(mode == 1) key_up =1;
-	  if(key_up &&(BRAKE_KEY == 1 || START_KEY ==1 ||DIR_KEY ==1 || DIGITAL_ADD_KEY==1||\
+	  if(key_up &&(ABC_POWER_KEY == 1 || START_KEY ==1 ||DIR_KEY ==1 || DIGITAL_ADD_KEY==1||\
 					DIGITAL_REDUCE_KEY==1||DOOR_KEY==1||HALL_SWITCH_KEY==1||\
 					WHEEL_KEY==1|| WIPERS_KEY==1 || AIR_KEY == 1))
 	  
 	   {
 		 DelayMs(10);
 		 key_up =0;
-	 #if 0
-		 if(BRAKE_KEY ==1)
+	 
+		 if(ABC_POWER_KEY ==1)
 		 {
 			/* 等待按键弹开，退出按键扫描函数 */
-			  while(BRAKE_KEY==1);
+			  while(ABC_POWER_KEY==1);
 			   /* 按键扫描完毕，确定按键按下 */
-			 return BRAKE_PRES;
+			 return ABC_POWER_PRES;
 		 }
-	 #endif 
-		 if(START_KEY == 1)
+	
+		 else if(START_KEY == 1)
 		 {
 			 /* 等待按键弹开，退出按键扫描函数 */
 			  while(START_KEY==1);
@@ -174,7 +180,7 @@ void KEY_Init(void)
 			return AIR_PRES;
 		 }
 	   }
-	   else if(BRAKE_KEY == 0 && START_KEY == 0 && DIR_KEY==0 && DIGITAL_ADD_KEY==0 &&\
+	   else if(ABC_POWER_KEY == 0 && START_KEY == 0 && DIR_KEY==0 && DIGITAL_ADD_KEY==0 &&\
 				   DIGITAL_REDUCE_KEY==0 &&DOOR_KEY==0 && HALL_SWITCH_KEY==0 && \
 					  WHEEL_KEY == 0 && WIPERS_KEY== 0 && AIR_KEY == 0) key_up = 1;
 	   

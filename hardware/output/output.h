@@ -5,6 +5,12 @@
 #include "fsl_gpio.h"
 #include "fsl_port.h"
 
+#define A_POWER_OUTPUT         PCout(10)
+#define B_POWER_OUTPUT         PCout(11)
+#define C_POWER_OUTPUT         PCout(0)
+
+
+
 #define AIR_OUTPUT               PEout(19)   //¿Õµ÷Êä³ö 
 #define WIPER_OUTPUT_2           PEout(18)   //Óê¹ÎÆ÷Êä³ö¶þµµ
 #define WIPER_OUTPUT_1           PEout(17)   //Óê¹ÎÆ÷Êä³öÒ»µµ
@@ -46,6 +52,7 @@ void AIR_OUTPUT_F(void);
 void WIPER_OUTPUT_F(void);
 void DOOR_OUTPUT_F(void);
 void WHEEL_OUTPUT_F(void);
+void ABC_POWER_OUTPUT_Init(void);
 
 
 #endif 

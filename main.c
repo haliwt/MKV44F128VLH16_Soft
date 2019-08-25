@@ -98,7 +98,7 @@ int main(void)
     HallSensor_GetPinState();
     OUTPUT_Fucntion_Init();
     ADC_CADC_Init();
-
+    ABC_POWER_OUTPUT_Init();
     /* Set the PWM Fault inputs to a low value */
     PWM_BLDC_Init();
     
@@ -370,7 +370,20 @@ static void vTaskCOTL(void *pvParameters)
                switch(ucKeyCode )//if(ptMsg->ucMessageID == 0x32)
                  { 
                 
-                 case START_PRES:
+                  case ABC_POWER_PRES :
+
+				  PRINTF("ABC_PRES key \r\n");
+				    A_POWER_OUTPUT =1;
+				     B_POWER_OUTPUT =1;
+					  C_POWER_OUTPUT =1;
+				  	LED1=0;
+					LED2=0;
+					DelayMs(500);
+				  	break;
+
+
+
+				 case START_PRES:
                    PRINTF("START_PRES key \r\n");
 				  recoder_number.dir_change ++;
 		          if((recoder_number.dir_change == 1)||(recoder_number.break_f ==1))
