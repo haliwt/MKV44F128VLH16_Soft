@@ -127,7 +127,8 @@ int main(void)
 ********************************************************************************************************/
 static void vTaskUSART(void *pvParameters)
 {
-  
+  TickType_t xLastWakeTime;
+  const TickType_t xFrequency = 300;
   MSG_T *ptMsg;
   uint8_t i;
   uint8_t ch[8];
@@ -180,7 +181,8 @@ static void vTaskUSART(void *pvParameters)
             }
         }
 		
-		vTaskDelay(xMaxBlockTime);
+		//vTaskDelay(xMaxBlockTime);
+	 vTaskDelayUntil(&xLastWakeTime, xFrequency);
     }
 }
 
@@ -193,6 +195,10 @@ static void vTaskUSART(void *pvParameters)
 *********************************************************************************************************/
 static void vTaskBLDC(void *pvParameters)
 {
+    
+    TickType_t xLastWakeTime;
+	const TickType_t xFrequency = 100;
+  
     volatile uint16_t pwm_f=0;
 	uint16_t sampleMask;
 	BaseType_t xResult;
@@ -279,7 +285,7 @@ static void vTaskBLDC(void *pvParameters)
            
 #endif
         }
-        vTaskDelay(xMaxBlockTime);         
+       vTaskDelayUntil(&xLastWakeTime, xFrequency); // vTaskDelay(xMaxBlockTime);         
      }  
  } 
 
@@ -295,7 +301,9 @@ static void vTaskBLDC(void *pvParameters)
 static void vTaskCOTL(void *pvParameters)
 {
    
-	MSG_T  *ptMsg; 
+	TickType_t xLastWakeTime;
+	const TickType_t xFrequency = 300;
+    MSG_T  *ptMsg; 
 	uint8_t ucKeyCode=0;
    
     BaseType_t xResult;
@@ -319,7 +327,35 @@ static void vTaskCOTL(void *pvParameters)
 				  LED1 = !LED1;
 				  LED2 = !LED2;
 				 
-				  
+				  if(ptMsg->ucMessageID==0x32)
+				  {
+                       recoder_number.dir_change ++;
+		          if(recoder_number.dir_change == 1)
+		          {
+                     ucControl =1;
+					 recoder_number.break_f =0;
+				  }
+				  else 
+				  {
+                     ucControl = 0;
+					 recoder_number.dir_change =0;
+				  }
+                
+		         	/* 向消息队列发送数据 */
+					if( xQueueSend(xQueue1,
+								   (void *) &ucControl,
+								   (TickType_t)10) != pdPASS )
+					{
+						/* 发送数据失败，等待10个节拍 */
+						printf("xQueue1 is fail?????????\r\n");
+					}
+					else
+					{
+						/* 发送数据成功 */
+						printf("xQueue1 is OK \r\n");						
+					}
+
+				  }
 				  
 				}
 				else
@@ -328,9 +364,9 @@ static void vTaskCOTL(void *pvParameters)
 			         LED2 = 0;
 		        }
 				
-				if(xResult == pdPASS || ucKeyCode != KEY_UP)
-                {
-                 if((ptMsg->ucMessageID==0x32)||(ucKeyCode == START_PRES))//if(ptMsg->ucMessageID == 0x32)
+			
+                
+                if (ucKeyCode == START_PRES)//if(ptMsg->ucMessageID == 0x32)
                  { 
                 
                  //case 0x32:
@@ -362,9 +398,13 @@ static void vTaskCOTL(void *pvParameters)
 					}
                   #endif 
                  }
-
+                     vTaskDelayUntil(&xLastWakeTime, xFrequency);
 				}
+                
+    }
+
  #if 0    
+    {
 				if(ptMsg->ucMessageID==0x33 || ucKeyCode==DIR_PRES) //'3'=0x33 driection
 				{
 						PRINTF("DIR_PRES key \r\n");
@@ -702,7 +742,7 @@ static void vTaskCOTL(void *pvParameters)
 			 break;
 			}
         }
-		#endif 
+	
        
 		//vTaskDelay(xMaxBlockTime);           vTaskYILED() //放弃时间片，把CPU让给同优先级的其它任务
     }
@@ -710,6 +750,7 @@ static void vTaskCOTL(void *pvParameters)
   
 
 }
+#endif 
 /********************************************************************************************************
 *	函 数 名: AppTaskCreate
 *	功能说明: 创建应用任务
