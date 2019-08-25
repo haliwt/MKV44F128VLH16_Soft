@@ -202,7 +202,7 @@ static void vTaskBLDC(void *pvParameters)
     volatile uint16_t pwm_f=0;
 	uint16_t sampleMask;
 	BaseType_t xResult;
-    const TickType_t xMaxBlockTime = pdMS_TO_TICKS(200); /* 设置最大等待时间为300ms */
+    const TickType_t xMaxBlockTime = pdMS_TO_TICKS(100); /* 设置最大等待时间为300ms */
 	uint8_t ucQueueMsgValue;
 	while(1)
     {       
@@ -302,12 +302,12 @@ static void vTaskCOTL(void *pvParameters)
 {
    
 	TickType_t xLastWakeTime;
-	const TickType_t xFrequency = 300;
+	const TickType_t xFrequency = 200;
     MSG_T  *ptMsg; 
 	uint8_t ucKeyCode=0;
    
     BaseType_t xResult;
-	const TickType_t xMaxBlockTime = pdMS_TO_TICKS(200); /* 设置最大等待时间为5ms */
+	const TickType_t xMaxBlockTime = pdMS_TO_TICKS(100); /* 设置最大等待时间为5ms */
 	uint8_t ucControl=0;
 
 	while(1)
@@ -364,12 +364,13 @@ static void vTaskCOTL(void *pvParameters)
 			         LED2 = 0;
 		        }
 				
-			
-                
-                if (ucKeyCode == START_PRES)//if(ptMsg->ucMessageID == 0x32)
+			if(ucKeyCode !=KEY_UP)
+				
+			{
+               switch(ucKeyCode )//if(ptMsg->ucMessageID == 0x32)
                  { 
                 
-                 //case 0x32:
+                 case START_PRES:
                    PRINTF("START_PRES key \r\n");
 				  recoder_number.dir_change ++;
 		          if(recoder_number.dir_change == 1)
@@ -397,9 +398,11 @@ static void vTaskCOTL(void *pvParameters)
 						printf("START_PRES is OK \r\n");						
 					}
                   #endif 
+				  break;
                  }
-                     vTaskDelayUntil(&xLastWakeTime, xFrequency);
 				}
+                  taskYIELD();//   vTaskDelayUntil(&xLastWakeTime, xFrequency);
+			}
                 
     }
 
