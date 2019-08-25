@@ -373,7 +373,7 @@ static void vTaskCOTL(void *pvParameters)
                  case START_PRES:
                    PRINTF("START_PRES key \r\n");
 				  recoder_number.dir_change ++;
-		          if(recoder_number.dir_change == 1)
+		          if((recoder_number.dir_change == 1)||(recoder_number.break_f ==1))
 		          {
                      ucControl =1;
 					 recoder_number.break_f =0;
@@ -399,224 +399,7 @@ static void vTaskCOTL(void *pvParameters)
 					}
                   #endif 
 				  break;
-                 }
-				}
-                  taskYIELD();//   vTaskDelayUntil(&xLastWakeTime, xFrequency);
-			}
-                
-    }
-
- #if 0    
-    {
-				if(ptMsg->ucMessageID==0x33 || ucKeyCode==DIR_PRES) //'3'=0x33 driection
-				{
-						PRINTF("DIR_PRES key \r\n");
-						recoder_number.dir_change ++;
-						if(recoder_number.dir_change == 1)
-						{
-                          ucControl = 0x11;
-						}
-						else 
-						{
-						   ucControl = 0x10;
-                           recoder_number.dir_change =0;
-						}
-
-				           /* 向消息队列发送数据 */
-							if( xQueueSend(xQueue1,
-										   (void *) &ucControl,
-										   (TickType_t)10) != pdPASS )
-							{
-								/* 发送数据失败，等待10个节拍 */
-								printf("DIR_PRES is fail?????????\r\n");
-							}
-							else
-							{
-								/* 发送数据成功 */
-								printf("DIR_SEND is OK \r\n");						
-							} 
-				}
-				
-				if(ptMsg->ucMessageID==0x34 || ucKeyCode==DIGITAL_ADD_PRES) //driection
-				{
-				     /* 向消息队列发送数据 */
-							if( xQueueSend(xQueue1,
-										   (void *) &ucControl,
-										   (TickType_t)10) != pdPASS )
-							{
-								/* 发送数据失败，等待10个节拍 */
-								printf("START_PRES is fail?????????\r\n");
-							}
-							else
-							{
-								/* 发送数据成功 */
-								printf("START_PRES is OK \r\n");						
-							} 
-				}
-				if(ptMsg->ucMessageID==0x35 || ucKeyCode==DIGITAL_REDUCE_PRES) //数字加减键
-				{
-				     /* 向消息队列发送数据 */
-							if( xQueueSend(xQueue1,
-										   (void *) &ucControl,
-										   (TickType_t)10) != pdPASS )
-							{
-								/* 发送数据失败，等待10个节拍 */
-								printf("START_PRES is fail?????????\r\n");
-							}
-							else
-							{
-								/* 发送数据成功 */
-								printf("START_PRES is OK \r\n");					
-							} 
-				}
-				if(ptMsg->ucMessageID==0x36 || ucKeyCode==DOOR_PRES)
-				{ 
-				/* 向消息队列发送数据 */
-						if( xQueueSend(xQueue1,
-									   (void *) &ucControl,
-									   (TickType_t)10) != pdPASS )
-						{
-							/* 发送数据失败，等待10个节拍 */
-							printf("START_PRES is fail?????????\r\n");
-						}
-						else
-						{
-							/* 发送数据成功 */
-							printf("START_PRES is OK \r\n");			
-						} 
-
-				}
-				if(ptMsg->ucMessageID==0x37 || ucKeyCode==HALL_PRES)
-				{ 
-						PRINTF("DIR_PRES key \r\n");
-						/* 向消息队列发送数据 */
-						if( xQueueSend(xQueue1,
-									   (void *) &ucControl,
-									   (TickType_t)10) != pdPASS )
-						{
-							/* 发送数据失败，等待10个节拍 */
-							printf("START_PRES is fail?????????\r\n");
-						}
-						else
-						{
-							/* 发送数据成功 */
-							printf("START_PRES is OK \r\n");			
-						} 
-
-				}
-
-	 			if(ptMsg->ucMessageID==0x38 || ucKeyCode==WHEEL_PRES)
-				{ 
-				/* 向消息队列发送数据 */
-						if( xQueueSend(xQueue1,
-									   (void *) &ucControl,
-									   (TickType_t)10) != pdPASS )
-						{
-							/* 发送数据失败，等待10个节拍 */
-							printf("START_PRES is fail?????????\r\n");
-						}
-						else
-						{
-							/* 发送数据成功 */
-							printf("START_PRES is OK \r\n");			
-						} 
-
-				}
-				if(ptMsg->ucMessageID==0x39 || ucKeyCode==WIPERS_PRES)
-				  { 
-				   /* 向消息队列发送数据 */
-					if( xQueueSend(xQueue1,
-								  (void *) &ucControl,
-								  (TickType_t)10) != pdPASS )
-					{
-						/* 发送数据失败，等待10个节拍 */
-						printf("START_PRES is fail?????????\r\n");
-					}
-					else
-					{
-						/* 发送数据成功 */
-						printf("START_PRES is OK \r\n");			
-					}
-					PRINTF("WIPERS_PRES key \r\n");
-					recoder_number.wiper_number ++;
-					if(recoder_number.wiper_number ==1)
-					{
-	                   WIPER_OUTPUT_2 = 0;
-					   WIPER_OUTPUT_1 = 1;
-					}
-					else if(recoder_number.wiper_number ==2)
-					{
-				       WIPER_OUTPUT_1 = 0;   
-				       WIPER_OUTPUT_2  = 1;
-					   
-				    }
-					else
-				    {
-						WIPER_OUTPUT_1 = 0;
-						WIPER_OUTPUT_2 = 0;
-	               		recoder_number.wiper_number =0;    
-					}
-	                 LED1 =0 ;
-					 LED2 =!LED2;
-
-				  }
-				if(ptMsg->ucMessageID==0x41 ||ptMsg->ucMessageID==0x61 || ucKeyCode==AIR_PRES)
-				  { 
-				   /* 向消息队列发送数据 */
-							if( xQueueSend(xQueue1,
-										   (void *) &ucControl,
-										   (TickType_t)10) != pdPASS )
-							{
-								/* 发送数据失败，等待10个节拍 */
-								printf("START_PRES is fail?????????\r\n");
-							}
-							else
-							{
-								/* 发送数据成功 */
-								printf("START_PRES is OK \r\n");			
-							} 
-
-				  }
-				#endif 
-		#if 0
-		if (ucKeyCode != KEY_UP ||xResult == pdPASS )
-		{
-			switch (ucKeyCode || ptMsg->ucMessageID)
-			{
-                          
-              case 2 ://START_PRES : //2
-                    PRINTF("START_PRES key \r\n");
-                    recoder_number.start_number++;
-					if(recoder_number.start_number ==1)
-					{
-	                   ucControl =1;
-					}
-				   	else 
-				   	{
-					   ucControl =0;
-					   recoder_number.air_number=0;
-					   LED1=0;
-				       LED2=0;
-			
-				    }
-					
-					/* 向消息队列发送数据 */
-					if( xQueueSend(xQueue1,
-								   (void *) &ucControl,
-								   (TickType_t)10) != pdPASS )
-					{
-						/* 发送数据失败，等待10个节拍 */
-						printf("START_PRES is fail?????????\r\n");
-					}
-					else
-					{
-						/* 发送数据成功 */
-						printf("START_PRES is OK \r\n");						
-					}
-				   
-			  break;
-			  
-			  case 3 :  //DIR_PRES: //3
+				  case DIR_PRES: //3
 
 			    recoder_number.dir_change++;
 	  			PRINTF(" DIR_change = %d  \r\n", recoder_number.dir_change);
@@ -742,18 +525,12 @@ static void vTaskCOTL(void *pvParameters)
 			    }
 	            LED1 =!LED1;
 	            LED2 =!LED2;
-			 break;
+               }
 			}
-        }
-	
-       
-		//vTaskDelay(xMaxBlockTime);           vTaskYILED() //放弃时间片，把CPU让给同优先级的其它任务
-    }
-
-  
-
+               taskYIELD();//   vTaskDelayUntil(&xLastWakeTime, xFrequency);
+	}
+                
 }
-#endif 
 /********************************************************************************************************
 *	函 数 名: AppTaskCreate
 *	功能说明: 创建应用任务
