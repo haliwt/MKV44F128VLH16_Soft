@@ -304,7 +304,7 @@ static void vTaskCOTL(void *pvParameters)
 	TickType_t xLastWakeTime;
 	const TickType_t xFrequency = 200;
     MSG_T  *ptMsg; 
-	uint8_t ucKeyCode=0;
+	uint8_t ucKeyCode=0,abc_s=0;
    
     BaseType_t xResult;
 	const TickType_t xMaxBlockTime = pdMS_TO_TICKS(100); /* 设置最大等待时间为5ms */
@@ -373,12 +373,24 @@ static void vTaskCOTL(void *pvParameters)
                   case ABC_POWER_PRES :
 
 				  PRINTF("ABC_PRES key \r\n");
-				    A_POWER_OUTPUT =1;
-				     B_POWER_OUTPUT =1;
-					  C_POWER_OUTPUT =1;
-				  	LED1=0;
-					LED2=0;
-					DelayMs(500);
+				     abc_s++;
+				  if(abc_s ==1)
+				  	{
+					     A_POWER_OUTPUT =1;
+					     B_POWER_OUTPUT =1;
+						 C_POWER_OUTPUT =1;
+					  	 LED1= !LED1;
+						 
+				  	}
+					else 
+					{
+                         A_POWER_OUTPUT =0;
+					     B_POWER_OUTPUT =0;
+						 C_POWER_OUTPUT =0;
+						 abc_s =0 ;
+						 LED2= !LED2;
+
+					}
 				  	break;
 
 
@@ -390,11 +402,18 @@ static void vTaskCOTL(void *pvParameters)
 		          {
                      ucControl =1;
 					 recoder_number.break_f =0;
+					 A_POWER_OUTPUT =1;
+					     B_POWER_OUTPUT =1;
+						 C_POWER_OUTPUT =1;
 				  }
 				  else 
 				  {
                      ucControl = 0;
 					 recoder_number.dir_change =0;
+					  A_POWER_OUTPUT =0;
+					     B_POWER_OUTPUT =0;
+						 C_POWER_OUTPUT =0;
+					
 				  }
                    #if 1
 		         	/* 向消息队列发送数据 */
