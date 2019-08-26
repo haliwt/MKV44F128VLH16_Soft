@@ -127,8 +127,8 @@ int main(void)
 ********************************************************************************************************/
 static void vTaskUSART(void *pvParameters)
 {
-  TickType_t xLastWakeTime;
-  const TickType_t xFrequency = 300;
+  //TickType_t xLastWakeTime;
+  //const TickType_t xFrequency = 300;
   MSG_T *ptMsg;
   uint8_t i;
   uint8_t ch[8];
@@ -181,8 +181,8 @@ static void vTaskUSART(void *pvParameters)
             }
         }
 		
-		//vTaskDelay(xMaxBlockTime);
-	 vTaskDelayUntil(&xLastWakeTime, xFrequency);
+		vTaskDelay(xMaxBlockTime);
+	 //vTaskDelayUntil(&xLastWakeTime, xFrequency);
     }
 }
 
@@ -197,8 +197,9 @@ static void vTaskBLDC(void *pvParameters)
 {
     
     TickType_t xLastWakeTime;
+	
 	const TickType_t xFrequency = 100;
-  
+    xLastWakeTime = xTaskGetTickCount();
     volatile uint16_t pwm_f=0;
 	uint16_t sampleMask;
 	BaseType_t xResult;
@@ -228,12 +229,14 @@ static void vTaskBLDC(void *pvParameters)
  #endif     
 	  if((ucQueueMsgValue==0)|| (recoder_number.break_f ==1))//刹车
 	  {
-         PMW_AllClose_ABC_Channel();
+         taskENTER_CRITICAL(); //进入临界状态
+		 PMW_AllClose_ABC_Channel();
          DelayMs(10U);
          PMW_AllClose_ABC_Channel();
 		 PWM_StopTimer(BOARD_PWM_BASEADDR,  kPWM_Control_Module_0);
 		 PWM_StopTimer(BOARD_PWM_BASEADDR,  kPWM_Control_Module_1);
 		 PWM_StopTimer(BOARD_PWM_BASEADDR,  kPWM_Control_Module_2);
+		 taskEXIT_CRITICAL(); //退出临界状态
 		 printf("Break is OK $$$$$$$$$$$$$\r\n");
        }
 	 else 
@@ -301,8 +304,8 @@ static void vTaskBLDC(void *pvParameters)
 static void vTaskCOTL(void *pvParameters)
 {
    
-	TickType_t xLastWakeTime;
-	const TickType_t xFrequency = 200;
+	//TickType_t xLastWakeTime;
+	//const TickType_t xFrequency = 200;
     MSG_T  *ptMsg; 
 	uint8_t ucKeyCode=0,abc_s=0;
    
