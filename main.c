@@ -141,7 +141,8 @@ static void vTaskUSART(void *pvParameters)
 	ptMsg->usData[0] = 0;
   while(1)
     {
-        UART_ReadBlocking(DEMO_UART, ch, 1);
+        printf("vTaskUSART-1 \r\n");
+		UART_ReadBlocking(DEMO_UART, ch, 1);
         UART_ReadBlocking(DEMO_UART, ch, 8);
        
         UART_WriteBlocking(DEMO_UART, ch, 8);
@@ -165,7 +166,13 @@ static void vTaskUSART(void *pvParameters)
         
         if(ch[0] == 0x31) //'1' = 0x31
          {
-            /* 向消息队列发送数据，如果消息队列满，等待10个时钟节拍 */
+           
+		      xTaskNotify(xHandleTaskCOTL,      /* 目标任务 */
+								ptMsg->usData[1],              /* 发送数据 */
+								eSetValueWithOverwrite);/* 上次目标任务没有执行，会被覆盖 */
+
+        #if 0
+		 /* 向消息队列发送数据，如果消息队列满，等待10个时钟节拍 */
 		    ptMsg->ucMessageID = ch[1];
             if( xQueueSend(xQueue2,
                      (void *) &ptMsg,
@@ -179,6 +186,7 @@ static void vTaskUSART(void *pvParameters)
              /* 发送成功 */
 		      printf("发送数据xQueue-2成功！\r\n");							
             }
+		#endif 
         }
 		
 		vTaskDelay(xMaxBlockTime);
@@ -196,19 +204,39 @@ static void vTaskUSART(void *pvParameters)
 static void vTaskBLDC(void *pvParameters)
 {
     
-    TickType_t xLastWakeTime;
+    uint8_t ucValue;
+	TickType_t xLastWakeTime;
 	
 	const TickType_t xFrequency = 100;
     xLastWakeTime = xTaskGetTickCount();
     volatile uint16_t pwm_f=0;
 	uint16_t sampleMask;
 	BaseType_t xResult;
-    const TickType_t xMaxBlockTime = pdMS_TO_TICKS(100); /* 设置最大等待时间为300ms */
-	uint8_t ucQueueMsgValue;
+    const TickType_t xMaxBlockTime = pdMS_TO_TICKS(5); /* 设置最大等待时间为300ms */
+	uint32_t ucQueueMsgValue;
 	while(1)
     {       
       printf("vTaskBLDC-2 \r\n");  
-	  #if 1
+
+        xResult = xTaskNotifyWait(0x00000000,      
+						          0xFFFFFFFF,      
+						          &ucQueueMsgValue,        /* 存储ulNotifiedValue在ulvalue中 */
+						          xMaxBlockTime);  /* 最大延迟时间 */
+	  if(xResult == pdPASS)
+		{
+			/* 接收数据成功 */
+          printf("vTaskBLDC ConmessageID = %#x\r\n",ucQueueMsgValue);
+		  ucValue = ucQueueMsgValue;
+		}
+		else
+		{
+			/* 超时 */
+			LED1= !LED1;
+			
+			
+		}
+	  
+	  #if 0
 	  xResult = xQueueReceive(xQueue1,                   	/* 消息队列句柄3 */
 		                        (void *)&ucQueueMsgValue,  	/* 存储到接收到数据变量ucQueueMsgValue */
 		                        (TickType_t)xMaxBlockTime);	/*设置阻塞时间*/
@@ -227,7 +255,7 @@ static void vTaskBLDC(void *pvParameters)
 		}
 	
  #endif     
-	  if((ucQueueMsgValue==0)|| (recoder_number.break_f ==1))//刹车
+	  if((ucValue==0x0a)|| (recoder_number.break_f ==1))//刹车
 	  {
          taskENTER_CRITICAL(); //进入临界状态
 		 PMW_AllClose_ABC_Channel();
@@ -239,9 +267,11 @@ static void vTaskBLDC(void *pvParameters)
 		 taskEXIT_CRITICAL(); //退出临界状态
 		 printf("Break is OK $$$$$$$$$$$$$\r\n");
        }
-	 else 
-	 {
-             printf("Motor Run is OK !!!!\r\n");
+	 else if(ucValue==0x0b) 
+	 { 
+             	/* 接收数据成功 */
+              printf("Motor run = %#x\r\n",ucQueueMsgValue);
+			 printf("Motor Run is OK !!!!\r\n");
 #if 1
 	       /**********************adjust frequency ****************************/
 			{
@@ -306,18 +336,59 @@ static void vTaskCOTL(void *pvParameters)
    
 	//TickType_t xLastWakeTime;
 	//const TickType_t xFrequency = 200;
-    MSG_T  *ptMsg; 
+   // MSG_T  *ptMsg; 
 	uint8_t ucKeyCode=0,abc_s=0;
    
     BaseType_t xResult;
 	const TickType_t xMaxBlockTime = pdMS_TO_TICKS(100); /* 设置最大等待时间为5ms */
 	uint8_t ucControl=0;
+	uint32_t ulValue;
 
 	while(1)
     {
 	      printf("vTaskCOTL-3 \r\n");
-		 
 		  ucKeyCode = KEY_Scan(0);
+		  xResult = xTaskNotifyWait(0x00000000,      
+						          0xFFFFFFFF,      
+						          &ulValue,        /* 存储ulNotifiedValue在ulvalue中 */
+						          xMaxBlockTime);  /* 最大延迟时间 */
+		
+		if( xResult == pdPASS )
+		{
+			printf("xTaskNotfifyWait = %#x\r\n", ulValue);
+			 if(ulValue==0x32)
+				  {
+                       recoder_number.dir_change ++;
+		          if(recoder_number.dir_change == 1)
+		          {
+                     ucControl =0x0a;
+					 recoder_number.break_f =0;
+					 xTaskNotify(xHandleTaskBLDC,      /* 目标任务 */
+					ucControl,              /* 发送数据 */
+					eSetValueWithOverwrite);/* 上次目标任务没有执行，会被覆盖 */
+				  }
+				  else 
+				  {
+                     ucControl = 0x0b;
+					 recoder_number.dir_change =0;
+					 xTaskNotify(xHandleTaskBLDC,      /* 目标任务 */
+					ucControl,              /* 发送数据 */
+					eSetValueWithOverwrite);/* 上次目标任务没有执行，会被覆盖 */
+				  }
+                
+		         	
+                   
+
+				  }
+		}
+		else
+		{
+			/* 3?ê± */
+			LED1=0;
+			LED2 =0 ;
+		}
+
+		  #if 0
           xResult = xQueueReceive(xQueue2,                   	/* 队列句柄 */
 		                        (void *)&ptMsg,  				/*接收到的数据地址 */
 		                        (TickType_t)xMaxBlockTime);		/* 设置阻塞时间*/
@@ -337,13 +408,19 @@ static void vTaskCOTL(void *pvParameters)
 		          {
                      ucControl =1;
 					 recoder_number.break_f =0;
+					  xTaskNotify(xHandleTaskBLDC,      /* 目标任务 */
+					 				ucControl,              /* 发送数据 */
+									eSetValueWithOverwrite);/* 上次目标任务没有执行，会被覆盖 */
 				  }
 				  else 
 				  {
                      ucControl = 0;
 					 recoder_number.dir_change =0;
+					  xTaskNotify(xHandleTaskBLDC,      /* 目标任务 */
+									ucControl,              /* 发送数据 */
+									eSetValueWithOverwrite);/* 上次目标任务没有执行，会被覆盖 */
 				  }
-                
+                 
 		         	/* 向消息队列发送数据 */
 					if( xQueueSend(xQueue1,
 								   (void *) &ucControl,
@@ -366,7 +443,7 @@ static void vTaskCOTL(void *pvParameters)
 					 LED1 = 0;
 			         LED2 = 0;
 		        }
-				
+			#endif 	
 			if(ucKeyCode !=KEY_UP)
 				
 			{
@@ -403,22 +480,23 @@ static void vTaskCOTL(void *pvParameters)
 				  recoder_number.dir_change ++;
 		          if((recoder_number.dir_change == 1)||(recoder_number.break_f ==1))
 		          {
-                     ucControl =1;
+                     ucControl =0x0b;
 					 recoder_number.break_f =0;
-					 A_POWER_OUTPUT =1;
-					     B_POWER_OUTPUT =1;
-						 C_POWER_OUTPUT =1;
+					 xTaskNotify(xHandleTaskBLDC,      /* 目标任务 */
+									ucControl,              /* 发送数据 */
+									eSetValueWithOverwrite);/* 上次目标任务没有执行，会被覆盖 */
+					
 				  }
 				  else 
 				  {
-                     ucControl = 0;
+                     ucControl = 0x0a;
 					 recoder_number.dir_change =0;
-					  A_POWER_OUTPUT =0;
-					     B_POWER_OUTPUT =0;
-						 C_POWER_OUTPUT =0;
-					
+					  xTaskNotify(xHandleTaskBLDC,      /* 目标任务 */
+									ucControl,              /* 发送数据 */
+									eSetValueWithOverwrite);/* 上次目标任务没有执行，会被覆盖 */
+					  
 				  }
-                   #if 1
+                   #if 0
 		         	/* 向消息队列发送数据 */
 					if( xQueueSend(xQueue1,
 								   (void *) &ucControl,
