@@ -207,7 +207,7 @@ static void vTaskUSART(void *pvParameters)
 static void vTaskSUBJ(void *pvParameters)
 {
      uint32_t vlSubj;
-     uint8_t ucConValue;
+     uint8_t ucConKeyValue;
 	 BaseType_t xResult;
 	const TickType_t xMaxBlockTime = pdMS_TO_TICKS(100); /* 设置最大等待时间为5ms */
 
@@ -220,16 +220,18 @@ static void vTaskSUBJ(void *pvParameters)
 						          &vlSubj,        /* 存储ulNotifiedValue在ulvalue中 */
 						          xMaxBlockTime);  /* 最大延迟时间 */
           
-		  ucConValue = (uint8_t)vlSubj;
+		  
 		if( xResult == pdPASS )
 		{
-			printf("vTaskSUBJ vlSubj = %#x\r\n", vlSubj);
-			 if(ucConValue==0x03)
+			
+             ucConKeyValue = (uint8_t)vlSubj;
+             printf("vTaskSUBJ vlSubj = %#x\r\n", ucConKeyValue);
+			 if(ucConKeyValue==0x03)
 			 {
                 DOOR_OUTPUT =1;//door open
 		        printf("DOOR_OUTPUT = 1 @@@@@@@\r\n");  
 		     }
-             if(ucConValue==0x04)
+             if(ucConKeyValue==0x04)
 			 {
                 DOOR_OUTPUT =0;//door open
 		        printf("DOOR_OUTPUT = 0 ~~~~~~~\r\n");     
@@ -267,48 +269,26 @@ static void vTaskBLDC(void *pvParameters)
 	uint16_t sampleMask;
 	BaseType_t xResult;
     const TickType_t xMaxBlockTime = pdMS_TO_TICKS(5); /* 设置最大等待时间为300ms */
-	uint32_t ucQueueMsgValue;
+	uint32_t ucConValue;
 	while(1)
     {       
       printf("vTaskBLDC-2 \r\n");  
 
         xResult = xTaskNotifyWait(0x00000000,      
 						          0xFFFFFFFF,      
-						          &ucQueueMsgValue,        /* 存储ulNotifiedValue在ulvalue中 */
+						          &ucConValue,        /* 存储ulNotifiedValue在ulvalue中 */
 						          xMaxBlockTime);  /* 最大延迟时间 */
 	  if(xResult == pdPASS)
 		{
 			/* 接收数据成功 */
-          printf("vTaskBLDC ConmessageID = %#x\r\n",ucQueueMsgValue);
-		  ucValue = ucQueueMsgValue;
+          printf("vTaskBLDC ConmessageID = %#x\r\n",ucConValue );
+		  ucValue = (uint8_t)ucConValue ;
 		}
 		else
 		{
 			/* 超时 */
-			LED1= !LED1;
-			
-			
+          LED1= !LED1;
 		}
-	  
-	  #if 0
-	  xResult = xQueueReceive(xQueue1,                   	/* 消息队列句柄3 */
-		                        (void *)&ucQueueMsgValue,  	/* 存储到接收到数据变量ucQueueMsgValue */
-		                        (TickType_t)xMaxBlockTime);	/*设置阻塞时间*/
-		
-		if(xResult == pdPASS)
-		{
-			/* 接收数据成功 */
-          printf("vTaskBLDC ConmessageID = %#x\r\n",ucQueueMsgValue);
-		}
-		else
-		{
-			/* 超时 */
-			LED1= !LED1;
-			
-			
-		}
-	
- #endif     
 	  if((ucValue==0x0a)|| (recoder_number.break_f ==1))//刹车
 	  {
          taskENTER_CRITICAL(); //进入临界状态
@@ -324,9 +304,9 @@ static void vTaskBLDC(void *pvParameters)
 	 else if(ucValue==0x0b) 
 	 { 
              	/* 接收数据成功 */
-              printf("Motor run = %#x\r\n",ucQueueMsgValue);
+             printf("Motor run = %#x\r\n",ucConValue);
 			 printf("Motor Run is OK !!!!\r\n");
-#if 1
+
 	       /**********************adjust frequency ****************************/
 			{
             
@@ -370,7 +350,7 @@ static void vTaskBLDC(void *pvParameters)
         	PRINTF("ouread = %d \r\n",uwStep);
         	HALLSensor_Detected_BLDC(uwStep,pwm_f); 
            
-#endif
+
         }
        vTaskDelayUntil(&xLastWakeTime, xFrequency); // vTaskDelay(xMaxBlockTime);         
      }  
@@ -382,7 +362,7 @@ static void vTaskBLDC(void *pvParameters)
 *	功能说明: 接收物理按键和数字按键的命令
 *	形    参: pvParameters 是在创建该任务时传递的形参
 *	返 回 值: 无
-*   优 先 级: 3  
+*   优 先 级: 4  
 *
 *********************************************************************************************************/
 static void vTaskCOTL(void *pvParameters)
@@ -586,7 +566,7 @@ static void vTaskCOTL(void *pvParameters)
 				
 				else if(wiper_s ==2)
 				{
-                   wiper_s = 0;
+                 
 				   WIPER_OUTPUT_1 = 0;   
 			       WIPER_OUTPUT_2  = 1;
 				    ucControl = 0x06;
@@ -599,7 +579,7 @@ static void vTaskCOTL(void *pvParameters)
 			    {
 					WIPER_OUTPUT_1 = 1;
 					WIPER_OUTPUT_2 = 1;
-                    ucControl = 0x06;
+                    ucControl = 0x07;
 					
 					xTaskNotify(xHandleTaskSUBJ,      /* 目标任务 */
 								   ucControl,              /* 发送数据 */
@@ -609,7 +589,7 @@ static void vTaskCOTL(void *pvParameters)
 				else
 				{
                     wiper_s == 0;
-					ucControl = 0x07;
+					ucControl = 0x08;
 					
 					xTaskNotify(xHandleTaskSUBJ,      /* 目标任务 */
 								ucControl,              /* 发送数据 */
