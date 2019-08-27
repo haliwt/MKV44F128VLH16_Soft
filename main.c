@@ -262,7 +262,17 @@ static void vTaskSUBJ(void *pvParameters)
 			     WIPER_OUTPUT_2  = 0;
 				printf("WIPERS  = 0 @@@~~~~@@@~~~~\r\n");
 			 }
-		     /*******************AIR_F***************************/    	
+		     /*******************AIR_F***************************/   
+              if(ucConKeyValue == 0x09)
+			 {
+                 AIR_OUTPUT = 1;
+				printf("AIR  = 1 ~~@@@~~\r\n");
+			 }
+              if(ucConKeyValue == 0x0a)
+			 {
+                 AIR_OUTPUT = 0;
+				printf("AIR  = 0 ~~@@@~~@@@~~~~@@@\r\n");
+			 }
         }
 		else
 		{
@@ -396,7 +406,7 @@ static void vTaskCOTL(void *pvParameters)
 	//const TickType_t xFrequency = 200;
    // MSG_T  *ptMsg; 
 	uint8_t ucKeyCode=0,abc_s=0;
-    uint8_t start_s =0,door_s = 0,wiper_s=0;
+    uint8_t start_s =0,door_s = 0,wiper_s=0,air_s=0;
     BaseType_t xResult;
 	const TickType_t xMaxBlockTime = pdMS_TO_TICKS(100); /* 设置最大等待时间为5ms */
 	uint8_t ucControl=0;
@@ -451,7 +461,7 @@ static void vTaskCOTL(void *pvParameters)
 				
 			{
                switch(ucKeyCode )//if(ptMsg->ucMessageID == 0x32)
-                 { 
+                { 
                 
                   case ABC_POWER_PRES :
 
@@ -610,26 +620,27 @@ static void vTaskCOTL(void *pvParameters)
 				
 	         case AIR_PRES : //10 PE29
 	         	PRINTF("AIR_PRES key \r\n");
-	            recoder_number.air_number++;
+	            air_s ++;
 				        
-				if(recoder_number.air_number==1)
+				if(air_s ==1)
 				{
-			           AIR_OUTPUT = 1;
-					   LED2=1;
-			           DelayMs(500U);
-			           LED2=0;
-				}
+			        ucControl = 0x09;
+					xTaskNotify(xHandleTaskSUBJ,      /* 目标任务 */
+								ucControl,              /* 发送数据 */
+								eSetValueWithOverwrite);/* 上次目标任务没有执行，会被覆盖 */
+				}	  
 			    else 
 			    {
-		           AIR_OUTPUT = 0;
-				   LED1=1;
-		           DelayMs(500U);
-		           LED1=0;
-		           recoder_number.air_number =0;
+		            air_s =0;
+				    ucControl = 0x0a;
+					xTaskNotify(xHandleTaskSUBJ,      /* 目标任务 */
+								ucControl,              /* 发送数据 */
+								eSetValueWithOverwrite);/* 上次目标任务没有执行，会被覆盖 */
+				  
 				   
 			    }
         }
-        taskYIELD();//   vTaskDelayUntil(&xLastWakeTime, xFrequency);
+        
 	}
     taskYIELD();//   vTaskDelayUntil(&xLastWakeTime, xFrequency);
    }//end whilt(1)
