@@ -43,6 +43,7 @@ output_t recoder_number;
 
 
 static void vTaskUSART(void *pvParameters);
+static void vTaskSUBJ(void *pvParameters);
 static void vTaskBLDC(void *pvParameters);
 static void vTaskCOTL(void *pvParameters);
 
@@ -56,6 +57,7 @@ static void AppObjCreate (void);
 **********************************************************************************************************
 */
 static TaskHandle_t xHandleTaskUSART = NULL;
+static TaskHandle_t xHandleTaskSUBJ =  NULL;
 static TaskHandle_t xHandleTaskBLDC = NULL;
 static TaskHandle_t xHandleTaskCOTL = NULL;
 
@@ -193,13 +195,65 @@ static void vTaskUSART(void *pvParameters)
 	 //vTaskDelayUntil(&xLastWakeTime, xFrequency);
     }
 }
+/*********************************************************************************************************
+*
+*	函 数 名: vTaskSUBJ
+*	功能说明: 接收物理按键和数字按键的命令
+*	形    参: pvParameters 是在创建该任务时传递的形参
+*	返 回 值: 无
+*   优 先 级: 2  
+*
+*********************************************************************************************************/
+static void vTaskSUBJ(void *pvParameters)
+{
+     uint32_t vlSubj;
+     uint8_t ucConValue;
+	 BaseType_t xResult;
+	const TickType_t xMaxBlockTime = pdMS_TO_TICKS(100); /* 设置最大等待时间为5ms */
 
+	while(1)
+    {
+          printf("vTaskSUBJ-2 \r\n");
+		
+		  xResult = xTaskNotifyWait(0x00000000,      
+						          0xFFFFFFFF,      
+						          &vlSubj,        /* 存储ulNotifiedValue在ulvalue中 */
+						          xMaxBlockTime);  /* 最大延迟时间 */
+          
+		  ucConValue = (uint8_t)vlSubj;
+		if( xResult == pdPASS )
+		{
+			printf("vTaskSUBJ vlSubj = %#x\r\n", vlSubj);
+			 if(ucConValue==0x03)
+			 {
+                DOOR_OUTPUT =1;//door open
+		        printf("DOOR_OUTPUT = 1 @@@@@@@\r\n");  
+		     }
+             if(ucConValue==0x04)
+			 {
+                DOOR_OUTPUT =0;//door open
+		        printf("DOOR_OUTPUT = 0 ~~~~~~~\r\n");     
+		     }  
+		         	
+             
+			 
+		}
+		else
+		{
+			/* 3?ê± */
+			LED1=0;
+			LED2 =0 ;
+		}
+
+
+	}
+}
 /*********************************************************************************************************
 *	函 数 名: vTaskBLDC
 *	功能说明: 使用函数xQueueReceive接收任务vTaskTaskUserIF发送的消息队列数据(xQueue2)	
 *	形    参: pvParameters 是在创建该任务时传递的形参
 *	返 回 值: 无
-*   优 先 级: 2  
+*   优 先 级: 3  
 *********************************************************************************************************/
 static void vTaskBLDC(void *pvParameters)
 {
@@ -300,15 +354,15 @@ static void vTaskBLDC(void *pvParameters)
      	}
 
             pwm_f = (uint16_t)((CADC_GetSampleResultValue(CADC_BASEADDR, 1U))/ 330);
-			if(ucQueueMsgValue== 0x11) 
+			if(recoder_number.dir_change == 1) 
             {
                   Dir = Dir ;
 				  printf("Dir = Dir is OK !!!!\r\n");
 			}
-			else if(ucQueueMsgValue== 0x10) 
+			else 
 			{
 			    Dir = -Dir;
-				printf("Dir = - Dir is OK !!!!\r\n");
+				printf("Dir = - Dir is OK #######\r\n");
 			}
 			/***********Motor Run**************/
             PMW_AllClose_ABC_Channel();
@@ -338,7 +392,7 @@ static void vTaskCOTL(void *pvParameters)
 	//const TickType_t xFrequency = 200;
    // MSG_T  *ptMsg; 
 	uint8_t ucKeyCode=0,abc_s=0;
-   
+    uint8_t start_s =0,door_s = 0,wiper_s=0;
     BaseType_t xResult;
 	const TickType_t xMaxBlockTime = pdMS_TO_TICKS(100); /* 设置最大等待时间为5ms */
 	uint8_t ucControl=0;
@@ -388,63 +442,8 @@ static void vTaskCOTL(void *pvParameters)
 			LED2 =0 ;
 		}
 
-		  #if 0
-          xResult = xQueueReceive(xQueue2,                   	/* 队列句柄 */
-		                        (void *)&ptMsg,  				/*接收到的数据地址 */
-		                        (TickType_t)xMaxBlockTime);		/* 设置阻塞时间*/
-		
-				if(xResult == pdPASS)
-				{
-					/* 成功接收，并通过串口将数据打印出来 */
-		          printf("接收到消息队列数据vTaskCOTL = %#x\r\n", ptMsg->ucMessageID);
-		          printf("接收到消息队列数据vsData[0] = %#x\r\n", ptMsg->usData[0]);
-				  LED1 = !LED1;
-				  LED2 = !LED2;
-				 
-				  if(ptMsg->ucMessageID==0x32)
-				  {
-                       recoder_number.dir_change ++;
-		          if(recoder_number.dir_change == 1)
-		          {
-                     ucControl =1;
-					 recoder_number.break_f =0;
-					  xTaskNotify(xHandleTaskBLDC,      /* 目标任务 */
-					 				ucControl,              /* 发送数据 */
-									eSetValueWithOverwrite);/* 上次目标任务没有执行，会被覆盖 */
-				  }
-				  else 
-				  {
-                     ucControl = 0;
-					 recoder_number.dir_change =0;
-					  xTaskNotify(xHandleTaskBLDC,      /* 目标任务 */
-									ucControl,              /* 发送数据 */
-									eSetValueWithOverwrite);/* 上次目标任务没有执行，会被覆盖 */
-				  }
-                 
-		         	/* 向消息队列发送数据 */
-					if( xQueueSend(xQueue1,
-								   (void *) &ucControl,
-								   (TickType_t)10) != pdPASS )
-					{
-						/* 发送数据失败，等待10个节拍 */
-						printf("xQueue1 is fail?????????\r\n");
-					}
-					else
-					{
-						/* 发送数据成功 */
-						printf("xQueue1 is OK \r\n");						
-					}
-
-				  }
-				  
-				}
-				else
-				{
-					 LED1 = 0;
-			         LED2 = 0;
-		        }
-			#endif 	
-			if(ucKeyCode !=KEY_UP)
+		  
+		if(ucKeyCode !=KEY_UP)
 				
 			{
                switch(ucKeyCode )//if(ptMsg->ucMessageID == 0x32)
@@ -477,8 +476,8 @@ static void vTaskCOTL(void *pvParameters)
 
 				 case START_PRES:
                    PRINTF("START_PRES key \r\n");
-				  recoder_number.dir_change ++;
-		          if((recoder_number.dir_change == 1)||(recoder_number.break_f ==1))
+				    start_s ++;
+		          if((start_s == 1)||(recoder_number.break_f ==1))
 		          {
                      ucControl =0x0b;
 					 recoder_number.break_f =0;
@@ -490,62 +489,30 @@ static void vTaskCOTL(void *pvParameters)
 				  else 
 				  {
                      ucControl = 0x0a;
-					 recoder_number.dir_change =0;
+					 start_s =0;
 					  xTaskNotify(xHandleTaskBLDC,      /* 目标任务 */
 									ucControl,              /* 发送数据 */
 									eSetValueWithOverwrite);/* 上次目标任务没有执行，会被覆盖 */
 					  
 				  }
-                   #if 0
-		         	/* 向消息队列发送数据 */
-					if( xQueueSend(xQueue1,
-								   (void *) &ucControl,
-								   (TickType_t)10) != pdPASS )
-					{
-						/* 发送数据失败，等待10个节拍 */
-						printf("START_PRES is fail?????????\r\n");
-					}
-					else
-					{
-						/* 发送数据成功 */
-						printf("START_PRES is OK \r\n");						
-					}
-                  #endif 
+                 
 				  break;
 				  case DIR_PRES: //3
 
-			    recoder_number.dir_change++;
-	  			PRINTF(" DIR_change = %d  \r\n", recoder_number.dir_change);
+			      recoder_number.dir_change++;
+	  			 PRINTF(" DIR_change = %d  \r\n", recoder_number.dir_change);
 	  			 if(recoder_number.dir_change == 1)
 	   				{
-                        ucControl = 0x11;
-						Dir = Dir;
-						LED1 =1;
+                       LED1 =0;
+						LED2 =0;
 				    }
 				 else 
 				   {
-                       ucControl = 0x10;
-					   Dir = -Dir;
-				       recoder_number.dir_change =0;
-					   LED1=0;
+                      recoder_number.dir_change =0;
+					  
 				   }
-				 #if 0
-				 /* 向消息队列发送数据 */
-					if( xQueueSend(xQueue1,
-								   (void *) &ucControl,
-								   (TickType_t)10) != pdPASS )
-					{
-						/* 发送数据失败，等待10个节拍 */
-						printf("DIR_PRES is fail?????????\r\n");
-					}
-					else
-					{
-						/* 发送数据成功 */
-						printf("DIR_PRES is OK \r\n");						
-					}
-                  #endif 
-           		
-			 break;
+			
+           		break;
 				
 			 case DIGITAL_ADD_PRES ://4
 				PRINTF("DIGITAL_ADD_PRES key \r\n");
@@ -570,15 +537,26 @@ static void vTaskCOTL(void *pvParameters)
 				
 			 case DOOR_PRES ://6
 			 	   PRINTF("DOOR_PRES key \r\n");
-			 	   recoder_number.door_number ++ ;
-				   if(recoder_number.door_number ==1)
+			 	   door_s ++ ;
+				   if(door_s ==1)
 				   {
-                       DOOR_OUTPUT =1;//door open
+                      
+                       ucControl = 0x03;
+					
+					  xTaskNotify(xHandleTaskSUBJ,      /* 目标任务 */
+								   ucControl,              /* 发送数据 */
+								   eSetValueWithOverwrite);/* 上次目标任务没有执行，会被覆盖 */
 				   }
 				   else
 				   {
-                      DOOR_OUTPUT = 0; //door close
+                     
+                      ucControl = 0x04;
+					 
+					  xTaskNotify(xHandleTaskSUBJ,      /* 目标任务 */
+								   ucControl,              /* 发送数据 */
+								   eSetValueWithOverwrite);/* 上次目标任务没有执行，会被覆盖 */
                        recoder_number.door_number=0;
+					   
 				   }
 			 	   
 				break;
@@ -593,26 +571,52 @@ static void vTaskCOTL(void *pvParameters)
 				
 			 case WIPERS_PRES: //9雨刮器
 			  	PRINTF("WIPERS_PRES key \r\n");
-				recoder_number.wiper_number ++;
-				if(recoder_number.wiper_number ==1)
+				wiper_s ++;
+				
+				if(wiper_s ==1)
 				{
                    WIPER_OUTPUT_2 = 0;
 				   WIPER_OUTPUT_1 = 1;
-				}
-				else if(recoder_number.wiper_number ==2)
+				   ucControl = 0x05;
+					
+				   xTaskNotify(xHandleTaskSUBJ,      /* 目标任务 */
+								   ucControl,              /* 发送数据 */
+								   eSetValueWithOverwrite);/* 上次目标任务没有执行，会被覆盖 */
+				   }
+				
+				else if(wiper_s ==2)
 				{
-			       WIPER_OUTPUT_1 = 0;   
+                   wiper_s = 0;
+				   WIPER_OUTPUT_1 = 0;   
 			       WIPER_OUTPUT_2  = 1;
-				   
-			    }
-				else
+				    ucControl = 0x06;
+					
+					xTaskNotify(xHandleTaskSUBJ,      /* 目标任务 */
+								   ucControl,              /* 发送数据 */
+								   eSetValueWithOverwrite);/* 上次目标任务没有执行，会被覆盖 */
+				 }
+				else if(wiper_s == 3)
 			    {
-					WIPER_OUTPUT_1 = 0;
-					WIPER_OUTPUT_2 = 0;
-               		recoder_number.wiper_number =0;    
+					WIPER_OUTPUT_1 = 1;
+					WIPER_OUTPUT_2 = 1;
+                    ucControl = 0x06;
+					
+					xTaskNotify(xHandleTaskSUBJ,      /* 目标任务 */
+								   ucControl,              /* 发送数据 */
+								   eSetValueWithOverwrite);/* 上次目标任务没有执行，会被覆盖 */
+					
 				}
-                 LED1 =0 ;
-				 LED2 =!LED2;
+				else
+				{
+                    wiper_s == 0;
+					ucControl = 0x07;
+					
+					xTaskNotify(xHandleTaskSUBJ,      /* 目标任务 */
+								ucControl,              /* 发送数据 */
+								eSetValueWithOverwrite);/* 上次目标任务没有执行，会被覆盖 */
+					
+				}
+                 
 			
 			 break;
 				
@@ -636,13 +640,11 @@ static void vTaskCOTL(void *pvParameters)
 		           recoder_number.air_number =0;
 				   
 			    }
-	            LED1 =!LED1;
-	            LED2 =!LED2;
-               }
-			}
-               taskYIELD();//   vTaskDelayUntil(&xLastWakeTime, xFrequency);
+        }
+        taskYIELD();//   vTaskDelayUntil(&xLastWakeTime, xFrequency);
 	}
-                
+    taskYIELD();//   vTaskDelayUntil(&xLastWakeTime, xFrequency);
+   }//end whilt(1)
 }
 /********************************************************************************************************
 *	函 数 名: AppTaskCreate
@@ -658,19 +660,26 @@ static void AppTaskCreate (void)
                  NULL,              							/* 任务参数  */
                  tskIDLE_PRIORITY+1,                 			/* 任务优先级 最低*/
                  &xHandleTaskUSART );  							/* 任务句柄  */
+
+	xTaskCreate( vTaskSUBJ,    									/* 任务函数  */
+                 "vTaskBLDC",  									/* 任务名    */
+                 configMINIMAL_STACK_SIZE + 166,         		/* stack大小，单位word，也就是4字节 */
+                 NULL,        									/* 任务参数  */
+                 tskIDLE_PRIORITY+2,           					/* 任务优先级*/
+                 &xHandleTaskSUBJ); 							/* 任务句柄  */
 	
 	xTaskCreate( vTaskBLDC,    									/* 任务函数  */
                  "vTaskBLDC",  									/* 任务名    */
                  configMINIMAL_STACK_SIZE + 934,         		/* stack大小，单位word，也就是4字节 */
                  NULL,        									/* 任务参数  */
-                 tskIDLE_PRIORITY+2,           					/* 任务优先级*/
+                 tskIDLE_PRIORITY+3,           					/* 任务优先级*/
                  &xHandleTaskBLDC); 							/* 任务句柄  */
 
 	xTaskCreate( vTaskCOTL,    									/* 任务函数  */
                  "vTaskCOTL",  									/* 任务名    */
-                 configMINIMAL_STACK_SIZE + 422,         		/* stack大小，单位word，也就是4字节 */
+                 configMINIMAL_STACK_SIZE + 166,         		/* stack大小，单位word，也就是4字节 */
                  NULL,        									/* 任务参数  */
-                 tskIDLE_PRIORITY+3,           					/* 任务优先级*/
+                 tskIDLE_PRIORITY+4,           					/* 任务优先级*/
                  &xHandleTaskCOTL); 							/* 任务句柄  */
 
 }
@@ -727,4 +736,5 @@ void BARKE_KEY_IRQ_HANDLER(void )//void BOARD_BRAKE_IRQ_HANDLER(void)
 #endif
 }
 #endif 
+
 
