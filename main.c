@@ -226,6 +226,21 @@ static void vTaskSUBJ(void *pvParameters)
 			
              ucConKeyValue = (uint8_t)vlSubj;
              printf("vTaskSUBJ vlSubj = %#x\r\n", ucConKeyValue);
+             /*******************ABC_POWER_F*************************/
+			 if(ucConKeyValue==0x01)
+			 {
+                 A_POWER_OUTPUT =1;
+				 B_POWER_OUTPUT =1;
+				 C_POWER_OUTPUT =1;
+		        printf("ABC_= 1 @@@@~~~@@@\r\n");  
+		     }
+			 if(ucConKeyValue==0x02)
+			 {
+                 A_POWER_OUTPUT =0;
+				 B_POWER_OUTPUT =0;
+				 C_POWER_OUTPUT =0;
+		        printf("ABC_ = 0 @@@@@@@~~~\r\n");  
+		     }
 			 /*******************Door_F*************************/
 			 if(ucConKeyValue==0x03)
 			 {
@@ -467,19 +482,21 @@ static void vTaskCOTL(void *pvParameters)
 				     abc_s++;
 				  if(abc_s ==1)
 				  	{
-					     A_POWER_OUTPUT =1;
-					     B_POWER_OUTPUT =1;
-						 C_POWER_OUTPUT =1;
-					  	 LED1= !LED1;
+                         ucControl = 0x01;
+						
+					  	 xTaskNotify(xHandleTaskSUBJ,      /* 目标任务 */
+							   ucControl,              /* 发送数据 */
+							   eSetValueWithOverwrite);/* 上次目标任务没有执行，会被覆盖 */
 						 
 				  	}
 					else 
 					{
-                         A_POWER_OUTPUT =0;
-					     B_POWER_OUTPUT =0;
-						 C_POWER_OUTPUT =0;
+                         ucControl = 0x02;
+						
 						 abc_s =0 ;
-						 LED2= !LED2;
+						 xTaskNotify(xHandleTaskSUBJ,      /* 目标任务 */
+							   ucControl,              /* 发送数据 */
+							   eSetValueWithOverwrite);/* 上次目标任务没有执行，会被覆盖 */
 
 					}
 				  	break;
