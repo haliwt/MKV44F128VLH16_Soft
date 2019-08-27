@@ -207,9 +207,9 @@ static void vTaskUSART(void *pvParameters)
 static void vTaskSUBJ(void *pvParameters)
 {
      uint32_t vlSubj;
-     uint8_t ucConKeyValue;
+     volatile uint8_t ucConKeyValue;
 	 BaseType_t xResult;
-	const TickType_t xMaxBlockTime = pdMS_TO_TICKS(100); /* 设置最大等待时间为5ms */
+	const TickType_t xMaxBlockTime = pdMS_TO_TICKS(200); /* 设置最大等待时间为5ms */
 
 	while(1)
     {
@@ -226,6 +226,7 @@ static void vTaskSUBJ(void *pvParameters)
 			
              ucConKeyValue = (uint8_t)vlSubj;
              printf("vTaskSUBJ vlSubj = %#x\r\n", ucConKeyValue);
+			 /*******************Door_F*************************/
 			 if(ucConKeyValue==0x03)
 			 {
                 DOOR_OUTPUT =1;//door open
@@ -235,11 +236,34 @@ static void vTaskSUBJ(void *pvParameters)
 			 {
                 DOOR_OUTPUT =0;//door open
 		        printf("DOOR_OUTPUT = 0 ~~~~~~~\r\n");     
-		     }  
-		         	
-             
-			 
-		}
+		     }
+			 /*******************WIPERS_F***************************/
+             if(ucConKeyValue == 0x05)
+	         {
+	  			 WIPER_OUTPUT_2 = 0;
+	  			 WIPER_OUTPUT_1 = 1;
+	  			 printf("WIPERS  = 1 @@@@~~~~\r\n");   
+	         }
+			 if(ucConKeyValue == 0x06)
+			 {
+                 WIPER_OUTPUT_1 = 1;   
+			     WIPER_OUTPUT_2  = 0;
+				printf("WIPERS  = 2 ~~~~@@@@\r\n");
+			 }
+			 if(ucConKeyValue == 0x07)
+			 {
+                 WIPER_OUTPUT_1 = 1;   
+			     WIPER_OUTPUT_2  = 1;
+				printf("WIPERS  = 3 @@@~~~~@@@\r\n");
+			 }
+			 if(ucConKeyValue == 0x08)
+			 {
+                 WIPER_OUTPUT_1 = 0;   
+			     WIPER_OUTPUT_2  = 0;
+				printf("WIPERS  = 0 @@@~~~~@@@~~~~\r\n");
+			 }
+		     /*******************AIR_F***************************/    	
+        }
 		else
 		{
 			/* 3?ê± */
@@ -260,7 +284,7 @@ static void vTaskSUBJ(void *pvParameters)
 static void vTaskBLDC(void *pvParameters)
 {
     
-    uint8_t ucValue;
+    volatile uint8_t ucValue;
 	TickType_t xLastWakeTime;
 	
 	const TickType_t xFrequency = 100;
@@ -329,7 +353,7 @@ static void vTaskBLDC(void *pvParameters)
 			 //  DelayMs(200U);
 	           
             }
-        CADC_ClearStatusFlags(CADC_BASEADDR, kCADC_ConverterAEndOfScanFlag);
+          CADC_ClearStatusFlags(CADC_BASEADDR, kCADC_ConverterAEndOfScanFlag);
 
      	}
 
@@ -555,50 +579,34 @@ static void vTaskCOTL(void *pvParameters)
 				
 				if(wiper_s ==1)
 				{
-                   WIPER_OUTPUT_2 = 0;
-				   WIPER_OUTPUT_1 = 1;
-				   ucControl = 0x05;
-					
+                   ucControl = 0x05;
 				   xTaskNotify(xHandleTaskSUBJ,      /* 目标任务 */
-								   ucControl,              /* 发送数据 */
-								   eSetValueWithOverwrite);/* 上次目标任务没有执行，会被覆盖 */
-				   }
-				
+							   ucControl,              /* 发送数据 */
+							   eSetValueWithOverwrite);/* 上次目标任务没有执行，会被覆盖 */
+				}
 				else if(wiper_s ==2)
 				{
-                 
-				   WIPER_OUTPUT_1 = 0;   
-			       WIPER_OUTPUT_2  = 1;
-				    ucControl = 0x06;
-					
+                    ucControl = 0x06;
 					xTaskNotify(xHandleTaskSUBJ,      /* 目标任务 */
-								   ucControl,              /* 发送数据 */
-								   eSetValueWithOverwrite);/* 上次目标任务没有执行，会被覆盖 */
+								ucControl,              /* 发送数据 */
+								eSetValueWithOverwrite);/* 上次目标任务没有执行，会被覆盖 */
 				 }
 				else if(wiper_s == 3)
 			    {
-					WIPER_OUTPUT_1 = 1;
-					WIPER_OUTPUT_2 = 1;
-                    ucControl = 0x07;
-					
+					ucControl = 0x07;
 					xTaskNotify(xHandleTaskSUBJ,      /* 目标任务 */
-								   ucControl,              /* 发送数据 */
-								   eSetValueWithOverwrite);/* 上次目标任务没有执行，会被覆盖 */
-					
+								ucControl,              /* 发送数据 */
+								eSetValueWithOverwrite);/* 上次目标任务没有执行，会被覆盖 */
 				}
 				else
 				{
                     wiper_s == 0;
 					ucControl = 0x08;
-					
 					xTaskNotify(xHandleTaskSUBJ,      /* 目标任务 */
 								ucControl,              /* 发送数据 */
 								eSetValueWithOverwrite);/* 上次目标任务没有执行，会被覆盖 */
-					
 				}
-                 
-			
-			 break;
+             break;
 				
 	         case AIR_PRES : //10 PE29
 	         	PRINTF("AIR_PRES key \r\n");
