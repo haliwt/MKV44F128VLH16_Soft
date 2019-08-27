@@ -317,7 +317,7 @@ static void vTaskBLDC(void *pvParameters)
     volatile uint16_t pwm_f=0;
 	uint16_t sampleMask;
 	BaseType_t xResult;
-    const TickType_t xMaxBlockTime = pdMS_TO_TICKS(5); /* 设置最大等待时间为300ms */
+    const TickType_t xMaxBlockTime = pdMS_TO_TICKS(50); /* 设置最大等待时间为300ms */
 	uint32_t ucConValue;
 	while(1)
     {       
@@ -342,12 +342,18 @@ static void vTaskBLDC(void *pvParameters)
 	  {
          taskENTER_CRITICAL(); //进入临界状态
 		 PMW_AllClose_ABC_Channel();
-         DelayMs(10U);
          PMW_AllClose_ABC_Channel();
 		 PWM_StopTimer(BOARD_PWM_BASEADDR,  kPWM_Control_Module_0);
 		 PWM_StopTimer(BOARD_PWM_BASEADDR,  kPWM_Control_Module_1);
 		 PWM_StopTimer(BOARD_PWM_BASEADDR,  kPWM_Control_Module_2);
+		 if(recoder_number.break_f ==1)
+		 {
+		     A_POWER_OUTPUT =0;
+			 B_POWER_OUTPUT =0;
+			 C_POWER_OUTPUT =0;	 
+		  }
 		 taskEXIT_CRITICAL(); //退出临界状态
+		 
 		 printf("Break is OK $$$$$$$$$$$$$\r\n");
        }
 	 else if(ucValue==0x0b) 
