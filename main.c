@@ -407,6 +407,7 @@ static void vTaskCOTL(void *pvParameters)
    // MSG_T  *ptMsg; 
 	uint8_t ucKeyCode=0,abc_s=0;
     uint8_t start_s =0,door_s = 0,wiper_s=0,air_s=0;
+
     BaseType_t xResult;
 	const TickType_t xMaxBlockTime = pdMS_TO_TICKS(100); /* 设置最大等待时间为5ms */
 	uint8_t ucControl=0;
@@ -425,11 +426,11 @@ static void vTaskCOTL(void *pvParameters)
 		{
 			printf("xTaskNotfifyWait = %#x\r\n", ulValue);
 			 if(ulValue==0x32)
-				  {
+				{
                        recoder_number.dir_change ++;
 		          if(recoder_number.dir_change == 1)
 		          {
-                     ucControl =0x0a;
+                     ucControl =0x0b;
 					 recoder_number.break_f =0;
 					 xTaskNotify(xHandleTaskBLDC,      /* 目标任务 */
 					ucControl,              /* 发送数据 */
@@ -437,17 +438,14 @@ static void vTaskCOTL(void *pvParameters)
 				  }
 				  else 
 				  {
-                     ucControl = 0x0b;
+                     ucControl = 0x0a;
 					 recoder_number.dir_change =0;
 					 xTaskNotify(xHandleTaskBLDC,      /* 目标任务 */
 					ucControl,              /* 发送数据 */
 					eSetValueWithOverwrite);/* 上次目标任务没有执行，会被覆盖 */
 				  }
                 
-		         	
-                   
-
-				  }
+				}
 		}
 		else
 		{
@@ -569,7 +567,7 @@ static void vTaskCOTL(void *pvParameters)
 					  xTaskNotify(xHandleTaskSUBJ,      /* 目标任务 */
 								   ucControl,              /* 发送数据 */
 								   eSetValueWithOverwrite);/* 上次目标任务没有执行，会被覆盖 */
-                       recoder_number.door_number=0;
+                       
 					   
 				   }
 			 	   
