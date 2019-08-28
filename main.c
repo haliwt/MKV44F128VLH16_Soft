@@ -144,7 +144,8 @@ static void vTaskUSART(void *pvParameters)
   while(1)
     {
         printf("vTaskUSART-1 \r\n");
-		UART_ReadBlocking(DEMO_UART, ch, 1);
+        DelayMs(1);
+		//UART_ReadBlocking(DEMO_UART, ch, 1);
         UART_ReadBlocking(DEMO_UART, ch, 8);
        
         UART_WriteBlocking(DEMO_UART, ch, 8);
@@ -170,7 +171,7 @@ static void vTaskUSART(void *pvParameters)
          {
            
 		      xTaskNotify(xHandleTaskCOTL,      /* 目标任务 */
-								ptMsg->usData[1],              /* 发送数据 */
+								ptMsg->usData[2],              /* 发送数据 */
 								eSetValueWithOverwrite);/* 上次目标任务没有执行，会被覆盖 */
 
         #if 0
@@ -191,7 +192,7 @@ static void vTaskUSART(void *pvParameters)
 		#endif 
         }
 		
-		vTaskDelay(xMaxBlockTime);
+	//	vTaskDelay(xMaxBlockTime);
 	 //vTaskDelayUntil(&xLastWakeTime, xFrequency);
     }
 }
@@ -338,7 +339,7 @@ static void vTaskBLDC(void *pvParameters)
 			/* 超时 */
           LED1= !LED1;
 		}
-	  if((ucValue==0x0a)|| (recoder_number.break_f ==1))//刹车
+	  if((ucValue==0x02)|| (recoder_number.break_f ==1))//刹车
 	  {
          taskENTER_CRITICAL(); //进入临界状态
 		 PMW_AllClose_ABC_Channel();
@@ -356,7 +357,7 @@ static void vTaskBLDC(void *pvParameters)
 		 
 		 printf("Break is OK $$$$$$$$$$$$$\r\n");
        }
-	 else if(ucValue==0x0b) 
+	 else if(ucValue==0x03) 
 	 { 
              	/* 接收数据成功 */
              printf("Motor run = %#x\r\n",ucConValue);
@@ -423,7 +424,7 @@ static void vTaskBLDC(void *pvParameters)
 static void vTaskCOTL(void *pvParameters)
 {
    
-    uint8_t ucKeyCode=0,abc_s=0;
+    uint8_t ucKeyCode=0,abc_s=0,digital_s=0;
     uint8_t start_s =0,door_s = 0,wiper_s=0,air_s=0;
 
     BaseType_t xResult;
@@ -458,11 +459,11 @@ static void vTaskCOTL(void *pvParameters)
 			 {
                 ucKeyCode =DIR_PRES  ; 
 			 }
-			 if(ulValue == 0x06)
+			 if(ulValue == 0x07)
 			 {
                 ucKeyCode =DIGITAL_ADD_PRES  ; 
 			 }
-			 if(ulValue == 0x07)
+			 if(ulValue == 0x06)
 			 {
                 ucKeyCode =DIGITAL_REDUCE_PRES  ; 
 			 }
@@ -478,7 +479,7 @@ static void vTaskCOTL(void *pvParameters)
 			 {
                 ucKeyCode =WHEEL_PRES ; 
 			 }
-			  if(ulValue == 0xe)
+			  if(ulValue == 0x0e)
 			 {
                 ucKeyCode =WIPERS_PRES ; 
 			 }
@@ -568,7 +569,8 @@ static void vTaskCOTL(void *pvParameters)
 				
 			 case DIGITAL_ADD_PRES ://4
 				PRINTF("DIGITAL_ADD_PRES key \r\n");
-				 if(abc_s ==1)
+                  digital_s ++;
+				 if(digital_s ==1)
 				  	{
                        ucControl = 0x01;
                        xTaskNotify(xHandleTaskSUBJ,      /* 目标任务 */
@@ -578,7 +580,7 @@ static void vTaskCOTL(void *pvParameters)
 					else 
 					{
                      ucControl = 0x00;
-                     abc_s =0 ;
+                     digital_s =0 ;
                      xTaskNotify(xHandleTaskSUBJ,      /* 目标任务 */
                            ucControl,              /* 发送数据 */
                            eSetValueWithOverwrite);/* 上次目标任务没有执行，会被覆盖 */
@@ -588,7 +590,8 @@ static void vTaskCOTL(void *pvParameters)
 				
 			 case DIGITAL_REDUCE_PRES ://5
 			 	PRINTF("DIGITAL_REDUCE_PRES key \r\n");
-				if(abc_s ==1)
+                digital_s ++;
+				if(digital_s ==1)
 				  	{
                        ucControl = 0x01;
                        xTaskNotify(xHandleTaskSUBJ,      /* 目标任务 */
@@ -598,7 +601,7 @@ static void vTaskCOTL(void *pvParameters)
 					else 
 					{
                      ucControl = 0x00;
-                     abc_s =0 ;
+                     digital_s =0 ;
                      xTaskNotify(xHandleTaskSUBJ,      /* 目标任务 */
                            ucControl,              /* 发送数据 */
                            eSetValueWithOverwrite);/* 上次目标任务没有执行，会被覆盖 */
