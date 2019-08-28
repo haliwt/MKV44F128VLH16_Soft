@@ -166,7 +166,7 @@ static void vTaskUSART(void *pvParameters)
 
 		}
         
-        if(ch[0] == 0x31) //'1' = 0x31
+        if(ch[0] == 0x01) //'1' = 0x31
          {
            
 		      xTaskNotify(xHandleTaskCOTL,      /* 目标任务 */
@@ -234,7 +234,7 @@ static void vTaskSUBJ(void *pvParameters)
 				 C_POWER_OUTPUT =1;
 		        printf("ABC_= 1 @@@@~~~@@@\r\n");  
 		     }
-			 if(ucConKeyValue==0x02)
+			 if(ucConKeyValue==0x00)
 			 {
                  A_POWER_OUTPUT =0;
 				 B_POWER_OUTPUT =0;
@@ -242,48 +242,48 @@ static void vTaskSUBJ(void *pvParameters)
 		        printf("ABC_ = 0 @@@@@@@~~~\r\n");  
 		     }
 			 /*******************Door_F*************************/
-			 if(ucConKeyValue==0x03)
+			 if(ucConKeyValue==0x09)
 			 {
                 DOOR_OUTPUT =1;//door open
 		        printf("DOOR_OUTPUT = 1 @@@@@@@\r\n");  
 		     }
-             if(ucConKeyValue==0x04)
+             if(ucConKeyValue==0x08)
 			 {
                 DOOR_OUTPUT =0;//door open
 		        printf("DOOR_OUTPUT = 0 ~~~~~~~\r\n");     
 		     }
 			 /*******************WIPERS_F***************************/
-             if(ucConKeyValue == 0x05)
+             if(ucConKeyValue == 0x0e)
 	         {
 	  			 WIPER_OUTPUT_2 = 0;
 	  			 WIPER_OUTPUT_1 = 1;
 	  			 printf("WIPERS  = 1 @@@@~~~~\r\n");   
 	         }
-			 if(ucConKeyValue == 0x06)
+			 if(ucConKeyValue == 0x0f)
 			 {
                  WIPER_OUTPUT_1 = 1;   
 			     WIPER_OUTPUT_2  = 0;
 				printf("WIPERS  = 2 ~~~~@@@@\r\n");
 			 }
-			 if(ucConKeyValue == 0x07)
+			 if(ucConKeyValue == 0x10)
 			 {
                  WIPER_OUTPUT_1 = 1;   
 			     WIPER_OUTPUT_2  = 1;
 				printf("WIPERS  = 3 @@@~~~~@@@\r\n");
 			 }
-			 if(ucConKeyValue == 0x08)
+			 if(ucConKeyValue == 0x11)
 			 {
                  WIPER_OUTPUT_1 = 0;   
 			     WIPER_OUTPUT_2  = 0;
 				printf("WIPERS  = 0 @@@~~~~@@@~~~~\r\n");
 			 }
 		     /*******************AIR_F***************************/   
-              if(ucConKeyValue == 0x09)
+              if(ucConKeyValue == 0x12)
 			 {
                  AIR_OUTPUT = 1;
 				printf("AIR  = 1 ~~@@@~~\r\n");
 			 }
-              if(ucConKeyValue == 0x0a)
+              if(ucConKeyValue == 0x13)
 			 {
                  AIR_OUTPUT = 0;
 				printf("AIR  = 0 ~~@@@~~@@@~~~~@@@\r\n");
@@ -317,7 +317,7 @@ static void vTaskBLDC(void *pvParameters)
     volatile uint16_t pwm_f=0;
 	uint16_t sampleMask;
 	BaseType_t xResult;
-    const TickType_t xMaxBlockTime = pdMS_TO_TICKS(50); /* 设置最大等待时间为300ms */
+    const TickType_t xMaxBlockTime = pdMS_TO_TICKS(200); /* 设置最大等待时间为300ms */
 	uint32_t ucConValue;
 	while(1)
     {       
@@ -423,16 +423,14 @@ static void vTaskBLDC(void *pvParameters)
 static void vTaskCOTL(void *pvParameters)
 {
    
-	//TickType_t xLastWakeTime;
-	//const TickType_t xFrequency = 200;
-   // MSG_T  *ptMsg; 
-	uint8_t ucKeyCode=0,abc_s=0;
+    uint8_t ucKeyCode=0,abc_s=0;
     uint8_t start_s =0,door_s = 0,wiper_s=0,air_s=0;
 
     BaseType_t xResult;
-	const TickType_t xMaxBlockTime = pdMS_TO_TICKS(100); /* 设置最大等待时间为5ms */
-	uint8_t ucControl=0;
-	uint32_t ulValue;
+	const TickType_t xMaxBlockTime = pdMS_TO_TICKS(200); /* 设置最大等待时间为5ms */
+	uint8_t ucControl=0,ulValue;
+	uint32_t rlValue;
+	
 
 	while(1)
     {
@@ -440,33 +438,55 @@ static void vTaskCOTL(void *pvParameters)
 		  ucKeyCode = KEY_Scan(0);
 		  xResult = xTaskNotifyWait(0x00000000,      
 						          0xFFFFFFFF,      
-						          &ulValue,        /* 存储ulNotifiedValue在ulvalue中 */
+						          &rlValue,        /* 存储ulNotifiedValue在ulvalue中 */
 						          xMaxBlockTime);  /* 最大延迟时间 */
 		
 		if( xResult == pdPASS )
 		{
+            ulValue=(uint8_t)rlValue;
 			printf("xTaskNotfifyWait = %#x\r\n", ulValue);
-			 if(ulValue==0x32)
-				{
-                       recoder_number.dir_change ++;
-		          if(recoder_number.dir_change == 1)
-		          {
-                     ucControl =0x0b;
-					 recoder_number.break_f =0;
-					 xTaskNotify(xHandleTaskBLDC,      /* 目标任务 */
-					ucControl,              /* 发送数据 */
-					eSetValueWithOverwrite);/* 上次目标任务没有执行，会被覆盖 */
-				  }
-				  else 
-				  {
-                     ucControl = 0x0a;
-					 recoder_number.dir_change =0;
-					 xTaskNotify(xHandleTaskBLDC,      /* 目标任务 */
-					ucControl,              /* 发送数据 */
-					eSetValueWithOverwrite);/* 上次目标任务没有执行，会被覆盖 */
-				  }
-                
-				}
+			/****************digitalkey coder******************/
+			 if(ulValue == 0x01)
+			 {
+                ucKeyCode =ABC_POWER_PRES  ; 
+			 }
+			 if(ulValue == 0x2)
+			 {
+                ucKeyCode =START_PRES  ; 
+			 }
+			 if(ulValue == 0x4)
+			 {
+                ucKeyCode =DIR_PRES  ; 
+			 }
+			 if(ulValue == 0x06)
+			 {
+                ucKeyCode =DIGITAL_ADD_PRES  ; 
+			 }
+			 if(ulValue == 0x07)
+			 {
+                ucKeyCode =DIGITAL_REDUCE_PRES  ; 
+			 }
+			 if(ulValue == 0x09)
+			 {
+                ucKeyCode =DOOR_PRES ; 
+			 }
+			 if(ulValue == 0x0a)
+			 {
+                ucKeyCode =HALL_PRES ; 
+			 }
+			 if(ulValue == 0x0c)
+			 {
+                ucKeyCode =WHEEL_PRES ; 
+			 }
+			  if(ulValue == 0xe)
+			 {
+                ucKeyCode =WIPERS_PRES ; 
+			 }
+			  if(ulValue == 0x12)
+			 {
+                ucKeyCode =AIR_PRES ; 
+			 }
+			 
 		}
 		else
 		{
@@ -476,10 +496,10 @@ static void vTaskCOTL(void *pvParameters)
 		}
 
 		  
-		if(ucKeyCode !=KEY_UP)
+		if(ucKeyCode !=KEY_UP) 
 				
 			{
-               switch(ucKeyCode )//if(ptMsg->ucMessageID == 0x32)
+               switch(ucKeyCode)//if(ptMsg->ucMessageID == 0x32)
                 { 
                 
                   case ABC_POWER_PRES :
@@ -488,21 +508,18 @@ static void vTaskCOTL(void *pvParameters)
 				     abc_s++;
 				  if(abc_s ==1)
 				  	{
-                         ucControl = 0x01;
-						
-					  	 xTaskNotify(xHandleTaskSUBJ,      /* 目标任务 */
-							   ucControl,              /* 发送数据 */
-							   eSetValueWithOverwrite);/* 上次目标任务没有执行，会被覆盖 */
-						 
-				  	}
+                       ucControl = 0x01;
+                       xTaskNotify(xHandleTaskSUBJ,      /* 目标任务 */
+                                   ucControl,              /* 发送数据 */
+                                   eSetValueWithOverwrite);/* 上次目标任务没有执行，会被覆盖 */
+                     }
 					else 
 					{
-                         ucControl = 0x02;
-						
-						 abc_s =0 ;
-						 xTaskNotify(xHandleTaskSUBJ,      /* 目标任务 */
-							   ucControl,              /* 发送数据 */
-							   eSetValueWithOverwrite);/* 上次目标任务没有执行，会被覆盖 */
+                     ucControl = 0x00;
+                     abc_s =0 ;
+                     xTaskNotify(xHandleTaskSUBJ,      /* 目标任务 */
+                           ucControl,              /* 发送数据 */
+                           eSetValueWithOverwrite);/* 上次目标任务没有执行，会被覆盖 */
 
 					}
 				  	break;
@@ -514,7 +531,7 @@ static void vTaskCOTL(void *pvParameters)
 				    start_s ++;
 		          if((start_s == 1)||(recoder_number.break_f ==1))
 		          {
-                     ucControl =0x0b;
+                     ucControl =0x03;
 					 recoder_number.break_f =0;
 					 xTaskNotify(xHandleTaskBLDC,      /* 目标任务 */
 									ucControl,              /* 发送数据 */
@@ -523,7 +540,7 @@ static void vTaskCOTL(void *pvParameters)
 				  }
 				  else 
 				  {
-                     ucControl = 0x0a;
+                     ucControl = 0x02;
 					 start_s =0;
 					  xTaskNotify(xHandleTaskBLDC,      /* 目标任务 */
 									ucControl,              /* 发送数据 */
@@ -551,23 +568,42 @@ static void vTaskCOTL(void *pvParameters)
 				
 			 case DIGITAL_ADD_PRES ://4
 				PRINTF("DIGITAL_ADD_PRES key \r\n");
-				 /* 向消息队列发送数据 */
-					if( xQueueSend(xQueue1,
-								   (void *) &ucControl,
-								   (TickType_t)10) != pdPASS )
+				 if(abc_s ==1)
+				  	{
+                       ucControl = 0x01;
+                       xTaskNotify(xHandleTaskSUBJ,      /* 目标任务 */
+                                   ucControl,              /* 发送数据 */
+                                   eSetValueWithOverwrite);/* 上次目标任务没有执行，会被覆盖 */
+                     }
+					else 
 					{
-						/* 发送数据失败，等待10个节拍 */
-						printf("DIGITAL_ADD_PRES is fail?????????\r\n");
-					}
-					else
-					{
-						/* 发送数据成功 */
-						printf("DIGITAL_ADD_PRES is OK \r\n");						
+                     ucControl = 0x00;
+                     abc_s =0 ;
+                     xTaskNotify(xHandleTaskSUBJ,      /* 目标任务 */
+                           ucControl,              /* 发送数据 */
+                           eSetValueWithOverwrite);/* 上次目标任务没有执行，会被覆盖 */
+
 					}
 				break;
 				
 			 case DIGITAL_REDUCE_PRES ://5
 			 	PRINTF("DIGITAL_REDUCE_PRES key \r\n");
+				if(abc_s ==1)
+				  	{
+                       ucControl = 0x01;
+                       xTaskNotify(xHandleTaskSUBJ,      /* 目标任务 */
+                                   ucControl,              /* 发送数据 */
+                                   eSetValueWithOverwrite);/* 上次目标任务没有执行，会被覆盖 */
+                     }
+					else 
+					{
+                     ucControl = 0x00;
+                     abc_s =0 ;
+                     xTaskNotify(xHandleTaskSUBJ,      /* 目标任务 */
+                           ucControl,              /* 发送数据 */
+                           eSetValueWithOverwrite);/* 上次目标任务没有执行，会被覆盖 */
+
+					}
 				break;
 				
 			 case DOOR_PRES ://6
@@ -576,7 +612,7 @@ static void vTaskCOTL(void *pvParameters)
 				   if(door_s ==1)
 				   {
                       
-                       ucControl = 0x03;
+                       ucControl = 0x09;
 					
 					  xTaskNotify(xHandleTaskSUBJ,      /* 目标任务 */
 								   ucControl,              /* 发送数据 */
@@ -584,24 +620,55 @@ static void vTaskCOTL(void *pvParameters)
 				   }
 				   else
 				   {
-                     
-                      ucControl = 0x04;
-					 
+                      door_s =0; 
+                     ucControl = 0x08;
 					  xTaskNotify(xHandleTaskSUBJ,      /* 目标任务 */
 								   ucControl,              /* 发送数据 */
 								   eSetValueWithOverwrite);/* 上次目标任务没有执行，会被覆盖 */
-                       
-					   
-				   }
+                    }
 			 	   
 				break;
 				   
 			 case HALL_PRES://7
 			 	PRINTF("HALL_PRES key \r\n");
+				  door_s ++ ;
+				   if(door_s ==1)
+				   {
+                      
+                       ucControl = 0x0b;
+					
+					  xTaskNotify(xHandleTaskSUBJ,      /* 目标任务 */
+								   ucControl,              /* 发送数据 */
+								   eSetValueWithOverwrite);/* 上次目标任务没有执行，会被覆盖 */
+				   }
+				   else
+				   {
+                      ucControl = 0x0a;
+					  xTaskNotify(xHandleTaskSUBJ,      /* 目标任务 */
+								   ucControl,              /* 发送数据 */
+								   eSetValueWithOverwrite);/* 上次目标任务没有执行，会被覆盖 */
+                   }
 				break;
 			 
 			 case WHEEL_PRES : //8
 			    PRINTF("WHEEL_PRES key \r\n");
+				  door_s ++ ;
+				   if(door_s ==1)
+				   {
+                      
+                       ucControl = 0x0d;
+					
+					  xTaskNotify(xHandleTaskSUBJ,      /* 目标任务 */
+								   ucControl,              /* 发送数据 */
+								   eSetValueWithOverwrite);/* 上次目标任务没有执行，会被覆盖 */
+				   }
+				   else
+				   {
+                      ucControl = 0x0c;
+					  xTaskNotify(xHandleTaskSUBJ,      /* 目标任务 */
+								   ucControl,              /* 发送数据 */
+								   eSetValueWithOverwrite);/* 上次目标任务没有执行，会被覆盖 */
+                   }
 			    break;
 				
 			 case WIPERS_PRES: //9雨刮器
@@ -610,21 +677,21 @@ static void vTaskCOTL(void *pvParameters)
 				
 				if(wiper_s ==1)
 				{
-                   ucControl = 0x05;
+                   ucControl = 0x0e;
 				   xTaskNotify(xHandleTaskSUBJ,      /* 目标任务 */
 							   ucControl,              /* 发送数据 */
 							   eSetValueWithOverwrite);/* 上次目标任务没有执行，会被覆盖 */
 				}
 				else if(wiper_s ==2)
 				{
-                    ucControl = 0x06;
+                    ucControl = 0x0f;
 					xTaskNotify(xHandleTaskSUBJ,      /* 目标任务 */
 								ucControl,              /* 发送数据 */
 								eSetValueWithOverwrite);/* 上次目标任务没有执行，会被覆盖 */
 				 }
 				else if(wiper_s == 3)
 			    {
-					ucControl = 0x07;
+					ucControl = 0x10;
 					xTaskNotify(xHandleTaskSUBJ,      /* 目标任务 */
 								ucControl,              /* 发送数据 */
 								eSetValueWithOverwrite);/* 上次目标任务没有执行，会被覆盖 */
@@ -632,7 +699,7 @@ static void vTaskCOTL(void *pvParameters)
 				else
 				{
                     wiper_s == 0;
-					ucControl = 0x08;
+					ucControl = 0x11;
 					xTaskNotify(xHandleTaskSUBJ,      /* 目标任务 */
 								ucControl,              /* 发送数据 */
 								eSetValueWithOverwrite);/* 上次目标任务没有执行，会被覆盖 */
@@ -645,7 +712,7 @@ static void vTaskCOTL(void *pvParameters)
 				        
 				if(air_s ==1)
 				{
-			        ucControl = 0x09;
+			        ucControl = 0x12;
 					xTaskNotify(xHandleTaskSUBJ,      /* 目标任务 */
 								ucControl,              /* 发送数据 */
 								eSetValueWithOverwrite);/* 上次目标任务没有执行，会被覆盖 */
@@ -653,13 +720,14 @@ static void vTaskCOTL(void *pvParameters)
 			    else 
 			    {
 		            air_s =0;
-				    ucControl = 0x0a;
+				    ucControl = 0x13;
 					xTaskNotify(xHandleTaskSUBJ,      /* 目标任务 */
 								ucControl,              /* 发送数据 */
 								eSetValueWithOverwrite);/* 上次目标任务没有执行，会被覆盖 */
 				  
 				   
 			    }
+                break;
         }
         
 	}
