@@ -333,9 +333,9 @@ static void vTaskBLDC(void *pvParameters)
          taskENTER_CRITICAL(); //½øÈëÁÙ½ç×´Ì¬
 		 PMW_AllClose_ABC_Channel();
          PMW_AllClose_ABC_Channel();
-		 PWM_StopTimer(BOARD_PWM_BASEADDR,  kPWM_Control_Module_0);
-		 PWM_StopTimer(BOARD_PWM_BASEADDR,  kPWM_Control_Module_1);
-		 PWM_StopTimer(BOARD_PWM_BASEADDR,  kPWM_Control_Module_2);
+		// PWM_StopTimer(BOARD_PWM_BASEADDR,  kPWM_Control_Module_0);
+		// PWM_StopTimer(BOARD_PWM_BASEADDR,  kPWM_Control_Module_1);
+		// PWM_StopTimer(BOARD_PWM_BASEADDR,  kPWM_Control_Module_2);
 		 if(recoder_number.break_f ==1)
 		 {
 		     A_POWER_OUTPUT =0;
@@ -809,6 +809,7 @@ void BARKE_KEY_IRQ_HANDLER(void )//void BOARD_BRAKE_IRQ_HANDLER(void)
     /* Change state of button. */
 
 	recoder_number.break_f =1;
+	PRINTF("interrupte has happed  \r\n");
 	                  
 /* Add for ARM errata 838869, affects Cortex-M4, Cortex-M4F Store immediate overlapping
   exception return operation might vector to incorrect interrupt */

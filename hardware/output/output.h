@@ -35,8 +35,8 @@
 typedef struct _output_t_
 {
 
-  uint8_t dir_change;
-  uint8_t break_f;
+  volatile uint8_t dir_change;
+  volatile uint8_t break_f;
 
 }output_t;
 
