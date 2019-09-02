@@ -145,11 +145,10 @@ static void vTaskUSART(void *pvParameters)
     {
         printf("vTaskUSART-1 \r\n");
         DelayMs(1);
-		//UART_ReadBlocking(DEMO_UART, ch, 1);
         UART_ReadBlocking(DEMO_UART, ch, 8);
        
         UART_WriteBlocking(DEMO_UART, ch, 8);
-        printf("ch output .\r\n");
+       // printf("ch output .\r\n");
         printf("ch=[7] %#x \r\n",ch[7]);
         printf("ch=[6] %#x \r\n",ch[6]);
         printf("ch=[5] %#x \r\n",ch[5]);
@@ -173,26 +172,9 @@ static void vTaskUSART(void *pvParameters)
 		      xTaskNotify(xHandleTaskCOTL,      /* 目标任务 */
 								ptMsg->usData[2],              /* 发送数据 */
 								eSetValueWithOverwrite);/* 上次目标任务没有执行，会被覆盖 */
-
-        #if 0
-		 /* 向消息队列发送数据，如果消息队列满，等待10个时钟节拍 */
-		    ptMsg->ucMessageID = ch[1];
-            if( xQueueSend(xQueue2,
-                     (void *) &ptMsg,
-                     (TickType_t)10) != pdPASS )
-            {
-             /* 发送失败，即使等待了10个时钟节拍 */
-	       		printf("向xQueue-2发送数据失败??????????\r\n");
-            }
-            else
-            {
-             /* 发送成功 */
-		      printf("发送数据xQueue-2成功！\r\n");							
-            }
-		#endif 
-        }
+         }
 		
-	//	vTaskDelay(xMaxBlockTime);
+		vTaskDelay(xMaxBlockTime);
 	 //vTaskDelayUntil(&xLastWakeTime, xFrequency);
     }
 }
@@ -282,19 +264,25 @@ static void vTaskSUBJ(void *pvParameters)
               if(ucConKeyValue == 0x12)
 			 {
                  AIR_OUTPUT = 1;
+                 A_POWER_OUTPUT =1;
+				 B_POWER_OUTPUT =1;
+				 C_POWER_OUTPUT =1;
 				printf("AIR  = 1 ~~@@@~~\r\n");
 			 }
               if(ucConKeyValue == 0x13)
 			 {
                  AIR_OUTPUT = 0;
+                 A_POWER_OUTPUT =0;
+				 B_POWER_OUTPUT =0;
+				 C_POWER_OUTPUT =0;
 				printf("AIR  = 0 ~~@@@~~@@@~~~~@@@\r\n");
 			 }
         }
 		else
 		{
 			/* 3?ê± */
-			LED1=0;
-			LED2 =0 ;
+			LED1=!LED1;
+			
 		}
 
 
@@ -320,6 +308,7 @@ static void vTaskBLDC(void *pvParameters)
 	BaseType_t xResult;
     const TickType_t xMaxBlockTime = pdMS_TO_TICKS(200); /* 设置最大等待时间为300ms */
 	uint32_t ucConValue;
+    uint16_t dirvalue;
 	while(1)
     {       
       printf("vTaskBLDC-2 \r\n");  
@@ -337,7 +326,7 @@ static void vTaskBLDC(void *pvParameters)
 		else
 		{
 			/* 超时 */
-          LED1= !LED1;
+          LED2= !LED2;
 		}
 	  if((ucValue==0x02)|| (recoder_number.break_f ==1))//刹车
 	  {
@@ -392,19 +381,19 @@ static void vTaskBLDC(void *pvParameters)
             pwm_f = (uint16_t)((CADC_GetSampleResultValue(CADC_BASEADDR, 1U))/ 330);
 			if(recoder_number.dir_change == 1) 
             {
-                  Dir = Dir ;
+                  dirvalue = 1 ;
 				  printf("Dir = Dir is OK !!!!\r\n");
 			}
 			else 
 			{
-			    Dir = -Dir;
+			   dirvalue = 0;
 				printf("Dir = - Dir is OK #######\r\n");
 			}
 			/***********Motor Run**************/
             PMW_AllClose_ABC_Channel();
 			uwStep = HallSensor_GetPinState();
         	PRINTF("ouread = %d \r\n",uwStep);
-        	HALLSensor_Detected_BLDC(uwStep,pwm_f); 
+        	HALLSensor_Detected_BLDC(uwStep,pwm_f,dirvalue); 
            
 
         }
@@ -426,7 +415,7 @@ static void vTaskCOTL(void *pvParameters)
    
     uint8_t ucKeyCode=0,abc_s=0,digital_s=0;
     uint8_t start_s =0,door_s = 0,wiper_s=0,air_s=0;
-
+    uint8_t hall_s = 0,wheel_s=0;
     BaseType_t xResult;
 	const TickType_t xMaxBlockTime = pdMS_TO_TICKS(200); /* 设置最大等待时间为5ms */
 	uint8_t ucControl=0,ulValue;
@@ -525,8 +514,6 @@ static void vTaskCOTL(void *pvParameters)
 					}
 				  	break;
 
-
-
 				 case START_PRES:
                    PRINTF("START_PRES key \r\n");
 				    start_s ++;
@@ -550,13 +537,14 @@ static void vTaskCOTL(void *pvParameters)
 				  }
                  
 				  break;
-				  case DIR_PRES: //3
+				  
+				 case DIR_PRES: //3
 
 			      recoder_number.dir_change++;
 	  			 PRINTF(" DIR_change = %d  \r\n", recoder_number.dir_change);
 	  			 if(recoder_number.dir_change == 1)
 	   				{
-                       LED1 =0;
+                        LED1 =0;
 						LED2 =0;
 				    }
 				 else 
@@ -611,7 +599,7 @@ static void vTaskCOTL(void *pvParameters)
 				
 			 case DOOR_PRES ://6
 			 	   PRINTF("DOOR_PRES key \r\n");
-			 	   door_s ++ ;
+			 	   door_s ++; ;
 				   if(door_s ==1)
 				   {
                       
@@ -634,8 +622,8 @@ static void vTaskCOTL(void *pvParameters)
 				   
 			 case HALL_PRES://7
 			 	PRINTF("HALL_PRES key \r\n");
-				  door_s ++ ;
-				   if(door_s ==1)
+				  hall_s ++ ;
+				   if(hall_s ==1)
 				   {
                       
                        ucControl = 0x0b;
@@ -646,7 +634,8 @@ static void vTaskCOTL(void *pvParameters)
 				   }
 				   else
 				   {
-                      ucControl = 0x0a;
+            		  hall_s = 0;
+					  ucControl = 0x0a;
 					  xTaskNotify(xHandleTaskSUBJ,      /* 目标任务 */
 								   ucControl,              /* 发送数据 */
 								   eSetValueWithOverwrite);/* 上次目标任务没有执行，会被覆盖 */
@@ -655,8 +644,8 @@ static void vTaskCOTL(void *pvParameters)
 			 
 			 case WHEEL_PRES : //8
 			    PRINTF("WHEEL_PRES key \r\n");
-				  door_s ++ ;
-				   if(door_s ==1)
+				  wheel_s ++ ;
+				   if(wheel_s ==1)
 				   {
                       
                        ucControl = 0x0d;
@@ -667,7 +656,8 @@ static void vTaskCOTL(void *pvParameters)
 				   }
 				   else
 				   {
-                      ucControl = 0x0c;
+                      wheel_s =0;
+					  ucControl = 0x0c;
 					  xTaskNotify(xHandleTaskSUBJ,      /* 目标任务 */
 								   ucControl,              /* 发送数据 */
 								   eSetValueWithOverwrite);/* 上次目标任务没有执行，会被覆盖 */

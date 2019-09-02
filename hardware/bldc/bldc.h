@@ -57,7 +57,7 @@ void HALL_Init(void);
 
 uint32_t HallSensor_GetPinState(void);
 
-void HALLSensor_Detected_BLDC(uint32_t uvw,uint16_t tpwmf);
+void HALLSensor_Detected_BLDC(uint32_t uvw,uint16_t tpwmf,uint16_t dir);
 
 
 void PWM_BLDC_Init(void);   // initial pwm function

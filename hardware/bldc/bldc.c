@@ -10,7 +10,7 @@ __IO int32_t uwStep = 0;      //六步引脚状态
 
 __IO uint32_t Lock_Time = 0;  // 堵转电流
 
-__IO int8_t Dir = CCW;       //
+
 
 __IO int16_t  PWM_Duty= 10;	 //占空比
 
@@ -221,7 +221,7 @@ static void PWM_DRV_Init3PhPwm(void)
  *
  *
 *********************************************************/
-void HALLSensor_Detected_BLDC(uint32_t uvw,uint16_t pwmf)
+void HALLSensor_Detected_BLDC(uint32_t uvw,uint16_t pwmf,uint16_t dir)
 {
       
 
@@ -229,7 +229,7 @@ void HALLSensor_Detected_BLDC(uint32_t uvw,uint16_t pwmf)
   //BLDCMotor.uwStep = HallSensor_GetPinState();
    __IO uint32_t tmp = 0;
 
- if(Dir == CCW)
+ if(dir == 1)
   {
     uvw = (uint32_t)7 - uvw;        // 逆时针 CW = 7 - CCW;
   }
