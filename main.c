@@ -264,17 +264,13 @@ static void vTaskSUBJ(void *pvParameters)
               if(ucConKeyValue == 0x12)
 			 {
                  AIR_OUTPUT = 1;
-                 A_POWER_OUTPUT =1;
-				 B_POWER_OUTPUT =1;
-				 C_POWER_OUTPUT =1;
+                
 				printf("AIR  = 1 ~~@@@~~\r\n");
 			 }
               if(ucConKeyValue == 0x13)
 			 {
                  AIR_OUTPUT = 0;
-                 A_POWER_OUTPUT =0;
-				 B_POWER_OUTPUT =0;
-				 C_POWER_OUTPUT =0;
+                
 				printf("AIR  = 0 ~~@@@~~@@@~~~~@@@\r\n");
 			 }
         }
@@ -309,6 +305,7 @@ static void vTaskBLDC(void *pvParameters)
     const TickType_t xMaxBlockTime = pdMS_TO_TICKS(200); /* 设置最大等待时间为300ms */
 	uint32_t ucConValue;
     uint16_t dirvalue;
+	
 	while(1)
     {       
       printf("vTaskBLDC-2 \r\n");  
@@ -328,6 +325,25 @@ static void vTaskBLDC(void *pvParameters)
 			/* 超时 */
           LED2= !LED2;
 		}
+      
+      if(ucValue == 0x05)
+      {
+         A_POWER_OUTPUT =1;
+		 B_POWER_OUTPUT =1;
+		 C_POWER_OUTPUT =1;
+		 
+	  }
+	  else if(ucValue == 0x04)
+	  {
+
+         A_POWER_OUTPUT =0;
+		 B_POWER_OUTPUT =0;
+		 C_POWER_OUTPUT =0;
+		
+	  }
+	  
+
+		
 	  if((ucValue==0x02)|| (recoder_number.break_f ==1))//刹车
 	  {
          taskENTER_CRITICAL(); //进入临界状态
@@ -415,7 +431,7 @@ static void vTaskCOTL(void *pvParameters)
    
     uint8_t ucKeyCode=0,abc_s=0,digital_s=0;
     uint8_t start_s =0,door_s = 0,wiper_s=0,air_s=0;
-    uint8_t hall_s = 0,wheel_s=0;
+    uint8_t hall_s = 0,wheel_s=0,abc_power_s=0;;
     BaseType_t xResult;
 	const TickType_t xMaxBlockTime = pdMS_TO_TICKS(200); /* 设置最大等待时间为5ms */
 	uint8_t ucControl=0,ulValue;
@@ -517,13 +533,16 @@ static void vTaskCOTL(void *pvParameters)
 				 case START_PRES:
                    PRINTF("START_PRES key \r\n");
 				    start_s ++;
-		          if((start_s == 1)||(recoder_number.break_f ==1))
+		          if((start_s == 1)||( abc_power_s==1))
 		          {
-                     ucControl =0x03;
-					 recoder_number.break_f =0;
-					 xTaskNotify(xHandleTaskBLDC,      /* 目标任务 */
-									ucControl,              /* 发送数据 */
-									eSetValueWithOverwrite);/* 上次目标任务没有执行，会被覆盖 */
+                     
+                             abc_power_s =0 ;
+							 ucControl =0x03;
+							 xTaskNotify(xHandleTaskBLDC,      /* 目标任务 */
+											ucControl,              /* 发送数据 */
+											eSetValueWithOverwrite);/* 上次目标任务没有执行，会被覆盖 */
+                    
+					 
 					
 				  }
 				  else 
@@ -642,26 +661,27 @@ static void vTaskCOTL(void *pvParameters)
                    }
 				break;
 			 
-			 case WHEEL_PRES : //8
+			 case WHEEL_PRES : //8 PTA5
 			    PRINTF("WHEEL_PRES key \r\n");
 				  wheel_s ++ ;
-				   if(wheel_s ==1)
+				 if((wheel_s ==1)||(recoder_number.break_f ==1))
 				   {
-                      
-                       ucControl = 0x0d;
-					
-					  xTaskNotify(xHandleTaskSUBJ,      /* 目标任务 */
-								   ucControl,              /* 发送数据 */
-								   eSetValueWithOverwrite);/* 上次目标任务没有执行，会被覆盖 */
-				   }
-				   else
+                      recoder_number.break_f =0;
+					  abc_power_s=1;
+					  ucControl = 0x05;
+					  xTaskNotify(xHandleTaskBLDC,		/* 目标任务 */
+								  ucControl,			  /* 发送数据 */
+								  eSetValueWithOverwrite);/* 上次目标任务没有执行，会被覆盖 */
+					}
+				   else 
 				   {
-                      wheel_s =0;
-					  ucControl = 0x0c;
-					  xTaskNotify(xHandleTaskSUBJ,      /* 目标任务 */
-								   ucControl,              /* 发送数据 */
-								   eSetValueWithOverwrite);/* 上次目标任务没有执行，会被覆盖 */
-                   }
+                     abc_power_s=0;
+					ucControl = 0x04;
+					wheel_s =0 ;
+					xTaskNotify(xHandleTaskBLDC,	  /* 目标任务 */
+						  ucControl,			  /* 发送数据 */
+						  eSetValueWithOverwrite);/* 上次目标任务没有执行，会被覆盖 */
+				   	}
 			    break;
 				
 			 case WIPERS_PRES: //9雨刮器
@@ -670,6 +690,7 @@ static void vTaskCOTL(void *pvParameters)
 				
 				if(wiper_s ==1)
 				{
+
                    ucControl = 0x0e;
 				   xTaskNotify(xHandleTaskSUBJ,      /* 目标任务 */
 							   ucControl,              /* 发送数据 */
