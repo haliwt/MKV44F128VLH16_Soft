@@ -84,34 +84,8 @@ void ADC_CADC_Init(void)
 
     PRINTF("Press any key to trigger the conversion ...\r\n");
     PRINTF("\r\nSample 0\tSample 1\tSample 2\tSample 3\r\n");
-#if 0
- 
-    {
-       // GETCHAR();
-        PRINTF("\r\n");
 
-        /* Trigger the converter.
-         * Trigger converter A would execute the long sequential conversion when in
-         * "kCADC_DualConverterWorkAsTriggeredSequential" work mode. */
-        CADC_DoSoftwareTriggerConverter(CADC_BASEADDR, kCADC_ConverterA);
 
-        /* Wait the conversion to be done. */
-        while (kCADC_ConverterAEndOfScanFlag !=
-               (kCADC_ConverterAEndOfScanFlag & CADC_GetStatusFlags(CADC_BASEADDR)))
-        {
-        }
-
-        /* Read the result value. */
-        if (sampleMask == (sampleMask & CADC_GetSampleReadyStatusFlags(CADC_BASEADDR)))
-        {
-            PRINTF("%d\t\t", (int16_t)CADC_GetSampleResultValue(CADC_BASEADDR, 0U));
-            PRINTF("%d\t\t", (int16_t)CADC_GetSampleResultValue(CADC_BASEADDR, 1U));
-           // PRINTF("%d\t\t", (int16_t)CADC_GetSampleResultValue(CADC_BASEADDR, 2U));
-            //PRINTF("%d", (int16_t)CADC_GetSampleResultValue(CADC_BASEADDR, 3U));
-        }
-        CADC_ClearStatusFlags(CADC_BASEADDR, kCADC_ConverterAEndOfScanFlag);
-    }
-#endif 
 }
 
 

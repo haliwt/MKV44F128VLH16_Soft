@@ -12971,7 +12971,7 @@ typedef struct {
  */
 #define PWM_CTRL_SPLIT(x)                        (((uint16_t)(((uint16_t)(x)) << PWM_CTRL_SPLIT_SHIFT)) & PWM_CTRL_SPLIT_MASK)
 #define PWM_CTRL_PRSC_MASK                       (0x70U)
-#define PWM_CTRL_PRSC_SHIFT                      (4U)
+#define PWM_CTRL_PRSC_SHIFT                      (0U)//(4U) WT.EDIT 
 /*! PRSC - Prescaler
  *  0b000..PWM clock frequency = fclk
  *  0b001..PWM clock frequency = fclk/2

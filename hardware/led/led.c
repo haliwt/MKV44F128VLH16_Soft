@@ -1,14 +1,16 @@
 #include "led.h"
 
-gpio_pin_config_t led_config = {
+ gpio_pin_config_t led_config = {
 	  kGPIO_DigitalOutput,
 	  0,
-  };
+      };
 
 
 void LED_Init(void)
 {
    
+    
+
      GPIO_QuickInit(HW_GPIOD,  7, kGPIO_Mode_OPP);
 	 GPIO_QuickInit(HW_GPIOD,  6, kGPIO_Mode_OPP);
 #if 0

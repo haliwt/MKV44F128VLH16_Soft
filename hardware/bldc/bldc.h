@@ -10,7 +10,7 @@
 
 
 
-#define PWM_SRC_CLK_FREQ CLOCK_GetFreq(kCLOCK_FastPeriphClk) //84Mhz 
+#define PWM_SRC_CLK_FREQ 			CLOCK_GetFreq(kCLOCK_LpoClk) //WT.EDIT //84Mhz 
 /* The PWM base address */
 #define BOARD_PWM_BASEADDR PWMA
 
@@ -42,7 +42,7 @@ extern __IO int32_t  uwStep ;
 
 extern __IO uint32_t Lock_Time; // 堵转时间
 //extern __IO int16_t   PWM_Duty;   //占空比
-extern __IO int8_t Dir;
+//extern __IO int8_t Dir;
 extern uint16_t SPEED_VALUE ;   //速度值
 
 
