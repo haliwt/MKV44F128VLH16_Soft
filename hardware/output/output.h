@@ -5,32 +5,42 @@
 #include "fsl_gpio.h"
 #include "fsl_port.h"
 
-#define A_POWER_OUTPUT         PCout(10)
+#define A_POWER_OUTPUT         PCout(10) //2SD315AI ABC电源切换输出，打开15V供电电源
 #define B_POWER_OUTPUT         PCout(11)
 #define C_POWER_OUTPUT         PCout(0)
 
-
-
-#define AIR_OUTPUT               PEout(19)   //空调输出 
-#define WIPER_OUTPUT_2           PEout(18)   //雨刮器输出二档
-#define WIPER_OUTPUT_1           PEout(17)   //雨刮器输出一档
+#define AIR_OUTPUT               PBout(17)   //空调输出 
+#define WIPER_OUTPUT_1           PBout(19)   //雨刮器输出一档
 #define DOOR_OUTPUT              PAout(19)   //车门输出
 #define WHEEL_OUTPUT             PBout(0)    //车轮输出
 
+#define SD315_VL_A_OUTPUT        PCout(7)//PEout(19)   //2SD315AI -4脚，保护模块，低电平保护
+#define SD315_VL_B_OUTPUT        PCout(6)//PEout(18)
+#define SD315_VL_C_OUTPUT        PCout(4)//PEout(17)
 
-#define OUTPUT_AIR_GPIO          GPIOE
-#define OUTPUT_WIPER_2_GPIO      GPIOE
-#define OUTPUT_WIPER_1_GPIO      GPIOE 
+
+
+#define OUTPUT_AIR_GPIO          GPIOB
+#define OUTPUT_WIPER_1_GPIO      GPIOB 
 #define OUTPUT_DOOR_GPIO         GPIOA 
 #define OUTPUT_WHEEL_GPIO        GPIOB
 
 
 
-#define OUTPUT_AIR_GPIO_PIN           19
-#define OUTPUT_WIPER_2_GPIO_PIN       18
-#define OUTPUT_WIPER_1_GPIO_PIN       17
+#define OUTPUT_AIR_GPIO_PIN           17
+#define OUTPUT_WIPER_1_GPIO_PIN       19
 #define OUTPUT_DOOR_GPIO_PIN          19
 #define OUTPUT_WHEEL_GPIO_PIN         0
+
+#define SD315AI_VL_A_GPIO      GPIOC//GPIOE
+#define SD315AI_VL_B_GPIO      GPIOC//GPIOE
+#define SD315AI_VL_C_GPIO      GPIOC//GPIOE
+
+
+
+#define SD315AI_VL_A_PIN      7//19U
+#define SD315AI_VL_B_PIN      6//18U
+#define SD315AI_VL_C_PIN      4//17U
 
 typedef struct _output_t_
 {

@@ -172,7 +172,7 @@ static void PWM_DRV_Init3PhPwm(void)
     uint16_t deadTimeVal;
     pwm_signal_param_t pwmSignal[2];
     uint32_t pwmSourceClockInHz;
-    uint32_t pwmFrequencyInHz = 1000; //5KHZ PWM of frequency  1khz ~ 4.5khz 1.5khz =1.5khz 2khz = 2khz 3kh=3kz
+    uint32_t pwmFrequencyInHz = 1500; //5KHZ PWM of frequency  1khz ~ 4.5khz 1.5khz =1.5khz 2khz = 2khz 3kh=3kz
 
 
     pwmSourceClockInHz = PWM_SRC_CLK_FREQ;

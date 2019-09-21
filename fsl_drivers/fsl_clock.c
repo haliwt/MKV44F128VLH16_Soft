@@ -475,8 +475,7 @@ uint32_t CLOCK_GetFreq(clock_name_t clockName)
             freq = CLOCK_GetPll0Freq();
             break;
         case kCLOCK_LpoClk:
-			freq =5000000000;  //WT.EDIT 2019-09-05
-            //freq = LPO_CLK_FREQ;
+			 freq = LPO_CLK_FREQ;
             break;
         case kCLOCK_Osc0ErClk:
             freq = CLOCK_GetOsc0ErClkDivFreq();

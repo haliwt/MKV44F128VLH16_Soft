@@ -31,6 +31,7 @@
 #include "adc.h"
 #include "pollingusart.h"
 #include "output.h"
+#include "input.h"
 //#include "usart_edma_rb.h"
 /*******************************************************************************
  * Definitions
@@ -96,6 +97,7 @@ int main(void)
     KEY_Init();
     DelayInit();
     HALL_Init();
+    SD315AI_SO12_Init();
     
     HallSensor_GetPinState();
     OUTPUT_Fucntion_Init();
@@ -240,26 +242,26 @@ static void vTaskSUBJ(void *pvParameters)
 			 /*******************WIPERS_F***************************/
              if(ucConKeyValue == 0x0e)
 	         {
-	  			 WIPER_OUTPUT_2 = 0;
+	  			
 	  			 WIPER_OUTPUT_1 = 1;
 	  			 printf("WIPERS  = 1 @@@@~~~~\r\n");   
 	         }
 			 if(ucConKeyValue == 0x0f)
 			 {
                  WIPER_OUTPUT_1 = 1;   
-			     WIPER_OUTPUT_2  = 0;
+			   
 				printf("WIPERS  = 2 ~~~~@@@@\r\n");
 			 }
 			 if(ucConKeyValue == 0x10)
 			 {
                  WIPER_OUTPUT_1 = 1;   
-			     WIPER_OUTPUT_2  = 1;
+			
 				printf("WIPERS  = 3 @@@~~~~@@@\r\n");
 			 }
 			 if(ucConKeyValue == 0x11)
 			 {
                  WIPER_OUTPUT_1 = 0;   
-			     WIPER_OUTPUT_2  = 0;
+			    
 				printf("WIPERS  = 0 @@@~~~~@@@~~~~\r\n");
 			 }
 		     /*******************AIR_F***************************/   
@@ -297,10 +299,10 @@ static void vTaskBLDC(void *pvParameters)
 {
     
     volatile uint8_t ucValue;
-	TickType_t xLastWakeTime;
+	//TickType_t xLastWakeTime;
 	
-	const TickType_t xFrequency = 100;
-    xLastWakeTime = xTaskGetTickCount();
+//	const TickType_t xFrequency = 100;
+  //  xLastWakeTime = xTaskGetTickCount();
     volatile uint16_t pwm_f=0;
 	uint16_t sampleMask;
 	BaseType_t xResult;
@@ -445,6 +447,13 @@ static void vTaskCOTL(void *pvParameters)
     {
 	      printf("vTaskCOTL-3 \r\n");
 		  ucKeyCode = KEY_Scan(0);
+          if(SD315AI_SO12_A_INPUT==1 || SD315AI_SO12_A_INPUT==1 ||SD315AI_SO12_A_INPUT == 1)
+          {
+            SD315_VL_A_OUTPUT =1;
+            SD315_VL_B_OUTPUT =1;
+            SD315_VL_C_OUTPUT =1;
+
+          }
 		  xResult = xTaskNotifyWait(0x00000000,      
 						          0xFFFFFFFF,      
 						          &rlValue,        /* ¥Ê¥¢ulNotifiedValue‘⁄ulvalue÷– */

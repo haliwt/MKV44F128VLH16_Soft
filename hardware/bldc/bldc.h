@@ -10,7 +10,7 @@
 
 
 
-#define PWM_SRC_CLK_FREQ 			CLOCK_GetFreq(kCLOCK_LpoClk) //WT.EDIT //84Mhz 
+#define PWM_SRC_CLK_FREQ 	CLOCK_GetFreq(kCLOCK_FastPeriphClk)//CLOCK_GetFreq(kCLOCK_LpoClk) //WT.EDIT //84Mhz 
 /* The PWM base address */
 #define BOARD_PWM_BASEADDR PWMA
 
