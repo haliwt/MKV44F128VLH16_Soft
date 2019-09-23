@@ -97,7 +97,7 @@ int main(void)
     KEY_Init();
     DelayInit();
     HALL_Init();
-    SD315AI_SO12_Init();
+    SD315AI_SO12_Input_Init();
     
     HallSensor_GetPinState();
     OUTPUT_Fucntion_Init();
@@ -447,7 +447,7 @@ static void vTaskCOTL(void *pvParameters)
     {
 	      printf("vTaskCOTL-3 \r\n");
 		  ucKeyCode = KEY_Scan(0);
-          if(SD315AI_SO12_A_INPUT==1 || SD315AI_SO12_A_INPUT==1 ||SD315AI_SO12_A_INPUT == 1)
+          if(GPIO_PinRead(GPIOE,19) == 1 || GPIO_PinRead(GPIOE,18)==1 ||GPIO_PinRead(GPIOE,17) == 1)
           {
             SD315_VL_A_OUTPUT =1;
             SD315_VL_B_OUTPUT =1;

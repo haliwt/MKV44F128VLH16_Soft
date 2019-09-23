@@ -1,13 +1,13 @@
 #include "input.h"
 
-void SD315AI_SO12_Init(void)
+void SD315AI_SO12_Input_Init(void)
 {
     gpio_pin_config_t sd315ai_config = {
 	  kGPIO_DigitalInput ,
 	  0,
     };
-
-   
+    
+     port_pin_config_t config ;
 
    /* Port D Clock Gate Control: Clock enabled */
     CLOCK_EnableClock(kCLOCK_PortE);
@@ -24,10 +24,18 @@ void SD315AI_SO12_Init(void)
         GPIO_PinInit(SD315AI_SO12_B_GPIO,    18 , 	&sd315ai_config);
 		GPIO_PinInit(SD315AI_SO12_C_GPIO,    17 , 	&sd315ai_config);
 
+        config.pullSelect= kPORT_PullDown;
+        
+
+        PORT_SetPinConfig(PORTE,19,&config);
+        PORT_SetPinConfig(PORTE,18,&config);
+        PORT_SetPinConfig(PORTE,17,&config);
         //输入
+        #if 0
         PORT_PinPullConfig(HW_GPIOE, 19, kPORT_PullDown);
         PORT_PinPullConfig(HW_GPIOE, 18, kPORT_PullDown);
         PORT_PinPullConfig(HW_GPIOE, 17, kPORT_PullDown);
+        #endif 
 }
 
 

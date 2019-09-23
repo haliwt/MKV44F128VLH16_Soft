@@ -19,7 +19,7 @@
 
 
 
-void SD315AI_SO12_Init(void);
+void SD315AI_SO12_Input_Init(void);
 
 
 
