@@ -46,7 +46,7 @@ void KEY_Init(void)
         GPIO_PinInit(KEY7_GPIO,     	KEY7_GPIO_PIN, 		    	&key_config);
 		GPIO_PinInit(KEY8_GPIO,     	KEY8_GPIO_PIN, 		    	&key_config);
 		GPIO_PinInit(KEY9_GPIO,     	KEY9_GPIO_PIN,   	    	&key_config);
-		GPIO_PinInit(AIR_GPIO,    	AIR_GPIO_PIN, 	    	        &key_config);
+		//GPIO_PinInit(AIR_GPIO,    	    AIR_GPIO_PIN, 	    	        &key_config);
 		GPIO_PinInit(ABC_POWER_GPIO,    	ABC_POWER_GPIO_PIN, 	    	        &key_config);
         
         PORT_PinPullConfig(HW_GPIOE, 29, kPORT_PullDown);
@@ -95,7 +95,7 @@ void KEY_Init(void)
 	   if(mode == 1) key_up =1;
 	  if(key_up &&(ABC_POWER_KEY == 1 || START_KEY ==1 ||DIR_KEY ==1 || DIGITAL_ADD_KEY==1||\
 					DIGITAL_REDUCE_KEY==1||DOOR_KEY==1||HALL_SWITCH_KEY==1||\
-					WHEEL_KEY==1|| WIPERS_KEY==1 || AIR_KEY == 1))
+					WHEEL_KEY==1|| WIPERS_KEY==1 ))
 	  
 	   {
 		 DelayMs(10);
@@ -170,7 +170,7 @@ void KEY_Init(void)
 			   /* 按键扫描完毕，确定按键按下 */
 			return WIPERS_PRES;
 		 }
-		 
+		 #if 0
 		 else if(AIR_KEY==1)		 
 		 {
 			  /* 等待按键弹开，退出按键扫描函数 */
@@ -178,10 +178,11 @@ void KEY_Init(void)
 			   /* 按键扫描完毕，确定按键按下 */
 			return AIR_PRES;
 		 }
+         #endif 
 	   }
 	   else if(ABC_POWER_KEY == 0 && START_KEY == 0 && DIR_KEY==0 && DIGITAL_ADD_KEY==0 &&\
 				   DIGITAL_REDUCE_KEY==0 &&DOOR_KEY==0 && HALL_SWITCH_KEY==0 && \
-					  WHEEL_KEY == 0 && WIPERS_KEY== 0 && AIR_KEY == 0) key_up = 1;
+					  WHEEL_KEY == 0 && WIPERS_KEY== 0 ) key_up = 1;
 	   
 		 return KEY_UP;
 	   

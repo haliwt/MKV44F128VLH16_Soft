@@ -4,19 +4,20 @@
 
 #include "fsl_gpio.h"
 #include "fsl_port.h"
+#include "fsl_llwu.h"
 
-#define A_POWER_OUTPUT         PCout(10) //2SD315AI ABC电源切换输出，打开15V供电电源
-#define B_POWER_OUTPUT         PCout(11)
-#define C_POWER_OUTPUT         PCout(0)
+#define A_POWER_OUTPUT           PCout(1)//PCout(10) //2SD315AI ABC电源切换输出，打开15V供电电源
+//#define B_POWER_OUTPUT         PCout(11)
+//#define C_POWER_OUTPUT         PCout(9)
 
 #define AIR_OUTPUT               PBout(17)   //空调输出 
 #define WIPER_OUTPUT_1           PBout(19)   //雨刮器输出一档
 #define DOOR_OUTPUT              PAout(19)   //车门输出
 #define WHEEL_OUTPUT             PBout(0)    //车轮输出
 
-#define SD315_VL_A_OUTPUT        PCout(7)//PEout(19)   //2SD315AI -4脚，保护模块，低电平保护
-#define SD315_VL_B_OUTPUT        PCout(6)//PEout(18)
-#define SD315_VL_C_OUTPUT        PCout(4)//PEout(17)
+#define SD315_VL_A_OUTPUT        PCout(7)//   //2SD315AI -4脚，保护模块，低电平保护
+#define SD315_VL_B_OUTPUT        PCout(6)//
+#define SD315_VL_C_OUTPUT        PCout(4)//
 
 
 
