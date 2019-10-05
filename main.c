@@ -70,7 +70,7 @@ static TaskHandle_t xHandleTaskCOTL = NULL;
 typedef struct Msg
 {
 	uint8_t  ucMessageID;
-	uint8_t  usData[4];
+	uint8_t  usData[10];
 	
 }MSG_T;
 
@@ -97,6 +97,7 @@ int main(void)
     KEY_Init();
     DelayInit();
     HALL_Init();
+    
     SD315AI_SO12_Input_Init();
     
     HallSensor_GetPinState();
@@ -105,12 +106,8 @@ int main(void)
     ABC_POWER_OUTPUT_Init();
     /* Set the PWM Fault inputs to a low value */
     PWM_BLDC_Init();
-    
-     //BOARD_InitDebugConsole();
-     USART_POLLING_Init();
+    USART_POLLING_Init();
      
-   //  POLLING_USART_Init();
-    /* Initialize logger for 10 logs with maximum lenght of one log 20 B */
     /* 创建任务 */
 	AppTaskCreate();
     
@@ -133,36 +130,49 @@ static void vTaskUSART(void *pvParameters)
 {
  // TickType_t xLastWakeTime;
  // const TickType_t xFrequency = 300;
+  uint8_t i,ch;
   MSG_T *ptMsg;
-  uint8_t i;
-  uint8_t ch[4];
+ 
   const TickType_t xMaxBlockTime = pdMS_TO_TICKS(300); /* 设置最大等待时间为5ms */
   /* 初始化结构体指针 */
 	ptMsg = &g_tMsg;
 	
 	/* 初始化数组 */
 	ptMsg->ucMessageID = 0;
+    for(i=0;i<4;i++)
+        ch =ptMsg->usData[i];
 
   while(1)
     {
-        printf("vTaskUSART-1 \r\n");
-        UART_ReadBlocking(DEMO_UART, ch, 4);
-        //UART_ReadBlocking(DEMO_UART, ptMsg->usData, 4);
+    
+      printf("vTaskUSART-1 \r\n");
    
+       UART_ReadBlocking(DEMO_UART, ptMsg->usData, 4);
+      
         for(i=0;i<4;i++)
 		{
-          ptMsg->usData[i]=ch[i];
-		  printf("ptMsg->usData[i]= %#x \r\n",ptMsg->usData[i]);
+          ch=ptMsg->usData[i];
+		  printf("ptMsg->usData[i]= %#x \r\n",ch);
 
 		}
-        
+      
         if(ptMsg->usData[0] == 0x01) //'1' = 0x31
          {
            
 		      xTaskNotify(xHandleTaskCOTL,      /* 目标任务 */
 								ptMsg->usData[2],              /* 发送数据 */
 								eSetValueWithOverwrite);/* 上次目标任务没有执行，会被覆盖 */
+               printf("Send to xHanderCONT is OK \n");
+                for(i=0;i<10;i++)
+                 ch =ptMsg->usData[i];
          }
+        if(ptMsg->usData[0]== 0x02)
+        {
+           
+	      xTaskNotify(xHandleTaskSUBJ,      /* 目标任务 */
+							ptMsg->usData[2],              /* 发送数据 */
+							eSetValueWithOverwrite);/* 上次目标任务没有执行，会被覆盖 */
+        }
 		//taskYIELD();//vTaskDelay(xMaxBlockTime);
 	    vTaskDelay(xMaxBlockTime);// vTaskDelayUntil(&xLastWakeTime, xFrequency);
     }
@@ -178,8 +188,9 @@ static void vTaskUSART(void *pvParameters)
 *********************************************************************************************************/
 static void vTaskSUBJ(void *pvParameters)
 {
+     uint8_t abc_s,door_s,wipers_s;
      uint32_t vlSubj;
-     volatile uint8_t ucConKeyValue;
+     uint32_t ucConKeyValue;
 	 BaseType_t xResult;
 	const TickType_t xMaxBlockTime = pdMS_TO_TICKS(200); /* 设置最大等待时间为5ms */
 
@@ -196,59 +207,78 @@ static void vTaskSUBJ(void *pvParameters)
 		if( xResult == pdPASS )
 		{
 			
-             ucConKeyValue = (uint8_t)vlSubj;
+             ucConKeyValue = vlSubj;
              printf("vTaskSUBJ vlSubj = %#x\r\n", ucConKeyValue);
              /*******************ABC_POWER_F*************************/
              #if 1
              if(ucConKeyValue==0x01)
 			 {
-                 A_POWER_OUTPUT =1;
-				 
-		        printf("ABC_= 1 @@@@~~~@@@\r\n");  
-		     }
-			 if(ucConKeyValue==0x02)
-			 {
-                 A_POWER_OUTPUT =0;
-				
-		        printf("ABC_ = 0 @@@@@@@~~~\r\n");  
+                 
+                 abc_s ++ ;
+                 if(abc_s == 1)
+                 {
+                   A_POWER_OUTPUT =1;
+                   
+                  printf("ABC_= 1 @@@@~~~@@@\r\n");  
+		     
+			     }
+			     else 
+                 {
+                   abc_s = 0;
+                   A_POWER_OUTPUT =0;
+                  
+                  printf("ABC_ = 0 @@@@@@@~~~\r\n");  
+                 }
 		     }
              #endif 
 			 /*******************Door_F*************************/
-			 if(ucConKeyValue==0x09)
+			 if(ucConKeyValue==0x08)
 			 {
-                DOOR_OUTPUT =1;//door open
-		        printf("DOOR_OUTPUT = 1 @@@@@@@\r\n");  
-		     }
-             if(ucConKeyValue==0x08)
-			 {
-                DOOR_OUTPUT =0;//door open
-		        printf("DOOR_OUTPUT = 0 ~~~~~~~\r\n");     
+               
+                door_s ++ ;
+                if(door_s ==1)
+                {
+                  DOOR_OUTPUT =1;//door open
+                  printf("DOOR_OUTPUT = 1 @@@@@@@\r\n");  
+		        }
+                else
+                {
+                  door_s =0;
+                  DOOR_OUTPUT =0;//door open
+                  printf("DOOR_OUTPUT = 0 ~~~~~~~\r\n");  
+                }
 		     }
 			 /*******************WIPERS_F***************************/
-             if(ucConKeyValue == 0x0e)
+             if(ucConKeyValue == 0x09)
 	         {
 	  			
-	  			 WIPER_OUTPUT_1 = 1;
-	  			 printf("WIPERS  = 1 @@@@~~~~\r\n");   
-	         }
-			 if(ucConKeyValue == 0x0f)
-			 {
-                 WIPER_OUTPUT_1 = 1;   
-			   
-				printf("WIPERS  = 2 ~~~~@@@@\r\n");
-			 }
-			 if(ucConKeyValue == 0x10)
-			 {
-                 WIPER_OUTPUT_1 = 1;   
-			
-				printf("WIPERS  = 3 @@@~~~~@@@\r\n");
-			 }
-			 if(ucConKeyValue == 0x11)
-			 {
-                 WIPER_OUTPUT_1 = 0;   
-			    
-				printf("WIPERS  = 0 @@@~~~~@@@~~~~\r\n");
-			 }
+	  			 wipers_s ++ ;
+                 if(wipers_s == 1)
+                 {
+                   WIPER_OUTPUT_1 = 1;
+                   printf("WIPERS  = 1 @@@@~~~~\r\n");   
+                 }
+			     else if(wipers_s == 2)
+                 {
+                   wipers_s = 0;
+                   WIPER_OUTPUT_1 = 2;   
+                   printf("WIPERS  = 2 ~~~~@@@@\r\n");
+                 }
+			 
+			    else if(wipers_s == 3)
+                 {
+                     WIPER_OUTPUT_1 = 3;   
+                
+                    printf("WIPERS  = 3 @@@~~~~@@@\r\n");
+                  }
+                else
+                 {
+                     wipers_s =0;
+                      WIPER_OUTPUT_1 = 0;   
+                    
+                      printf("WIPERS  = 0 @@@~~~~@@@~~~~\r\n");
+                 }
+             }
 		     /*******************AIR_F***************************/   
               if(ucConKeyValue == 0x12)
 			 {
@@ -283,7 +313,8 @@ static void vTaskSUBJ(void *pvParameters)
 static void vTaskBLDC(void *pvParameters)
 {
     
-    volatile uint8_t ucValue;
+    uint32_t ucValue;
+   
 	//TickType_t xLastWakeTime;
 	
 //	const TickType_t xFrequency = 100;
@@ -307,7 +338,7 @@ static void vTaskBLDC(void *pvParameters)
 		{
 			/* 接收数据成功 */
           printf("vTaskBLDC ConmessageID = %#x\r\n",ucConValue );
-		  ucValue = (uint8_t)ucConValue ;
+		  ucValue = ucConValue ;
 		}
 		else
 		{
@@ -334,8 +365,11 @@ static void vTaskBLDC(void *pvParameters)
 	  #endif 
 
 		
-	  if((ucValue==0x04)|| (recoder_number.break_f ==1))//刹车
+	  if((ucValue==0xa1)|| (recoder_number.break_f ==1))//刹车
 	  {
+       
+        
+           
          taskENTER_CRITICAL(); //进入临界状态
 		 PMW_AllClose_ABC_Channel();
          PMW_AllClose_ABC_Channel();
@@ -348,10 +382,12 @@ static void vTaskBLDC(void *pvParameters)
 		 taskEXIT_CRITICAL(); //退出临界状态
 		 
 		 printf("Break is OK $$$$$$$$$$$$$\r\n");
-       }
-	 else if(ucValue==0x03) 
-	 { 
-             	/* 接收数据成功 */
+        
+	  }
+	  else if(ucValue==0xa0)  
+	  { 
+            
+            /* 接收数据成功 */
              printf("Motor run = %#x\r\n",ucConValue);
 			 printf("Motor Run is OK !!!!\r\n");
 
@@ -372,16 +408,17 @@ static void vTaskBLDC(void *pvParameters)
 		      //   PRINTF("%d\t\t",pwm_f );
 	           
 			 // DelayMs(100U);
-              pwm_f = (uint16_t)((CADC_GetSampleResultValue(CADC_BASEADDR, 1U))/ 330);
-	        //  PRINTF("PWM_Duty = %d\r\n",pwm_f);
-			 //  DelayMs(200U);
+             // pwm_f = (uint16_t)((CADC_GetSampleResultValue(CADC_BASEADDR, 1U))/ 330);
+	         // PRINTF("PWM_Duty = %d\r\n",pwm_f);
+			 // DelayMs(200U);
 	           
             }
-          CADC_ClearStatusFlags(CADC_BASEADDR, kCADC_ConverterAEndOfScanFlag);
+            CADC_ClearStatusFlags(CADC_BASEADDR, kCADC_ConverterAEndOfScanFlag);
 
-     	}
+     	    }
 
             pwm_f = (uint16_t)((CADC_GetSampleResultValue(CADC_BASEADDR, 1U))/ 330);
+            PRINTF("PWM_Duty = %d\r\n",pwm_f);
 			if(recoder_number.dir_change == 1) 
             {
                   dirvalue = 1 ;
@@ -393,15 +430,16 @@ static void vTaskBLDC(void *pvParameters)
 				printf("Dir = - Dir is OK #######\r\n");
 			}
 			/***********Motor Run**************/
-            PMW_AllClose_ABC_Channel();
+          //  PMW_AllClose_ABC_Channel();
 			uwStep = HallSensor_GetPinState();
         	PRINTF("ouread = %d \r\n",uwStep);
         	HALLSensor_Detected_BLDC(uwStep,pwm_f,dirvalue); 
            
 
         }
+	
       taskYIELD();// // vTaskDelayUntil(&xLastWakeTime, xFrequency); // vTaskDelay(xMaxBlockTime);         
-     }  
+      }
  } 
 
 /*********************************************************************************************************
@@ -420,14 +458,14 @@ static void vTaskCOTL(void *pvParameters)
      uint8_t start_s =0,door_s = 0,wiper_s=0,air_s=0;
      uint8_t hall_s = 0,wheel_s=0,abc_power_s=0;
      
-    // TickType_t xLastWakeTime;
+     TickType_t xLastWakeTime;
 
-   //  const TickType_t xFrequency = 100;
-   //  xLastWakeTime = xTaskGetTickCount();
+    const TickType_t xFrequency = 200;
+    xLastWakeTime = xTaskGetTickCount();
     BaseType_t xResult;
 	const TickType_t xMaxBlockTime = pdMS_TO_TICKS(100); /* 设置最大等待时间为5ms */
-	uint8_t ucControl=0,ulValue;
-	uint32_t rlValue;
+	uint8_t ucControl=0;
+	uint32_t rlValue,ulValue;
 	
 
 	while(1)
@@ -457,13 +495,13 @@ static void vTaskCOTL(void *pvParameters)
               
           }
 		  xResult = xTaskNotifyWait(0x00000000,      
-						          0xFFFFFFFF,      
-						          &rlValue,        /* 存储ulNotifiedValue在ulvalue中 */
-						          xMaxBlockTime);  /* 最大延迟时间 */
+						            0xFFFFFFFF,      
+						            &rlValue,        /* 存储ulNotifiedValue在ulvalue中 */
+						            xMaxBlockTime);  /* 最大延迟时间 */
 		
 		if( xResult == pdPASS )
 		{
-            ulValue=(uint8_t)rlValue;
+            ulValue=rlValue;
 			printf("vTaskCOTL = %#x\r\n", ulValue);
 			/****************digitalkey coder******************/
 			 if(ulValue == 0x01)
@@ -521,7 +559,7 @@ static void vTaskCOTL(void *pvParameters)
 			{
                switch(ucKeyCode)//if(ptMsg->ucMessageID == 0x32)
                 { 
-                
+                 
                   case ABC_POWER_PRES :
 
 				  PRINTF("ABC_PRES key \r\n");
@@ -539,14 +577,16 @@ static void vTaskCOTL(void *pvParameters)
                        xTaskNotify(xHandleTaskSUBJ ,          //xHandleTaskBLDC,        /* 目标任务 */
                                    ucControl,              /* 发送数据 */
                                    eSetValueWithOverwrite);/* 上次目标任务没有执行，会被覆盖 */
+                       printf("ABC POWER IS SEND WORKS \n");
                      }
 					else 
 					{
-                     ucControl = 0x02;
+                     ucControl = 0x01;
                      abc_power_s =0 ;
                      xTaskNotify( xHandleTaskSUBJ ,//xHandleTaskBLDC,        /* 目标任务 */
                                  ucControl,              /* 发送数据 */
                                  eSetValueWithOverwrite);/* 上次目标任务没有执行，会被覆盖 */
+                     printf("ABC POWER IS STOP \n");
 
 					}
 				  	break;
@@ -557,22 +597,22 @@ static void vTaskCOTL(void *pvParameters)
 		          if(((start_s == 1)||(abc_s ==2))&&(abc_s!=0))
 		          {
                     
-                     ucControl =0x03;
+                     ucControl =0xa0;
                      abc_s =5; ;
     				 recoder_number.break_f=0;
     				 xTaskNotify(xHandleTaskBLDC,      /* 目标任务 */
     								ucControl,              /* 发送数据 */
     								eSetValueWithOverwrite);/* 上次目标任务没有执行，会被覆盖 */
-                    
+                    printf("START KEY IS SEND WORKS \n");
 				  }
 				  else 
 				  {
-                     ucControl = 0x04;
+                     ucControl = 0xa1;
 					 start_s =0;
 					  xTaskNotify(xHandleTaskBLDC,      /* 目标任务 */
 									ucControl,              /* 发送数据 */
 									eSetValueWithOverwrite);/* 上次目标任务没有执行，会被覆盖 */
-					  
+					 printf("START KEY IS STOP\n");
 				  }
                  
 				  break;
@@ -751,7 +791,7 @@ static void vTaskCOTL(void *pvParameters)
         }
         
 	}
-       taskYIELD();//vTaskDelayUntil(&xLastWakeTime, xFrequency);//
+      vTaskDelayUntil(&xLastWakeTime, xFrequency);//taskYIELD();//
    }//end whilt(1)
 }
 /********************************************************************************************************
@@ -810,12 +850,14 @@ static void AppObjCreate (void)
        printf("xQueuel set up fail!!!!"); 
        /* 没有创建成功，用户可以在这里加入创建失败的处理机制 */
     }
+    #if 0
      /* 创建10个存储指针变量的消息队列，由于CM3/CM4内核是32位机，一个指针变量占用4个字节 */
 	xQueue2 = xQueueCreate(10, sizeof(struct Msg *));
     if( xQueue2 == 0 )
     {
          printf("xQueue2 set up fail!!!!"); /* 没有创建成功，用户可以在这里加入创建失败的处理机制 */
     }
+    #endif 
 
 }
 #endif 
