@@ -422,17 +422,17 @@ static void vTaskBLDC(void *pvParameters)
 			if(recoder_number.dir_change == 1) 
             {
                   dirvalue = 1 ;
-				  printf("Dir = Dir is OK !!!!\r\n");
+				  printf("Dir = Dir is OK !!!! CW \r\n");
 			}
 			else 
 			{
-			   dirvalue = 0;
+			    dirvalue = 0;
 				printf("Dir = - Dir is OK #######\r\n");
 			}
 			/***********Motor Run**************/
           //  PMW_AllClose_ABC_Channel();
-			uwStep = HallSensor_GetPinState();
-        	PRINTF("ouread = %d \r\n",uwStep);
+			 uwStep = HallSensor_GetPinState();
+        	//PRINTF("ouread = %d \r\n",uwStep);
         	HALLSensor_Detected_BLDC(uwStep,pwm_f,dirvalue); 
            
 
