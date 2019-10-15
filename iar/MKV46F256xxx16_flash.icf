@@ -2,7 +2,7 @@
 ** ###################################################################
 **     Processors:          MKV44F128VLF16
 **                          MKV44F128VLH16
-**                          MKV44F128VLL16
+**                          MKV44F128VLL16  BY changed MKV44F128VLH16
 **
 **     Compiler:            IAR ANSI C/C++ Compiler for ARM
 **     Reference manual:    KV4XP100M168RM Rev 3.2, 09/2015

@@ -12875,7 +12875,7 @@ typedef struct {
  */
 #define PWM_CTRL2_CLK_SEL(x)                     (((uint16_t)(((uint16_t)(x)) << PWM_CTRL2_CLK_SEL_SHIFT)) & PWM_CTRL2_CLK_SEL_MASK)
 #define PWM_CTRL2_RELOAD_SEL_MASK                (0x4U)
-#define PWM_CTRL2_RELOAD_SEL_SHIFT               (2U)
+#define PWM_CTRL2_RELOAD_SEL_SHIFT               (0x0U)//(2U) WT.EDIT 
 /*! RELOAD_SEL - Reload Source Select
  *  0b0..The local RELOAD signal is used to reload registers.
  *  0b1..The master RELOAD signal (from submodule 0) is used to reload registers. This setting should not be used in submodule 0 as it will force the RELOAD signal to logic 0.
@@ -12971,7 +12971,7 @@ typedef struct {
  */
 #define PWM_CTRL_SPLIT(x)                        (((uint16_t)(((uint16_t)(x)) << PWM_CTRL_SPLIT_SHIFT)) & PWM_CTRL_SPLIT_MASK)
 #define PWM_CTRL_PRSC_MASK                       (0x70U)
-#define PWM_CTRL_PRSC_SHIFT                      (0U)//(4U) WT.EDIT 
+#define PWM_CTRL_PRSC_SHIFT                      (4U) 
 /*! PRSC - Prescaler
  *  0b000..PWM clock frequency = fclk
  *  0b001..PWM clock frequency = fclk/2

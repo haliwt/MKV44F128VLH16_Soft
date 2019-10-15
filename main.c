@@ -3,11 +3,16 @@
  * Copyright 2016-2017 NXP
  * All rights reserved.
  *
- * SPDX-License-Identifier: BSD-3-Clause
+ * SPDX-License-Identifier: BSD-3-Clause  MKV46F256VLH16
  */
 
 /*System includes.*/
 #include <stdio.h>
+#include "amclib_FP.h"
+#include "mlib_FP.h"
+#include "gflib_FP.h"
+#include "gdflib_FP.h"
+#include "gmclib_FP.h"
 
 /* Kernel includes. */
 #include "FreeRTOS.h"

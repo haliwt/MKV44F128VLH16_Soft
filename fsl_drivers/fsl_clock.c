@@ -75,6 +75,10 @@
 #define SIM_CLKDIV1_OUTDIV2_VAL ((SIM->CLKDIV1 & SIM_CLKDIV1_OUTDIV2_MASK) >> SIM_CLKDIV1_OUTDIV2_SHIFT)
 #define SIM_CLKDIV1_OUTDIV4_VAL ((SIM->CLKDIV1 & SIM_CLKDIV1_OUTDIV4_MASK) >> SIM_CLKDIV1_OUTDIV4_SHIFT)
 #define SIM_SOPT1_OSC32KSEL_VAL ((SIM->SOPT1 & SIM_SOPT1_OSC32KSEL_MASK) >> SIM_SOPT1_OSC32KSEL_SHIFT)
+#define MCGOUT_TO_CORE_DIVIDER           (((SIM->CLKDIV1 & SIM_CLKDIV1_OUTDIV1_MASK)>>SIM_CLKDIV1_OUTDIV1_SHIFT) + 1) //WT.EDIT
+
+#define MCGOUT_TO_BUS_DIVIDER  (((SIM->CLKDIV1 & SIM_CLKDIV1_OUTDIV2_MASK)>>SIM_CLKDIV1_OUTDIV2_SHIFT) + 1) //WT.EDIT
+
 
 /* MCG_S_CLKST definition. */
 enum _mcg_clkout_stat
@@ -445,7 +449,9 @@ uint32_t CLOCK_GetCoreSysClkFreq(void)
  */
 uint32_t CLOCK_GetFreq(clock_name_t clockName)
 {
-    uint32_t freq;
+    uint32_t freq,clock;
+    clock = SystemCoreClock * MCGOUT_TO_CORE_DIVIDER;
+  
 
     switch (clockName)
     {
@@ -456,6 +462,8 @@ uint32_t CLOCK_GetFreq(clock_name_t clockName)
             freq = CLOCK_GetOutClkFreq() / (SIM_CLKDIV1_OUTDIV2_VAL + 1); //CLOCK_GetPll0Freq() / (0x10 +1) =  
             break;
         case kCLOCK_BusClk:
+             clock = clock / MCGOUT_TO_BUS_DIVIDER;
+             freq = clock;
         case kCLOCK_FlashClk:
             freq = CLOCK_GetOutClkFreq() / (SIM_CLKDIV1_OUTDIV4_VAL + 1);
             break;
