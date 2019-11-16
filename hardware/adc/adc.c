@@ -236,7 +236,7 @@ void ADC_CADC_Init(void)
      * cadcConfigStruct.powerUpDelay = 26U;
      */
     CADC_GetDefaultConfig(&cadcConfigStruct);
-    cadcConfigStruct.dualConverterScanMode = kCADC_DualConverterWorkAsTriggeredSequential; //kCADC_DualConverterWorkAsLoopSequential;//WT.EDIT kCADC_DualConverterWorkAsTriggeredSequential;
+    cadcConfigStruct.dualConverterScanMode = kCADC_DualConverterWorkAsLoopSequential;//WT.EDIT kCADC_DualConverterWorkAsTriggeredSequential;
     CADC_Init(CADC_BASEADDR, &cadcConfigStruct);
 
     /* Configure each converter. */
@@ -253,7 +253,7 @@ void ADC_CADC_Init(void)
 
     /* Configure the samples. */
     cadcSampleConfigStruct.channelGain      = kCADC_ChannelGainx1;
-    cadcSampleConfigStruct.zeroCrossingMode = kCADC_ZeroCorssingDisabled;
+    cadcSampleConfigStruct.zeroCrossingMode = kCADC_ZeroCorssingForAnySignChanged;//WT.EDIT 20191116//kCADC_ZeroCorssingDisabled;
     cadcSampleConfigStruct.highLimitValue   = 0xFFFFU;
     cadcSampleConfigStruct.lowLimitValue    = 0x0U;
     cadcSampleConfigStruct.offsetValue      = 0x0U;
@@ -398,7 +398,7 @@ void ADC_UVW_Sample_HALL_Value(void)
         }
           
 
-            uSaHall = (u[0]+u[1]+u[3]+u[4])/ 5;
+            uSaHall = (u[0]+u[1]+u[2]+u[3]+u[4])/ 5;
            // uSaHall = (u[0]+u[1]) / 2;
             PRINTF("u= %d\r\n", uSaHall);
            
