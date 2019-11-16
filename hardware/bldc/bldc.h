@@ -6,7 +6,7 @@
 #include "board.h"
 #include "fsl_debug_console.h"
 #include "fsl_gpio.h"
-
+#include "adc.h"
 
 
 
@@ -34,7 +34,11 @@
 
 
 
-#define  PWMA_INIT_ON                    1
+#define  PWMA_INIT_ON           1
+
+//#define IRFP4768PbF             1
+#define DEBUG_PRINT             2
+
 
 
 
@@ -45,6 +49,9 @@ extern __IO uint32_t Lock_Time; // 堵转时间
 extern __IO uint16_t   PWM_Duty;   //占空比
 extern __IO int8_t Dir;
 extern uint16_t SPEED_VALUE ;   //速度值
+extern __IO uint16_t uSaHall;
+extern __IO uint16_t vSaHall;
+extern __IO uint16_t wSaHall; //电机 W相，采样电压值
 
 
 

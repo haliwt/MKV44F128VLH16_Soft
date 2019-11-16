@@ -8,11 +8,11 @@
 
 /*System includes.*/
 #include <stdio.h>
-#include "amclib_FP.h"
-#include "mlib_FP.h"
-#include "gflib_FP.h"
-#include "gdflib_FP.h"
-#include "gmclib_FP.h"
+//#include "amclib_FP.h"
+//#include "mlib_FP.h"
+//#include "gflib_FP.h"
+//#include "gdflib_FP.h"
+//#include "gmclib_FP.h"
 
 /* Kernel includes. */
 //#include "FreeRTOS.h"
@@ -37,11 +37,14 @@
 #include "pollingusart.h"
 #include "output.h"
 #include "input.h"
+#include "hall.h"
+
 //#include "usart_edma_rb.h"
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
-//#define IRFP4768PbF  1
+
+
 
 output_t motor_ref;
 
@@ -63,7 +66,7 @@ int main(void)
      uint8_t printx4[]="key motor run = 0 ^^^^ \r\n";
      uint8_t printx5[]="key motor run  = 1 $$$$ \r\n";
      uint8_t ucKeyCode=0,abc_s=0;
-     uint8_t dir_s =0;
+     uint8_t dir_s =0,no_sensorless;
      uint16_t pwm_duty;
  
 
@@ -76,6 +79,7 @@ int main(void)
     KEY_Init();
     DelayInit();
     HALL_Init();
+    NO_HALL_GPIO_Init(); 
     
     SD315AI_SO12_Input_Init();
     
@@ -97,7 +101,13 @@ int main(void)
            {
             // pwm_duty = ADC_DMA_ReadValue();
              pwm_duty = CADC_Read_ADC_Value();
-            // printf("pwm_duty = %d\r \n",pwm_duty); 
+#ifdef DEBUG_PRINT 
+             printf("pw = %d\r \n",pwm_duty); 
+             no_sensorless =NO_HallSensor_GetPinState();
+             printf("nh = %d\r \n",no_sensorless); 
+
+#endif 
+              
                if(motor_ref.power_on == 1)
 
                {
@@ -185,16 +195,52 @@ int main(void)
                   
                   SD315AI_Check_Fault();
                  // CADC_Read_ADC_Value();
-                  uwStep = HallSensor_GetPinState();
+                 uwStep = HallSensor_GetPinState();
+               #ifdef DEBUG_PRINT
+			     // printf("uwStep = %d\r \n",uwStep); 
+			   #endif 
                                  
                   HALLSensor_Detected_BLDC(pwm_duty);
+				 
                  
                 }
              }
           
           else
           {
-              PMW_AllClose_ABC_Channel();
+
+             if(motor_ref.power_on==2||motor_ref.motor_run==1)
+             	{
+				  pwm_duty = 40;
+				  uwStep = HallSensor_GetPinState();
+				  HALLSensor_Detected_BLDC(pwm_duty);
+				  
+				  pwm_duty = 35;
+				  uwStep = HallSensor_GetPinState();
+	              HALLSensor_Detected_BLDC(pwm_duty);
+				  
+				  pwm_duty = 30;
+				  uwStep = HallSensor_GetPinState();
+	              HALLSensor_Detected_BLDC(pwm_duty);
+				  
+				  pwm_duty = 25;
+				  uwStep = HallSensor_GetPinState();
+	              HALLSensor_Detected_BLDC(pwm_duty);
+				  
+				  pwm_duty = 20;
+				  uwStep = HallSensor_GetPinState();
+	              HALLSensor_Detected_BLDC(pwm_duty);
+				  
+				  pwm_duty = 10;
+				  uwStep = HallSensor_GetPinState();
+	              HALLSensor_Detected_BLDC(pwm_duty);
+				  
+				  pwm_duty = 5;
+				  uwStep = HallSensor_GetPinState();
+				  HALLSensor_Detected_BLDC(pwm_duty);
+             	}
+              
+			  PMW_AllClose_ABC_Channel();
               SD315AI_Disable_Output();
               GPIO_PortToggle(GPIOD,1<<BOARD_LED1_GPIO_PIN);
               DelayMs(100);
@@ -230,7 +276,7 @@ int main(void)
 				     }
                       
 				  	break;
-                #if 1		
+        		
                   case START_PRES:
                    
 				   motor_ref.motor_run ++ ;
@@ -249,18 +295,23 @@ int main(void)
 				  }
                  
 				  break;
-			#endif 
+		
 				 case DIR_PRES: //3
 
 			       dir_s ++ ;
 	  			 if(dir_s == 1) //Dir =1 ;  //顺时针旋转
 	   			 {
 
-                        if(motor_ref.power_on ==2)
+                        if(motor_ref.power_on ==2)//motor is runing
                         {
                             if(motor_ref.Dir_flag == 0)
                             {
-                              PMW_AllClose_ABC_Channel();
+                              pwm_duty = 10;
+							  uwStep = HallSensor_GetPinState();
+				              HALLSensor_Detected_BLDC(pwm_duty);
+							  pwm_duty = 5;
+							  uwStep = HallSensor_GetPinState();
+							  HALLSensor_Detected_BLDC(pwm_duty);
                               motor_ref.power_on = 1;
                               motor_ref.Dir_flag =1;
                               Dir =1;
@@ -278,16 +329,21 @@ int main(void)
 				  }
 			   else // Dir = 0; //逆时针旋转
 			   {
-                    dir_s = 0;
+                  dir_s=0;
                   if(motor_ref.power_on == 2) //motor is runing
                  {
                     if(motor_ref.Dir_flag ==1)
                     {
 
-                        PMW_AllClose_ABC_Channel();
-                        motor_ref.power_on = 1;
-                        motor_ref.Dir_flag = 0;
-                        Dir =0;
+                      pwm_duty = 10;
+					  uwStep = HallSensor_GetPinState();
+		              HALLSensor_Detected_BLDC(pwm_duty);
+					  pwm_duty = 5;
+					  uwStep = HallSensor_GetPinState();
+					  HALLSensor_Detected_BLDC(pwm_duty);
+                      motor_ref.power_on = 1;
+                      motor_ref.Dir_flag = 0;
+                      Dir =0;
                     }
                   
                   }

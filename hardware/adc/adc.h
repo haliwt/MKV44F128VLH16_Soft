@@ -26,13 +26,14 @@
 #define CADC_CHANNEL1_NUMBER 7U     //2U
 #define CADC_CHANNEL1_ENABLE_DIFF    false//true  ADCA_CH2 -9PIN
 
-#define CADC_CHANNEL2_NUMBER 6U   //3U
+#define CADC_CHANNEL2_NUMBER 6U     //3U
 #define CADC_CHANNEL2_ENABLE_DIFF   false //true  ADCA_CH3 -10PIN
 
-#define CADC_CHANNEL3_NUMBER 12U
+#define CADC_CHANNEL3_NUMBER 3U
 #define CADC_CHANNEL3_ENABLE_DIFF   false //true
 
-#define CADC_CHANNEL4_NUMBER 14U
+
+#define CADC_CHANNEL4_NUMBER 2U
 #define CADC_CHANNEL4_ENABLE_DIFF   false //true
 
 
@@ -53,6 +54,8 @@ void ADC_CADC_Init(void);
 
 
 uint16_t CADC_Read_ADC_Value(void);
+
+void ADC_UVW_Sample_HALL_Value(void); /*No Hall element */
 
 
 void ADC_DMA_Init(void);

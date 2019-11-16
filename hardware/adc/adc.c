@@ -60,7 +60,7 @@ void ADC_DMA_Init(void)
      * "kCADC_DualConverterWorkAsLoopSequential" work mode. */
     CADC_DoSoftwareTriggerConverter(DEMO_CADC_BASEADDR, kCADC_ConverterA);
 
-    PRINTF("Press any key to get user channel's ADC value ...\r\n");
+   // PRINTF("Press any key to get user channel's ADC value ...\r\n");
 
 
 
@@ -236,7 +236,7 @@ void ADC_CADC_Init(void)
      * cadcConfigStruct.powerUpDelay = 26U;
      */
     CADC_GetDefaultConfig(&cadcConfigStruct);
-    cadcConfigStruct.dualConverterScanMode =  kCADC_DualConverterWorkAsLoopSequential;//WT.EDIT kCADC_DualConverterWorkAsTriggeredSequential;
+    cadcConfigStruct.dualConverterScanMode = kCADC_DualConverterWorkAsTriggeredSequential; //kCADC_DualConverterWorkAsLoopSequential;//WT.EDIT kCADC_DualConverterWorkAsTriggeredSequential;
     CADC_Init(CADC_BASEADDR, &cadcConfigStruct);
 
     /* Configure each converter. */
@@ -259,13 +259,25 @@ void ADC_CADC_Init(void)
     cadcSampleConfigStruct.offsetValue      = 0x0U;
     cadcSampleConfigStruct.enableWaitSync   = false;
 
-    /* For converter A. */
+    /* For converter A ADCA_CHC7 12PIN. */
     cadcSampleConfigStruct.channelNumber          = CADC_CHANNEL1_NUMBER;
     cadcSampleConfigStruct.enableDifferentialPair = CADC_CHANNEL1_ENABLE_DIFF;
     CADC_SetSampleConfig(CADC_BASEADDR, 0U, &cadcSampleConfigStruct);
+
+    /* ADCA_CHC6 11PIN*/
     cadcSampleConfigStruct.channelNumber          = CADC_CHANNEL2_NUMBER;
     cadcSampleConfigStruct.enableDifferentialPair = CADC_CHANNEL2_ENABLE_DIFF;
     CADC_SetSampleConfig(CADC_BASEADDR, 1U, &cadcSampleConfigStruct);
+    
+    /*ADCA_CH3 10PIN*/
+    cadcSampleConfigStruct.channelNumber          = CADC_CHANNEL3_NUMBER;
+    cadcSampleConfigStruct.enableDifferentialPair = CADC_CHANNEL3_ENABLE_DIFF;
+    CADC_SetSampleConfig(DEMO_CADC_BASEADDR, 2U, &cadcSampleConfigStruct);
+    
+    /*ADCA_CH2 9PIN*/
+    cadcSampleConfigStruct.channelNumber          = CADC_CHANNEL4_NUMBER;
+    cadcSampleConfigStruct.enableDifferentialPair = CADC_CHANNEL4_ENABLE_DIFF;
+    CADC_SetSampleConfig(DEMO_CADC_BASEADDR, 3U, &cadcSampleConfigStruct);
 #if 0
     /* For converter B. */
     cadcSampleConfigStruct.channelNumber          = CADC_CHANNEL3_NUMBER;
@@ -277,9 +289,9 @@ void ADC_CADC_Init(void)
 #endif 
     /* Enable the sample slot. */
     sampleMask = CADC_SAMPLE_MASK(0U)    /* For converter A. */
-                 | CADC_SAMPLE_MASK(1U);  /* For converter A. */
-                // | CADC_SAMPLE_MASK(2U)  /* For converter B. */
-                // | CADC_SAMPLE_MASK(3U); /* For converter B. */
+                 | CADC_SAMPLE_MASK(1U)  /* For converter A. */
+                 | CADC_SAMPLE_MASK(2U)  /* For converter A. */
+                 | CADC_SAMPLE_MASK(3U);  /* For converter A. */
     CADC_EnableSample(CADC_BASEADDR, sampleMask, true);
     CADC_EnableSample(CADC_BASEADDR, (uint16_t)(~sampleMask), false); /* Disable other sample slot. */
 
@@ -302,41 +314,102 @@ uint16_t CADC_Read_ADC_Value(void)
 {
 
          
-       static uint16_t pwm_duty= 5;
+    uint16_t pwm_duty;
+
+        /* Enable the sample slot. */
+    pwm_duty = CADC_SAMPLE_MASK(0U)    /* For converter A. */
+                 | CADC_SAMPLE_MASK(1U)  /* For converter A. */
+                 | CADC_SAMPLE_MASK(2U)  /* For converter A. */
+                 | CADC_SAMPLE_MASK(3U);  /* For converter A. */
+    CADC_EnableSample(CADC_BASEADDR, pwm_duty, true);
+    CADC_EnableSample(CADC_BASEADDR, (uint16_t)(~pwm_duty), false); /* Disable other sample slot. */
        CADC_DoSoftwareTriggerConverter(CADC_BASEADDR, kCADC_ConverterA);
 
-
-
-     
-      
-         /* Wait the conversion to be done. */
+	  /* Wait the conversion to be done. */
        while (kCADC_ConverterAEndOfScanFlag !=
                (kCADC_ConverterAEndOfScanFlag & CADC_GetStatusFlags(CADC_BASEADDR)))
         {
         }
+       /* Read the result value. */
+       // if (pwm_duty == (pwm_duty & CADC_GetSampleReadyStatusFlags(CADC_BASEADDR)))
+       // {
 
-   
-	     
-
-           /* Read the result value. */
-        if (pwm_duty == (pwm_duty & CADC_GetSampleReadyStatusFlags(CADC_BASEADDR)))
-        {
-
-            PRINTF("PWM_Duty2 = %d\r\n",(uint16_t)((CADC_GetSampleResultValue(CADC_BASEADDR, 0U))/ 330));
+         //   PRINTF("PWM_Duty2 = %d\r\n",(uint16_t)((CADC_GetSampleResultValue(CADC_BASEADDR, 0U))/ 330));
           //  PRINTF("PWM_Duty3 = %d\r\n",(uint16_t)((CADC_GetSampleResultValue(CADC_BASEADDR, 1U))/ 330));
            
             
-        }
-        pwm_duty = (uint16_t)((CADC_GetSampleResultValue(CADC_BASEADDR, 0U))/ 330);
+      //  }
+        pwm_duty = (uint16_t)((CADC_GetSampleResultValue(CADC_BASEADDR, 3U))/ 330);//ADCA_CH2-9PIN
+	    if(pwm_duty > 98)
+			pwm_duty = 100;
         
         CADC_ClearStatusFlags(CADC_BASEADDR, kCADC_ConverterAEndOfScanFlag);//kCADC_ConverterAInProgressFlag
       //  CADC_ClearStatusFlags(CADC_BASEADDR, kCADC_ConverterAInProgressFlag);
        
-   
-        return pwm_duty;
+   		return pwm_duty;
      
-    
+ }
+/*******************************************************************************
+ * 
+ *Function Name: void ADC_UVW_Sample_HALL_Value(void)
+ *Function : no hall element ,sample of Motor of phase_U,V,W.
+ *
+ *
+ ******************************************************************************/
 
+void ADC_UVW_Sample_HALL_Value(void)
+{
+
+        uint16_t i,u[5],v[5],w[5];
+        uint16_t sampleMask ;
+             /* Enable the sample slot. */
+    sampleMask = CADC_SAMPLE_MASK(0U)    /* For converter A. */
+                 | CADC_SAMPLE_MASK(1U)  /* For converter A. */
+                 | CADC_SAMPLE_MASK(2U)  /* For converter A. */
+                 | CADC_SAMPLE_MASK(3U);  /* For converter A. */
+    CADC_EnableSample(CADC_BASEADDR, sampleMask, true);
+    CADC_EnableSample(CADC_BASEADDR, (uint16_t)(~sampleMask), false); /* Disable other sample slot. */
+       CADC_DoSoftwareTriggerConverter(CADC_BASEADDR, kCADC_ConverterA);
+        CADC_DoSoftwareTriggerConverter(DEMO_CADC_BASEADDR, kCADC_ConverterA);
+
+        /* Wait the conversion to be done. */
+        while (kCADC_ConverterAEndOfScanFlag !=
+               (kCADC_ConverterAEndOfScanFlag & CADC_GetStatusFlags(DEMO_CADC_BASEADDR)))
+        {
+        }
+
+        /* Read the result value. */
+     //   if (sampleMask == (sampleMask & CADC_GetSampleReadyStatusFlags(DEMO_CADC_BASEADDR)))
+        {
+            for(i=0;i<5;i++)
+            {
+             u[i] = (int16_t)CADC_GetSampleResultValue(DEMO_CADC_BASEADDR, 2U);
+           
+            // PRINTF("u= %d\r\n", uSaHall);
+           
+             v[i] = (int16_t)CADC_GetSampleResultValue(DEMO_CADC_BASEADDR, 1U); 
+             
+            // PRINTF("v= %d\r\n", vSaHall);
+             
+             w[i] = (int16_t)CADC_GetSampleResultValue(DEMO_CADC_BASEADDR, 0U);
+     
+            // PRINTF("w= %d\r\n",wSaHall);
+            }
+        }
+          
+
+            uSaHall = (u[0]+u[1]+u[3]+u[4])/ 5;
+           // uSaHall = (u[0]+u[1]) / 2;
+            PRINTF("u= %d\r\n", uSaHall);
+           
+           vSaHall = (v[0]+v[1]+v[2]+v[3]+v[4])/5;
+             PRINTF("v= %d\r\n", vSaHall);
+           
+            wSaHall = (w[0]+w[1]+w[2]+w[3]+w[4]) /5;
+            PRINTF("w= %d\r\n",wSaHall);
+    
+           CADC_ClearStatusFlags(DEMO_CADC_BASEADDR, kCADC_ConverterAEndOfScanFlag);
 
 }
+
 
