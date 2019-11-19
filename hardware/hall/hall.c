@@ -57,22 +57,140 @@ uint8_t NO_HallSensor_GetPinState(void)
 
  
   
-  if(uSaHall < 10000)  //U
+  if(uSaHall < 27000)  //U
   {
     State |= 0x01U;
   }
-  if(vSaHall < 10000)  //V
+  if(vSaHall < 27000)  //V
   {
     State |= 0x02U;
   }
-  if(wSaHall < 10000)  //W
+  if(wSaHall < 27000)  //W
   {
     State |= 0x04U;
   }
    return State;
 
 }
+/*********************************************************
+ *
+ *Funtion Name: NO_HallSensor_Hex(void)
+ *Function :Hex number to has hall of hex number
+ *
+ *
+ *
+*********************************************************/
 
+uint8_t NO_HallSensor_Hex(void)
+{
+
+  static uint8_t noHallValue,step = 0;
+  noHallValue = NO_HallSensor_GetPinState();
+  PRINTF("nHallValue = %d \r\n",noHallValue);
+  if(Dir == 0)
+  {
+     if((noHallValue == 0x4) || (noHallValue == 0x2)) //0x4 -- hall - 0x1
+     {
+           if(step == 0)
+           {
+
+            uwStep = 0x1; //hall 0x01
+           
+            step = 1;
+            return uwStep ;
+           }
+           if(step == 0x3)
+           {
+             uwStep = 0x1; //hall 0x01
+           
+            step = 1;
+            return uwStep ;
+
+           }
+           
+       
+
+     }
+    if(((noHallValue == 0x3) || (noHallValue == 0x7))) //0x3 ---hall - 0x5
+     {
+        if(step == 1)
+        {
+            uwStep = 0x5;
+            step =5;
+            return uwStep ;
+        }
+        if(step == 5) //soft insert 0x04
+        {
+            uwStep = 0x4;
+            step =4;
+            return uwStep ;
+        }
+     
+
+     }
+     if((noHallValue == 0x4) || (noHallValue == 0x3)||(noHallValue == 0)||(noHallValue == 0x2)) //0x4 --hall 0x06
+     {
+
+       if(step==0)
+       {
+         uwStep = 0x6;
+         step =6;
+         return uwStep ;
+
+       }
+       if(step == 4)
+       {
+
+         uwStep = 0x6;
+         step =6;
+         return uwStep ;
+       }
+       
+     }
+    if((noHallValue == 0x3) || (noHallValue == 0x7)) // hall  0x2
+     {
+        if(step == 0)
+        {
+         uwStep = 0x2;
+         step= 2;
+         return uwStep ;
+        }
+        if(step == 0x6)
+         {
+             uwStep = 0x2;
+             step= 2;
+             return uwStep ;
+        }
+      
+
+     }
+     if((noHallValue == 0x3) || (noHallValue == 0x7)) //hall 0x3 soft inert number
+     {
+
+       if(step == 0)
+       {
+            uwStep = 0x3;
+            step = 3;
+            return uwStep ;
+       }
+
+       if(step == 2)
+       {
+            uwStep = 0x3;
+            step = 3;
+            return uwStep ;
+
+       }
+       
+
+     }
+     
+     
+   }
+ 
+   return uwStep ;
+
+}
 
 
 

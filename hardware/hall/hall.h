@@ -19,5 +19,7 @@ void NO_HALL_GPIO_Init(void);
 
 uint8_t NO_HallSensor_GetPinState(void);
 
+uint8_t NO_HallSensor_Hex(void);
+
 
 #endif 

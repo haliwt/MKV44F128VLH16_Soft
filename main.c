@@ -66,7 +66,7 @@ int main(void)
      uint8_t printx4[]="key motor run = 0 ^^^^ \r\n";
      uint8_t printx5[]="key motor run  = 1 $$$$ \r\n";
      uint8_t ucKeyCode=0,abc_s=0;
-     uint8_t dir_s =0,no_sensorless;
+     uint8_t dir_s =0,no_sensorless,hall;
      uint16_t pwm_duty;
  
 
@@ -102,9 +102,9 @@ int main(void)
             // pwm_duty = ADC_DMA_ReadValue();
              pwm_duty = CADC_Read_ADC_Value();
 #ifdef DEBUG_PRINT 
-             printf("pw = %d\r \n",pwm_duty); 
-             no_sensorless =NO_HallSensor_GetPinState();
-             printf("nh = %d\r \n",no_sensorless); 
+          //   printf("pw = %d\r \n",pwm_duty); 
+          //   no_sensorless =NO_HallSensor_GetPinState();
+          //   printf("nh = %d\r \n",no_sensorless); 
 
 #endif 
               
@@ -195,9 +195,11 @@ int main(void)
                   
                   SD315AI_Check_Fault();
                  // CADC_Read_ADC_Value();
-                 uwStep = HallSensor_GetPinState();
+                 hall = HallSensor_GetPinState(); 
+                 uwStep = NO_HallSensor_Hex(); //WT.EDIT 2019-11-19
                #ifdef DEBUG_PRINT
-			     // printf("uwStep = %d\r \n",uwStep); 
+			      printf("uwStep = %d\r \n",uwStep);
+                  printf("hall = %d\r \n",hall); 
 			   #endif 
                                  
                   HALLSensor_Detected_BLDC(pwm_duty);
