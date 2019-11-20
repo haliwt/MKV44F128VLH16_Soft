@@ -325,17 +325,24 @@ uint8_t NO_HallSensor_Hex(void)
            step=5;
            return uwStep ;
         }
+      else
+      {
+
+         uwStep = 0x5;
+         step=5;
+          return uwStep ;
+
+
+      }
 
 
    }
-
-  if(Dir == 0) //逆时针方向 -0
-  {
-    uwStep = (uint32_t)7 - uwStep;        // 逆时针 CW = 7 - CCW;
-  }
-  return uwStep;
-
+   return uwStep;
 }
+
+ 
+
+
 
 
 

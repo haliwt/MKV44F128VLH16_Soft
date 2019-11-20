@@ -410,6 +410,7 @@ void ADC_UVW_Sample_HALL_Value(void)
           //  wSaHall = (w[0]+w[1]+w[2]+w[3]+w[4]) /5;
           
             wSaHall = b/5  ;
+          DelayMs(1);
          #ifdef DEBUG_PRINT  
             PRINTF("u= %d\r\n", uSaHall);
             PRINTF("v= %d\r\n", vSaHall);
