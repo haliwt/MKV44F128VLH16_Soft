@@ -14,6 +14,9 @@
 #define NO_HALL_B_GPIO_PIN       8U
 #define NO_HALL_C_GPIO_PIN      16U
 
+extern __IO uint8_t step;
+
+
 
 void NO_HALL_GPIO_Init(void);
 

@@ -6,6 +6,7 @@ __IO uint16_t uSaHall;
 __IO uint16_t vSaHall;
 __IO uint16_t wSaHall; //电机 W相，采样电压值
 
+__IO uint8_t step;
 
 
 
@@ -57,15 +58,15 @@ uint8_t NO_HallSensor_GetPinState(void)
 
  
   
-  if(uSaHall < 27000)  //U
+  if(uSaHall > 8000)  //U
   {
     State |= 0x01U;
   }
-  if(vSaHall < 27000)  //V
+  if(vSaHall > 8000)  //V
   {
     State |= 0x02U;
   }
-  if(wSaHall < 27000)  //W
+  if(wSaHall > 8000)  //W
   {
     State |= 0x04U;
   }
@@ -84,111 +85,255 @@ uint8_t NO_HallSensor_GetPinState(void)
 uint8_t NO_HallSensor_Hex(void)
 {
 
-  static uint8_t noHallValue,step = 0;
+  static uint8_t noHallValue;
+
   noHallValue = NO_HallSensor_GetPinState();
-  PRINTF("nHallValue = %d \r\n",noHallValue);
-  if(Dir == 0)
-  {
-     if((noHallValue == 0x4) || (noHallValue == 0x2)) //0x4 -- hall - 0x1
-     {
-           if(step == 0)
+ // PRINTF("d = %d \r\n",noHallValue);
+
+  if(noHallValue == 0x4) //0x4 --hall  0x5 0x1
+   {
+
+          
+         if(step == 5)
            {
-
-            uwStep = 0x1; //hall 0x01
-           
-            step = 1;
-            return uwStep ;
+              uwStep = 0x4;
+              step=4;
+              return uwStep ;
            }
-           if(step == 0x3)
+         if(step == 4)
            {
-             uwStep = 0x1; //hall 0x01
-           
-            step = 1;
-            return uwStep ;
-
+              uwStep = 0x6;
+              step=6;
+              return uwStep ;
            }
+         if(step == 6)
+           {
+              uwStep = 0x2;
+              step=2;
+              return uwStep ;
+           }
+         if(step == 2)
+           {
+              uwStep = 0x3;
+              step=3;
+              return uwStep ;
+           }
+         if(step == 3)
+           {
+              uwStep = 0x1;
+              step=1;
+              return uwStep ;
+           }
+         if(step == 1)
+           {
+              uwStep = 0x5;
+              step=5;
+              return uwStep ;
+           }
+          else  
+          {
+
+              uwStep = 0x5;
+              step=5;
            
-       
-
-     }
-    if(((noHallValue == 0x3) || (noHallValue == 0x7))) //0x3 ---hall - 0x5
-     {
-        if(step == 1)
-        {
-            uwStep = 0x5;
-            step =5;
-            return uwStep ;
-        }
-        if(step == 5) //soft insert 0x04
-        {
-            uwStep = 0x4;
-            step =4;
-            return uwStep ;
-        }
-     
-
-     }
-     if((noHallValue == 0x4) || (noHallValue == 0x3)||(noHallValue == 0)||(noHallValue == 0x2)) //0x4 --hall 0x06
-     {
-
-       if(step==0)
-       {
-         uwStep = 0x6;
-         step =6;
-         return uwStep ;
-
-       }
-       if(step == 4)
-       {
-
-         uwStep = 0x6;
-         step =6;
-         return uwStep ;
-       }
-       
-     }
-    if((noHallValue == 0x3) || (noHallValue == 0x7)) // hall  0x2
-     {
-        if(step == 0)
-        {
-         uwStep = 0x2;
-         step= 2;
-         return uwStep ;
-        }
-        if(step == 0x6)
-         {
-             uwStep = 0x2;
-             step= 2;
-             return uwStep ;
-        }
+              return uwStep ;
+          }
+        
       
+    }
+   if((noHallValue == 0x0)||(noHallValue == 0x7)) //0x0 --hall 0x6 0x04
+   {
+          
+            if(step == 5)
+           {
+              uwStep = 0x4;
+              step=4;
+              return uwStep ;
+           }
+         if(step == 4)
+           {
+              uwStep = 0x6;
+              step=6;
+              return uwStep ;
+           }
+         if(step == 6)
+           {
+              uwStep = 0x2;
+              step=2;
+              return uwStep ;
+           }
+         if(step == 2)
+           {
+              uwStep = 0x3;
+              step=3;
+              return uwStep ;
+           }
+         if(step == 3)
+           {
+              uwStep = 0x1;
+              step=1;
+              return uwStep ;
+           }
+         if(step == 1)
+           {
+              uwStep = 0x5;
+              step=5;
+              return uwStep ;
+           }
+          else
+          {
+              uwStep = 0x6;
+              step=6;
+            
+              return uwStep ;
 
-     }
-     if((noHallValue == 0x3) || (noHallValue == 0x7)) //hall 0x3 soft inert number
-     {
 
-       if(step == 0)
-       {
-            uwStep = 0x3;
-            step = 3;
-            return uwStep ;
-       }
+          }
 
-       if(step == 2)
-       {
-            uwStep = 0x3;
-            step = 3;
-            return uwStep ;
+    }
+   if(noHallValue == 0x3) //0x3 --hall 0x2,0x03
+   {
 
-       }
+         
+   if(step == 5)
+           {
+              uwStep = 0x4;
+              step=4;
+              return uwStep ;
+           }
+         if(step == 4)
+           {
+              uwStep = 0x6;
+              step=6;
+              return uwStep ;
+           }
+         if(step == 6)
+           {
+              uwStep = 0x2;
+              step=2;
+              return uwStep ;
+           }
+         if(step == 2)
+           {
+              uwStep = 0x3;
+              step=3;
+              return uwStep ;
+           }
+         if(step == 3)
+           {
+              uwStep = 0x1;
+              step=1;
+              return uwStep ;
+           }
+         if(step == 1)
+           {
+              uwStep = 0x5;
+              step=5;
+              return uwStep ;
+           }
+        else
+          {
+           uwStep = 0x2;
+           step=2;
        
-
-     }
-     
+           return uwStep ;
+          }
      
    }
- 
-   return uwStep ;
+   if(noHallValue == 0x1) 
+   {
+         
+        if(step == 5)
+           {
+              uwStep = 0x4;
+              step=4;
+              return uwStep ;
+           }
+         if(step == 4)
+           {
+              uwStep = 0x6;
+              step=6;
+              return uwStep ;
+           }
+         if(step == 6)
+           {
+              uwStep = 0x2;
+              step=2;
+              return uwStep ;
+           }
+         if(step == 2)
+           {
+              uwStep = 0x3;
+              step=3;
+              return uwStep ;
+           }
+         if(step == 3)
+           {
+              uwStep = 0x1;
+              step=1;
+              return uwStep ;
+           }
+         if(step == 1)
+           {
+              uwStep = 0x5;
+              step=5;
+              return uwStep ;
+           }
+          else
+          {
+           uwStep = 0x3;
+           step=3;
+         
+           return uwStep ;
+          }
+   }
+   if((noHallValue == 0x5)||(noHallValue == 0x2)||(noHallValue == 0x6))
+   {
+      if(step == 5)
+        {
+           uwStep = 0x4;
+           step=4;
+           return uwStep ;
+        }
+      if(step == 4)
+        {
+           uwStep = 0x6;
+           step=6;
+           return uwStep ;
+        }
+      if(step == 6)
+        {
+           uwStep = 0x2;
+           step=2;
+           return uwStep ;
+        }
+      if(step == 2)
+        {
+           uwStep = 0x3;
+           step=3;
+           return uwStep ;
+        }
+      if(step == 3)
+        {
+           uwStep = 0x1;
+           step=1;
+           return uwStep ;
+        }
+      if(step == 1)
+        {
+           uwStep = 0x5;
+           step=5;
+           return uwStep ;
+        }
+
+
+   }
+
+  if(Dir == 0) //逆时针方向 -0
+  {
+    uwStep = (uint32_t)7 - uwStep;        // 逆时针 CW = 7 - CCW;
+  }
+  return uwStep;
 
 }
 

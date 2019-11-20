@@ -253,7 +253,7 @@ void ADC_CADC_Init(void)
 
     /* Configure the samples. */
     cadcSampleConfigStruct.channelGain      = kCADC_ChannelGainx1;
-    cadcSampleConfigStruct.zeroCrossingMode = kCADC_ZeroCorssingForAnySignChanged;//WT.EDIT 20191116//kCADC_ZeroCorssingDisabled;
+    cadcSampleConfigStruct.zeroCrossingMode = kCADC_ZeroCorssingDisabled;//WT.EDIT 20191116//kCADC_ZeroCorssingDisabled;
     cadcSampleConfigStruct.highLimitValue   = 0xFFFFU;
     cadcSampleConfigStruct.lowLimitValue    = 0x0U;
     cadcSampleConfigStruct.offsetValue      = 0x0U;
@@ -361,6 +361,7 @@ void ADC_UVW_Sample_HALL_Value(void)
 {
 
         uint16_t i,u[5],v[5],w[5];
+        uint16_t r=0,y=0,b=0;
         uint16_t sampleMask ;
              /* Enable the sample slot. */
     sampleMask = CADC_SAMPLE_MASK(0U)    /* For converter A. */
@@ -370,7 +371,7 @@ void ADC_UVW_Sample_HALL_Value(void)
     CADC_EnableSample(CADC_BASEADDR, sampleMask, true);
     CADC_EnableSample(CADC_BASEADDR, (uint16_t)(~sampleMask), false); /* Disable other sample slot. */
        CADC_DoSoftwareTriggerConverter(CADC_BASEADDR, kCADC_ConverterA);
-        CADC_DoSoftwareTriggerConverter(DEMO_CADC_BASEADDR, kCADC_ConverterA);
+       
 
         /* Wait the conversion to be done. */
         while (kCADC_ConverterAEndOfScanFlag !=
@@ -379,34 +380,41 @@ void ADC_UVW_Sample_HALL_Value(void)
         }
 
         /* Read the result value. */
-     //   if (sampleMask == (sampleMask & CADC_GetSampleReadyStatusFlags(DEMO_CADC_BASEADDR)))
+     //  if (sampleMask == (sampleMask & CADC_GetSampleReadyStatusFlags(DEMO_CADC_BASEADDR)))
         {
             for(i=0;i<5;i++)
             {
              u[i] = (int16_t)CADC_GetSampleResultValue(DEMO_CADC_BASEADDR, 2U);
            
-            // PRINTF("u= %d\r\n", uSaHall);
+              r=r+u[i];
+             // PRINTF("u= %d\r\n", uSaHall);
            
              v[i] = (int16_t)CADC_GetSampleResultValue(DEMO_CADC_BASEADDR, 1U); 
-             
+             y=y+v[i];
             // PRINTF("v= %d\r\n", vSaHall);
              
              w[i] = (int16_t)CADC_GetSampleResultValue(DEMO_CADC_BASEADDR, 0U);
-     
+             b=b+w[i];
             // PRINTF("w= %d\r\n",wSaHall);
             }
         }
           
 
-            uSaHall = (u[0]+u[1]+u[2]+u[3]+u[4])/ 5;
-           // uSaHall = (u[0]+u[1]) / 2;
+           // uSaHall = (u[0]+u[1]+u[2]+u[3]+u[4])/ 5;
+            uSaHall = r/5 ;
+           
+           
+          // vSaHall = (v[0]+v[1]+v[2]+v[3]+v[4])/5;
+            
+            vSaHall = y/5  ;
+          //  wSaHall = (w[0]+w[1]+w[2]+w[3]+w[4]) /5;
+          
+            wSaHall = b/5  ;
+         #ifdef DEBUG_PRINT  
             PRINTF("u= %d\r\n", uSaHall);
-           
-           vSaHall = (v[0]+v[1]+v[2]+v[3]+v[4])/5;
-             PRINTF("v= %d\r\n", vSaHall);
-           
-            wSaHall = (w[0]+w[1]+w[2]+w[3]+w[4]) /5;
+            PRINTF("v= %d\r\n", vSaHall);
             PRINTF("w= %d\r\n",wSaHall);
+         #endif 
     
            CADC_ClearStatusFlags(DEMO_CADC_BASEADDR, kCADC_ConverterAEndOfScanFlag);
 
