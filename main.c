@@ -197,14 +197,15 @@ int main(void)
                 
                 uwStep= NO_HallSensor_Hex(); //WT.EDIT 2019-11-19
                 // uwStep = HallSensor_GetPinState();
-                //DelayMs(1);
+                
                 HALLSensor_Detected_BLDC(pwm_duty,uwStep);
                
 				 SD315AI_Check_Fault();
                  pwm_duty = CADC_Read_ADC_Value();
+                 DelayMs(1);
                  #ifdef DEBUG_PRINT
                   
-			        printf("uwStep = %d\r \n",uwStep);
+			        //printf("uwStep = %d\r \n",uwStep);
                  #endif 
                  
                 }
