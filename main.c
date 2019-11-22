@@ -1,9 +1,9 @@
 /*
- * Copyright (c) 2015, Freescale Semiconductor, Inc.
- * Copyright 2016-2017 NXP
+ *  Inc.
+ * Copyright 2019 KST
  * All rights reserved.
  *
- * SPDX-License-Identifier: BSD-3-Clause  MKV46F256VLH16
+ * No Hall soft  BSD-3-Clause  MKV46F256VLH16
  */
 
 /*System includes.*/
@@ -62,7 +62,6 @@ int main(void)
      
      uint8_t printx1[]="Key Dir = 1 is CW !!!! CW \r\n";
      uint8_t printx2[]="Key Dir = 0 is CCW \r\n";
-  //   uint8_t printx3[]="motor run is OK @@@@@@@@@ \r\n";
      uint8_t printx4[]="key motor run = 0 ^^^^ \r\n";
      uint8_t printx5[]="key motor run  = 1 $$$$ \r\n";
      uint8_t ucKeyCode=0,abc_s=0;
@@ -100,12 +99,11 @@ int main(void)
           if(motor_ref.motor_run == 1 )
            {
             // pwm_duty = ADC_DMA_ReadValue();
-             pwm_duty = CADC_Read_ADC_Value();
-             printf("pw = %d\r \n",pwm_duty); 
+            // pwm_duty = CADC_Read_ADC_Value();
+             
 #ifdef DEBUG_PRINT 
-             printf("pw = %d\r \n",pwm_duty); 
+          //   printf("pw = %d\r \n",pwm_duty); 
          
-
 #endif 
               
                if(motor_ref.power_on == 1)
@@ -195,23 +193,19 @@ int main(void)
               else 
               {
                   
-                  SD315AI_Check_Fault();
+                  
                 
                 uwStep= NO_HallSensor_Hex(); //WT.EDIT 2019-11-19
-                // uwStep = HallSensor_GetPinState(); 
-                DelayMs(1);
-                #ifdef DEBUG_PRINT
-                  
-			      //printf("uwStep = %d\r \n",uwStep);
-                   
-                 // printf("no = %d\r \n",no); 
-                      
-			   #endif 
-              
-                                 
-                  HALLSensor_Detected_BLDC(pwm_duty,uwStep);
+                // uwStep = HallSensor_GetPinState();
+                //DelayMs(1);
+                HALLSensor_Detected_BLDC(pwm_duty,uwStep);
                
-				 
+				 SD315AI_Check_Fault();
+                 pwm_duty = CADC_Read_ADC_Value();
+                 #ifdef DEBUG_PRINT
+                  
+			        printf("uwStep = %d\r \n",uwStep);
+                 #endif 
                  
                 }
              }

@@ -360,7 +360,7 @@ uint16_t CADC_Read_ADC_Value(void)
 void ADC_UVW_Sample_HALL_Value(void)
 {
 
-        uint16_t i,u[4],v[4],w[4];
+        uint16_t i,u[5],v[5],w[5];
         uint16_t r=0,y=0,b=0;
         uint16_t sampleMask ;
              /* Enable the sample slot. */
@@ -382,35 +382,26 @@ void ADC_UVW_Sample_HALL_Value(void)
         /* Read the result value. */
      //  if (sampleMask == (sampleMask & CADC_GetSampleReadyStatusFlags(DEMO_CADC_BASEADDR)))
         {
-           for(i=0;i<4;i++)
-            {
+           for(i=0;i<5;i++)
+           {
              u[i] = (int16_t)CADC_GetSampleResultValue(DEMO_CADC_BASEADDR, 2U);
            
               r=r+ u[i];
-             // PRINTF("u= %d\r\n", uSaHall);
+          
            
-             v[0] = (int16_t)CADC_GetSampleResultValue(DEMO_CADC_BASEADDR, 1U); 
+             v[i] = (int16_t)CADC_GetSampleResultValue(DEMO_CADC_BASEADDR, 1U); 
              y=y+v[i];
-            // PRINTF("v= %d\r\n", vSaHall);
+        
              
-             w[0] = (int16_t)CADC_GetSampleResultValue(DEMO_CADC_BASEADDR, 0U);
-             b=b+w[0];
-            // PRINTF("w= %d\r\n",wSaHall);
-            }
-        }
-          
-
-           // uSaHall = (u[0]+u[1]+u[2]+u[3]+u[4])/ 5;
-            uSaHall = r/4 ;
-           
-         
-          // vSaHall = (v[0]+v[1]+v[2]+v[3]+v[4])/5;
+             w[i] = (int16_t)CADC_GetSampleResultValue(DEMO_CADC_BASEADDR, 0U);
+             b=b+w[i];
             
-            vSaHall = y/4  ;
-          //  wSaHall = (w[0]+w[1]+w[2]+w[3]+w[4]) /5;
-          
-            wSaHall = b/4  ;
-          
+           }
+         }
+            uSaHall = r/5 ;
+            vSaHall = y/5  ;
+            wSaHall = b/5  ;
+          DelayMs(1);
          #ifdef DEBUG_PRINT  
            // PRINTF("u= %d\r\n", uSaHall);
            // PRINTF("v= %d\r\n", vSaHall);
