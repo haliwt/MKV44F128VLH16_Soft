@@ -5,7 +5,8 @@
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
-
+
+
 #ifndef _PIN_MUX_H_
 #define _PIN_MUX_H_
 
@@ -45,9 +46,9 @@ extern "C" {
  */
 
 
-#define ADCOPT_ADCACH6SEL_CH_C  0x02u
-#define ADCOPT_ADCBCH7SEL_CH_E 0x04u   /*!<@brief ADCB MUX1 selection for ADCB channel 7: ADCB MUX1's channel e. */
-#define ADCOPT_ADCACH7SEL_CH_C  0x02u
+#define ADCOPT_ADCACH6SEL_CH_C      0x02u
+#define ADCOPT_ADCBCH7SEL_CH_E      0x04u   /*!<@brief ADCB MUX1 selection for ADCB channel 7: ADCB MUX1's channel e. */
+#define ADCOPT_ADCACH7SEL_CH_C      0x02u
 #define SOPT5_UART1RXSRC_UART_RX 0x00u /*!<@brief UART 1 receive data source select: UART1_RX pin */
 #define SOPT5_UART1TXSRC_UART_TX 0x00u /*!<@brief UART 1 transmit data source select: UART1_TX pin */
 

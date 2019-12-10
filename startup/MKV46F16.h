@@ -572,7 +572,7 @@ typedef struct {
   __IO uint16_t CLIST4;                            /**< ADC Channel List Register 4, offset: 0xE */
   __IO uint16_t SDIS;                              /**< ADC Sample Disable Register, offset: 0x10 */
   __IO uint16_t STAT;                              /**< ADC Status Register, offset: 0x12 */
-  __I  uint16_t RDY;                               /**< ADC Ready Register, offset: 0x14 */
+  __I  uint16_t RDY;                               /**< ADC Ready Register, offset: 0x14 = 4005_C014H*/
   __IO uint16_t LOLIMSTAT;                         /**< ADC Low Limit Status Register, offset: 0x16 */
   __IO uint16_t HILIMSTAT;                         /**< ADC High Limit Status Register, offset: 0x18 */
   __IO uint16_t ZXSTAT;                            /**< ADC Zero Crossing Status Register, offset: 0x1A */

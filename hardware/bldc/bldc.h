@@ -37,7 +37,7 @@
 #define  PWMA_INIT_ON           1
 
 #define IRFP4768PbF           1
-//#define DEBUG_PRINT             2
+#define DEBUG_PRINT           2
 
 
 
@@ -73,12 +73,25 @@ void PWM_BLDC_Init(void);   // initial pwm function
 void PWMA_Select_AB_Channel(uint8_t s_pwmA,uint16_t duty);  //select one PWM A channel,H-bridge first 
 void PWMA_Select_BC_Channel(uint8_t s_pwmB,uint16_t duty);  //select one PWM B  channel,H-bridge second
 void PWMA_Select_CA_Channel(uint8_t s_pwmC,uint16_t duty); 
+
+
+void PWMA_Open_A_Plus_Channel(uint8_t duty); 
+void PWMA_Open_A_Negative_Channel(uint8_t duty);
+
+void PWMA_Open_B_Plus_Channel(uint8_t duty); 
+void PWMA_Open_B_Negative_Channel(uint8_t duty);
+
+void PWMA_Open_C_Plus_Channel(uint8_t duty); 
+void PWMA_Open_C_Negative_Channel(uint8_t duty);
+
+
+
+
+
 void PMW_AllClose_ABC_Channel(void);
+
 void PMW_AllClose_ABC_Duty_10_Channel(void);
 void PMW_AllClose_ABC_Duty_20_Channel(void);
-
-
-
 
 void PWMA_Close_ABC_Channel(uint8_t f_pwma);
 

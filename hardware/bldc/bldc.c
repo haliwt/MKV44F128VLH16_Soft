@@ -201,7 +201,7 @@ static void PWM_DRV_Init3PhPwm(void)
     uint16_t deadTimeVal;
     pwm_signal_param_t pwmSignal[2];
     uint32_t pwmSourceClockInHz;
-    uint32_t pwmFrequencyInHz = 10000;//1300; //1.3KHZ
+    uint32_t pwmFrequencyInHz = 60000;//1300; //1.3KHZ
 
 
     pwmSourceClockInHz = PWM_SRC_CLK_FREQ;
@@ -262,7 +262,7 @@ void HALLSensor_Detected_BLDC(uint16_t duty,uint8_t uwStep)
   /*---- six step changed phase */
   /*---- 1(001,U),IC2(010,V),IC3(100,W) ----*/
 #ifdef DEBUG_PRINT
-//   PRINTF("uwStep = %d\n",uwStep);
+  PRINTF("uwStep = %d\n",uwStep);
 #endif 
  switch(uwStep)//switch(BLDCMotor.uwStep)
  {
@@ -437,11 +437,12 @@ void PWMA_Select_CA_Channel(uint8_t s_pwmc,uint16_t Duty)
      {
 	   
 	     /*PWMA C channel PWM output*/
-         PWM_UpdatePwmDutycycle(BOARD_PWM_BASEADDR, kPWM_Module_2, kPWM_PwmB,   kPWM_SignedEdgeAligned, 0); 
+       PWM_UpdatePwmDutycycle(BOARD_PWM_BASEADDR, kPWM_Module_2, kPWM_PwmB,   kPWM_SignedEdgeAligned, 0); 
 	     PWM_UpdatePwmDutycycle(BOARD_PWM_BASEADDR, kPWM_Module_2, kPWM_PwmA,   kPWM_SignedEdgeAligned, Duty); 
 	  
-	     PWM_UpdatePwmDutycycle(BOARD_PWM_BASEADDR, kPWM_Module_0, kPWM_PwmA,   kPWM_SignedEdgeAligned, 0); //
-		 PWM_UpdatePwmDutycycle(BOARD_PWM_BASEADDR, kPWM_Module_0, kPWM_PwmB,   kPWM_SignedEdgeAligned, Duty); //
+	      /*PWMA A- channel PWM output*/
+       PWM_UpdatePwmDutycycle(BOARD_PWM_BASEADDR, kPWM_Module_0, kPWM_PwmA,   kPWM_SignedEdgeAligned, 0); //
+		   PWM_UpdatePwmDutycycle(BOARD_PWM_BASEADDR, kPWM_Module_0, kPWM_PwmB,   kPWM_SignedEdgeAligned, Duty); //
 	     PWM_SetPwmLdok(BOARD_PWM_BASEADDR, kPWM_Control_Module_0| kPWM_Control_Module_2, true);
 
 	   //  PWM_StartTimer(BOARD_PWM_BASEADDR, kPWM_Control_Module_0 |kPWM_Control_Module_2 );
@@ -461,13 +462,98 @@ void PWMA_Select_CA_Channel(uint8_t s_pwmc,uint16_t Duty)
      }
  
 }
+/**************************************************************
+ *
+ *Function Name: PWMA_Open_A_Plus_Channel(uint8_t duty)
+ *Function Active :  PWM A+ output
+ *
+ *
+**************************************************************/
+void PWMA_Open_A_Plus_Channel(uint8_t Duty)
+{
+      /*PWMA A+ channel PWM output*/
+     PWM_UpdatePwmDutycycle(BOARD_PWM_BASEADDR, kPWM_Module_0, kPWM_PwmA, kPWM_SignedEdgeAligned, Duty); 
+     PWM_UpdatePwmDutycycle(BOARD_PWM_BASEADDR, kPWM_Module_0, kPWM_PwmB, kPWM_SignedEdgeAligned, 0); 
 
+     PWM_SetPwmLdok(BOARD_PWM_BASEADDR, kPWM_Control_Module_0, true);
+}
+
+/**************************************************************
+ *
+ *Function Name: PWMA_Open_A_Negative_Channel(uint8_t duty)
+ *Function Active :  PWM A- output
+ *
+ *
+**************************************************************/
+void PWMA_Open_A_Negative_Channel(uint8_t Duty)
+{
+     /*PWMA A- channel PWM output*/
+     PWM_UpdatePwmDutycycle(BOARD_PWM_BASEADDR, kPWM_Module_0, kPWM_PwmA, kPWM_SignedEdgeAligned, 0); 
+     PWM_UpdatePwmDutycycle(BOARD_PWM_BASEADDR, kPWM_Module_0, kPWM_PwmB, kPWM_SignedEdgeAligned, Duty); 
+
+     PWM_SetPwmLdok(BOARD_PWM_BASEADDR, kPWM_Control_Module_0, true);
+}
+/**************************************************************
+ *
+ *Function Name: PWMA_Open_B_Plus_Channel(uint8_t duty)
+ *Function Active :  PWM B+ output
+ *
+ *
+**************************************************************/
+void PWMA_Open_B_Plus_Channel(uint8_t Duty)
+{
+     /*PWMA B+ channel PWM output*/
+      PWM_UpdatePwmDutycycle(BOARD_PWM_BASEADDR, kPWM_Module_1, kPWM_PwmA,   kPWM_SignedEdgeAligned, Duty);
+      PWM_UpdatePwmDutycycle(BOARD_PWM_BASEADDR, kPWM_Module_1, kPWM_PwmB,   kPWM_SignedEdgeAligned, 0); 
+	    PWM_SetPwmLdok(BOARD_PWM_BASEADDR, kPWM_Control_Module_1, true);
+}
+/**************************************************************
+ *
+ *Function Name: PWMA_Open_B_Negative_Channel(uint8_t duty)
+ *Function Active :  PWM B- output
+ *
+ *
+**************************************************************/
+void PWMA_Open_B_Negative_Channel(uint8_t Duty)
+{
+     /*PWMA B- channel PWM output*/
+      PWM_UpdatePwmDutycycle(BOARD_PWM_BASEADDR, kPWM_Module_1, kPWM_PwmA,   kPWM_SignedEdgeAligned, 0);
+      PWM_UpdatePwmDutycycle(BOARD_PWM_BASEADDR, kPWM_Module_1, kPWM_PwmB,   kPWM_SignedEdgeAligned, Duty); 
+	      
+     PWM_SetPwmLdok(BOARD_PWM_BASEADDR, kPWM_Control_Module_1, true);
+}
+/**************************************************************
+ *
+ *Function Name: PWMA_Open_C_Plus_Channel(uint8_t duty)
+ *Function Active :  PWM C+ output
+ *
+ *
+**************************************************************/
+void PWMA_Open_C_Plus_Channel(uint8_t Duty)
+{
+     /*PWMA C+ channel PWM output*/
+      PWM_UpdatePwmDutycycle(BOARD_PWM_BASEADDR, kPWM_Module_2, kPWM_PwmB,   kPWM_SignedEdgeAligned, 0); 
+	    PWM_UpdatePwmDutycycle(BOARD_PWM_BASEADDR, kPWM_Module_2, kPWM_PwmA,   kPWM_SignedEdgeAligned, Duty); 
+      PWM_SetPwmLdok(BOARD_PWM_BASEADDR, kPWM_Control_Module_2, true);
+}
+/**************************************************************
+ *
+ *Function Name: PWMA_Open_C_Negative_Channel(uint8_t duty)
+ *Function Active :  PWM C- output
+ *
+ *
+**************************************************************/
+void PWMA_Open_C_Negative_Channel(uint8_t Duty)
+{
+     /*PWMA C- channel PWM output*/
+      PWM_UpdatePwmDutycycle(BOARD_PWM_BASEADDR, kPWM_Module_2, kPWM_PwmB,   kPWM_SignedEdgeAligned, Duty); 
+	    PWM_UpdatePwmDutycycle(BOARD_PWM_BASEADDR, kPWM_Module_2, kPWM_PwmA,   kPWM_SignedEdgeAligned, 0); 
+      PWM_SetPwmLdok(BOARD_PWM_BASEADDR, kPWM_Control_Module_2, true);
+}
 /**************************************************************
  *
  *Function Name: PWMABC_Selection 
  *Function Active :be used to kPWM_Control_Module_0 
- *
- *
  *
 **************************************************************/
 void PWMA_Close_ABC_Channel(uint8_t f_pwmabc)

@@ -38,12 +38,13 @@
 #include "output.h"
 #include "input.h"
 #include "hall.h"
+#include "clock_config.h"
 
 //#include "usart_edma_rb.h"
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
-
+uint16_t pwm_duty;
 
 
 output_t motor_ref;
@@ -66,13 +67,13 @@ int main(void)
      uint8_t printx5[]="key motor run  = 1 $$$$ \r\n";
      uint8_t ucKeyCode=0,abc_s=0;
      uint8_t dir_s =0;
-     uint16_t pwm_duty;
+     
  
 
     BOARD_InitPins();
     BOARD_BootClockRUN();
     BOARD_InitDebugConsole();
-    
+   
    
     LED_Init();
     KEY_Init();
@@ -99,10 +100,10 @@ int main(void)
           if(motor_ref.motor_run == 1 )
            {
             // pwm_duty = ADC_DMA_ReadValue();
-            // pwm_duty = CADC_Read_ADC_Value();
+             pwm_duty = CADC_Read_ADC_Value();
              
 #ifdef DEBUG_PRINT 
-          //   printf("pw = %d\r \n",pwm_duty); 
+        //     printf("pw = %d\r \n",pwm_duty); 
          
 #endif 
               
@@ -192,23 +193,20 @@ int main(void)
                }
               else 
               {
-                  
-                  
-                
-                uwStep= NO_HallSensor_Hex(); //WT.EDIT 2019-11-19
-                // uwStep = HallSensor_GetPinState();
-                
-                HALLSensor_Detected_BLDC(pwm_duty,uwStep);
+                   Dector_Phase(pwm_duty);
+              }  
+             
                
-				 SD315AI_Check_Fault();
-                 pwm_duty = CADC_Read_ADC_Value();
-                 DelayMs(1);
+				        SD315AI_Check_Fault();
+               
+                 DWT_DelayUs(100);
                  #ifdef DEBUG_PRINT
-                  
-			        //printf("uwStep = %d\r \n",uwStep);
+                   // printf("u = %d\r \n",uwStep);
+			            printf("P = %d\r \n",Phase);
+					        printf("--------\r\n");
                  #endif 
                  
-                }
+                
              }
           
           else
@@ -259,7 +257,7 @@ int main(void)
             
            }
       
-       /*´¦Àí½ÓÊÕµ½µÄ°´¼ü¹¦ÄÜ*/  
+       /*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Õµï¿½ï¿½Ä°ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½*/  
 		if(ucKeyCode !=KEY_UP) 
 		{
            switch(ucKeyCode)
@@ -310,7 +308,7 @@ int main(void)
 				 case DIR_PRES: //3
 
 			       dir_s ++ ;
-	  			 if(dir_s == 1) //Dir =1 ;  //Ë³Ê±ÕëÐý×ª
+	  			 if(dir_s == 1) //Dir =1 ;  //Ë³Ê±ï¿½ï¿½ï¿½ï¿½×ª
 	   			 {
 
                         if(motor_ref.power_on ==2)//motor is runing
@@ -320,6 +318,7 @@ int main(void)
                               pwm_duty = 10;
 							  //uwStep = HallSensor_GetPinState();
                               uwStep= NO_HallSensor_Hex();
+                      
 				              HALLSensor_Detected_BLDC(pwm_duty,uwStep);
 							  pwm_duty = 5;
 							  //uwStep = HallSensor_GetPinState();
@@ -340,7 +339,7 @@ int main(void)
                         }
                          UART_WriteBlocking(DEMO_UART, printx1, sizeof(printx1) - 1);
 				  }
-			   else // Dir = 0; //ÄæÊ±ÕëÐý×ª
+			   else // Dir = 0; //ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½×ª
 			   {
                   dir_s=0;
                   if(motor_ref.power_on == 2) //motor is runing
@@ -413,12 +412,116 @@ void BARKE_KEY_IRQ_HANDLER(void )//void BOARD_BRAKE_IRQ_HANDLER(void)
     __DSB();
 #endif
 }
+/******************************************************************************
+ *
+ * Function Name:NO_HALL_A_IRQ_HANDLER(void)
+ * Function Active: Interrpt brake input key 
+ * @brief Interrupt service fuction of switch.
+ *
+ * This function no hall a dector signal
+ *
+******************************************************************************/
+void NO_HALL_A_IRQ_HANDLER(void)
+{
+   /* Clear external interrupt flag. */
+    GPIO_PortClearInterruptFlags(NO_HALL_A_GPIO, 1U << NO_HALL_A_GPIO_PIN );
+    if(Phase == 5)Phase =0;
+    else 
+    Phase++;
+   
+  //   PRINTF("AAAAAAAAA \r\n");
+ // PRINTF("A = %d\r \n",Phase); 
+   DisableIRQ(NO_HALL_A_IRQ); 
+  /* Add for ARM errata 838869, affects Cortex-M4, Cortex-M4F Store immediate overlapping
+    exception return operation might vector to incorrect interrupt */
+  #if defined __CORTEX_M && (__CORTEX_M == 4U)
+      __DSB();
+  #endif
+}
+/*******************************************************************************
+ * @brief Interrupt NO_HALL_B interrupt 
+ *
+ * This function toggles the LED
+ * 
+ *******************************************************************************/
+void NO_HALL_B_IRQ_HANDLER(void)
+{
+    /* Clear external interrupt flag. */
+    GPIO_PortClearInterruptFlags(NO_HALL_B_GPIO, 1U << NO_HALL_B_GPIO_PIN);
+    /* Change state of button. */
+    if(Phase == 5)Phase =0;
+    else 
+    Phase ++;
+  
+  //    PRINTF("BBBBBBBBBB \r\n");
+	//  PRINTF("B = %d\r \n",Phase);  
+     DisableIRQ(NO_HALL_B_IRQ);
+	//PRINTF("\r\n HO_HALL_B 2222222222 \r\n");
+/* Add for ARM errata 838869, affects Cortex-M4, Cortex-M4F Store immediate overlapping
+  exception return operation might vector to incorrect interrupt */
+#if defined __CORTEX_M && (__CORTEX_M == 4U)
+    __DSB();
+#endif
+}
+/***********************************************************************
+ * @brief Interrupt NO_HALL_C interrupt 
+ *
+ * This function toggles the LED
+ * 
+ ***********************************************************************/
+void NO_HALL_C_IRQ_HANDLER(void)
+{
+    /* Clear external interrupt flag. */
+    GPIO_PortClearInterruptFlags(NO_HALL_C_GPIO, 1U << NO_HALL_C_GPIO_PIN);
+    /* Change state of button. */
+    if(Phase == 5)Phase =0;
+    else 
+    Phase ++ ;
+   
+  // PRINTF("CCCCCCCCCCCCCC \r\n");
+ // PRINTF("C = %d\r \n",Phase); 
+   DisableIRQ(NO_HALL_C_IRQ); 
+	//PRINTF("\r\n HO_HALL_C 333333333 \r\n");
+/* Add for ARM errata 838869, affects Cortex-M4, Cortex-M4F Store immediate overlapping
+  exception return operation might vector to incorrect interrupt */
+#if defined __CORTEX_M && (__CORTEX_M == 4U)
+    __DSB();
+#endif
+}
+#if 0
+/******************************************************************************
+ *
+ * Function Name: ADC_LIMT_IRQHandler(void)
+ * Function Active: Interrpt brake input key 
+ * @brief Interrupt service fuction of switch.
+ *
+ * This function limit high voltage
+ *
+******************************************************************************/
+void ADC_LIMIT_IRQHandler(void) 
+{
+ 
+    g_Adc16InterruptHighFlag=0;
+    g_Adc16InterruptZeroFlag=0;
+    CADC_ClearSampleZeroCrossingStatusFlags(DEMO_CADC_BASEADDR, kCADC_ZeroCrossingFlag);
+   // CADC_ClearSampleLowLimitStatusFlags(DEMO_CADC_BASEADDR, kCADC_LowLimitFlag);
+    CADC_ClearSampleHighLimitStatusFlags(DEMO_CADC_BASEADDR, kCADC_HighLimitFlag);
+    PRINTF("0000000000\r\n");
+    PRINTF("0000000000\r\n");
+    PRINTF("\r\n");
+      CADC_DisableInterrupts(DEMO_CADC_BASEADDR, kCADC_ZeroCrossingInterruptEnable);
+      CADC_DisableInterrupts(DEMO_CADC_BASEADDR, kCADC_HighLimitInterruptEnable);
+      CADC_DisableInterrupts(DEMO_CADC_BASEADDR, kCADC_LowLimitInterruptEnable);
+   
+     CADC_ClearStatusFlags(DEMO_CADC_BASEADDR, kCADC_ConverterAEndOfScanFlag);
+       DisableIRQ(ADC_LIMIT_IRQn);
+         uwStep= NO_HallSensor_Hex(); //WT.EDIT 2019-11-19
+      
 
-
-
-
-
-
-/*******************************************************************************************/
-
-
+    /* Add for ARM errata 838869, affects Cortex-M4, Cortex-M4F Store immediate overlapping
+      exception return operation might vector to incorrect interrupt */
+#if defined __CORTEX_M && (__CORTEX_M == 4U)
+    __DSB();
+#endif
+}
+#endif 

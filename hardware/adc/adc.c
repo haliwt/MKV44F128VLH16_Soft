@@ -2,6 +2,11 @@
 
 /* Initialize CADC */
 
+volatile uint16_t g_Adc16ConversionValue;
+volatile uint16_t g_Adc16InterruptCounter;
+volatile uint16_t g_Adc16InterruptZeroFlag;
+volatile uint16_t g_Adc16InterruptHighFlag;
+
 
 //__IO uint16_t  PWM_Duty	; //占空比
 /*******************************************************************************
@@ -138,12 +143,15 @@ static void CADC_Configuration(void)
      */
     CADC_GetDefaultConfig(&cadcConfigStruct);
     cadcConfigStruct.dualConverterScanMode = kCADC_DualConverterWorkAsLoopSequential;
-    cadcConfigStruct.DMATriggerSoruce      = kCADC_DMATriggerSourceAsSampleReady;
-    CADC_Init(DEMO_CADC_BASEADDR, &cadcConfigStruct);
+  
+    cadcConverterConfigStruct.lowReferenceVoltageSource=kCADC_ReferenceVoltageVrefPad; //WT.EDIT 
+    cadcConverterConfigStruct.speedMode=kCADC_SpeedMode3; //WT.EDIT
+      
+      CADC_Init(DEMO_CADC_BASEADDR, &cadcConfigStruct);
 
     /* Configure converterA. */
     CADC_GetDefaultConverterConfig(&cadcConverterConfigStruct);
-    cadcConverterConfigStruct.clockDivisor = 10U;
+
     CADC_SetConverterConfig(DEMO_CADC_BASEADDR, kCADC_ConverterA, &cadcConverterConfigStruct);
     /* Enable the power for converterA. */
     CADC_EnableConverterPower(DEMO_CADC_BASEADDR, kCADC_ConverterA, true);
@@ -155,8 +163,9 @@ static void CADC_Configuration(void)
 
     /* Configure the samples. */
     cadcSampleConfigStruct.channelGain      = kCADC_ChannelGainx1;
+     cadcConverterConfigStruct.speedMode=  kCADC_SpeedMode3;
     cadcSampleConfigStruct.zeroCrossingMode = kCADC_ZeroCorssingDisabled;
-    cadcSampleConfigStruct.highLimitValue   = 0xFFFFU;
+    cadcSampleConfigStruct.highLimitValue   = 0x3E80;//0xFFFFU; //WT.EDIT
     cadcSampleConfigStruct.lowLimitValue    = 0x0U;
     cadcSampleConfigStruct.offsetValue      = 0x0U;
     cadcSampleConfigStruct.enableWaitSync   = false;
@@ -237,6 +246,9 @@ void ADC_CADC_Init(void)
      */
     CADC_GetDefaultConfig(&cadcConfigStruct);
     cadcConfigStruct.dualConverterScanMode = kCADC_DualConverterWorkAsLoopSequential;//WT.EDIT kCADC_DualConverterWorkAsTriggeredSequential;
+
+     cadcConverterConfigStruct.lowReferenceVoltageSource=kCADC_ReferenceVoltageVrefPad; //WT.EDIT 
+    cadcConverterConfigStruct.speedMode=kCADC_SpeedMode3; //WT.EDIT
     CADC_Init(CADC_BASEADDR, &cadcConfigStruct);
 
     /* Configure each converter. */
@@ -253,24 +265,25 @@ void ADC_CADC_Init(void)
 
     /* Configure the samples. */
     cadcSampleConfigStruct.channelGain      = kCADC_ChannelGainx1;
-    cadcSampleConfigStruct.zeroCrossingMode = kCADC_ZeroCorssingDisabled;//WT.EDIT 20191116//kCADC_ZeroCorssingDisabled;
-    cadcSampleConfigStruct.highLimitValue   = 0xFFFFU;
-    cadcSampleConfigStruct.lowLimitValue    = 0x0U;
-    cadcSampleConfigStruct.offsetValue      = 0x0U;
+     cadcConverterConfigStruct.speedMode=  kCADC_SpeedMode3;
+    cadcSampleConfigStruct.zeroCrossingMode = kCADC_ZeroCorssingForAnySignChanged;//WT.EDIT 20191116//kCADC_ZeroCorssingDisabled;
+    cadcSampleConfigStruct.highLimitValue   = 0xFDE8;//3.0V //0xFFFFU;  //高电平极限设置(中断)
+    cadcSampleConfigStruct.lowLimitValue    = 0x0U;     //低电平极限设置(中断)
+    cadcSampleConfigStruct.offsetValue      = 0x64U;
     cadcSampleConfigStruct.enableWaitSync   = false;
 
     /* For converter A ADCA_CHC7 12PIN. */
-    cadcSampleConfigStruct.channelNumber          = CADC_CHANNEL1_NUMBER;
+    cadcSampleConfigStruct.channelNumber          = CADC_CHANNEL1_NUMBER; //ADCA_CHC7 --A 
     cadcSampleConfigStruct.enableDifferentialPair = CADC_CHANNEL1_ENABLE_DIFF;
     CADC_SetSampleConfig(CADC_BASEADDR, 0U, &cadcSampleConfigStruct);
 
     /* ADCA_CHC6 11PIN*/
-    cadcSampleConfigStruct.channelNumber          = CADC_CHANNEL2_NUMBER;
+    cadcSampleConfigStruct.channelNumber          = CADC_CHANNEL2_NUMBER;  //ADCA_CHC6 ---B
     cadcSampleConfigStruct.enableDifferentialPair = CADC_CHANNEL2_ENABLE_DIFF;
     CADC_SetSampleConfig(CADC_BASEADDR, 1U, &cadcSampleConfigStruct);
     
     /*ADCA_CH3 10PIN*/
-    cadcSampleConfigStruct.channelNumber          = CADC_CHANNEL3_NUMBER;
+    cadcSampleConfigStruct.channelNumber          = CADC_CHANNEL3_NUMBER; //ADCA_CH3  ---C
     cadcSampleConfigStruct.enableDifferentialPair = CADC_CHANNEL3_ENABLE_DIFF;
     CADC_SetSampleConfig(DEMO_CADC_BASEADDR, 2U, &cadcSampleConfigStruct);
     
@@ -278,15 +291,7 @@ void ADC_CADC_Init(void)
     cadcSampleConfigStruct.channelNumber          = CADC_CHANNEL4_NUMBER;
     cadcSampleConfigStruct.enableDifferentialPair = CADC_CHANNEL4_ENABLE_DIFF;
     CADC_SetSampleConfig(DEMO_CADC_BASEADDR, 3U, &cadcSampleConfigStruct);
-#if 0
-    /* For converter B. */
-    cadcSampleConfigStruct.channelNumber          = CADC_CHANNEL3_NUMBER;
-    cadcSampleConfigStruct.enableDifferentialPair = CADC_CHANNEL3_ENABLE_DIFF;
-    CADC_SetSampleConfig(CADC_BASEADDR, 2U, &cadcSampleConfigStruct);
-    cadcSampleConfigStruct.channelNumber          = CADC_CHANNEL4_NUMBER;
-    cadcSampleConfigStruct.enableDifferentialPair = CADC_CHANNEL4_ENABLE_DIFF;
-    CADC_SetSampleConfig(CADC_BASEADDR, 3U, &cadcSampleConfigStruct);
-#endif 
+
     /* Enable the sample slot. */
     sampleMask = CADC_SAMPLE_MASK(0U)    /* For converter A. */
                  | CADC_SAMPLE_MASK(1U)  /* For converter A. */
@@ -294,7 +299,7 @@ void ADC_CADC_Init(void)
                  | CADC_SAMPLE_MASK(3U);  /* For converter A. */
     CADC_EnableSample(CADC_BASEADDR, sampleMask, true);
     CADC_EnableSample(CADC_BASEADDR, (uint16_t)(~sampleMask), false); /* Disable other sample slot. */
-
+    
     /* The available sample slots are sample 0, 1, 2, 3. */
 
    // PRINTF("Press any key to trigger the conversion ...\r\n");
@@ -317,12 +322,13 @@ uint16_t CADC_Read_ADC_Value(void)
     uint16_t pwm_duty;
 
         /* Enable the sample slot. */
-    pwm_duty = CADC_SAMPLE_MASK(0U)    /* For converter A. */
-                 | CADC_SAMPLE_MASK(1U)  /* For converter A. */
+    pwm_duty =  CADC_SAMPLE_MASK(0U)    /* For converter A. */
+                | CADC_SAMPLE_MASK(1U)  /* For converter A. */
                  | CADC_SAMPLE_MASK(2U)  /* For converter A. */
-                 | CADC_SAMPLE_MASK(3U);  /* For converter A. */
+                  |CADC_SAMPLE_MASK(3U);  /* For converter A. */
     CADC_EnableSample(CADC_BASEADDR, pwm_duty, true);
     CADC_EnableSample(CADC_BASEADDR, (uint16_t)(~pwm_duty), false); /* Disable other sample slot. */
+ 
        CADC_DoSoftwareTriggerConverter(CADC_BASEADDR, kCADC_ConverterA);
 
 	  /* Wait the conversion to be done. */
@@ -356,20 +362,20 @@ uint16_t CADC_Read_ADC_Value(void)
  *
  *
  ******************************************************************************/
-
 void ADC_UVW_Sample_HALL_Value(void)
 {
-
-        uint16_t i,u[5],v[5],w[5];
-        uint16_t r=0,y=0,b=0;
+        uint8_t i=0;
+        uint16_t u[10],v[10],w[10];
         uint16_t sampleMask ;
+
              /* Enable the sample slot. */
-    sampleMask = CADC_SAMPLE_MASK(0U)    /* For converter A. */
+    sampleMask = CADC_SAMPLE_MASK(0U)    /* For converter A.  */  
                  | CADC_SAMPLE_MASK(1U)  /* For converter A. */
                  | CADC_SAMPLE_MASK(2U)  /* For converter A. */
                  | CADC_SAMPLE_MASK(3U);  /* For converter A. */
     CADC_EnableSample(CADC_BASEADDR, sampleMask, true);
     CADC_EnableSample(CADC_BASEADDR, (uint16_t)(~sampleMask), false); /* Disable other sample slot. */
+  
        CADC_DoSoftwareTriggerConverter(CADC_BASEADDR, kCADC_ConverterA);
        
 
@@ -378,38 +384,83 @@ void ADC_UVW_Sample_HALL_Value(void)
                (kCADC_ConverterAEndOfScanFlag & CADC_GetStatusFlags(DEMO_CADC_BASEADDR)))
         {
         }
-
-        /* Read the result value. */
-     //  if (sampleMask == (sampleMask & CADC_GetSampleReadyStatusFlags(DEMO_CADC_BASEADDR)))
-        {
-           for(i=0;i<5;i++)
-           {
-             u[i] = (int16_t)CADC_GetSampleResultValue(DEMO_CADC_BASEADDR, 2U);
-           
-              r=r+ u[i];
-          
-           
-             v[i] = (int16_t)CADC_GetSampleResultValue(DEMO_CADC_BASEADDR, 1U); 
-             y=y+v[i];
-        
-             
-             w[i] = (int16_t)CADC_GetSampleResultValue(DEMO_CADC_BASEADDR, 0U);
-             b=b+w[i];
-            
-           }
-         }
-            uSaHall = r/5 ;
-            vSaHall = y/5  ;
-            wSaHall = b/5  ;
-          DelayMs(1);
-         #ifdef DEBUG_PRINT  
-           // PRINTF("u= %d\r\n", uSaHall);
-           // PRINTF("v= %d\r\n", vSaHall);
-           // PRINTF("w= %d\r\n",wSaHall);
-         #endif 
     
-           CADC_ClearStatusFlags(DEMO_CADC_BASEADDR, kCADC_ConverterAEndOfScanFlag);
+        /* Read the result value. */
+       if (sampleMask == (sampleMask & CADC_GetSampleReadyStatusFlags(DEMO_CADC_BASEADDR))) // flags =1 准备读取样板
+        {
+        
+           u[i] = (int16_t)CADC_GetSampleResultValue(DEMO_CADC_BASEADDR, 0U); //ADCA_CHC7 --A
+           v[i] = (int16_t)CADC_GetSampleResultValue(DEMO_CADC_BASEADDR, 1U); //ADCA_CHC6  -B 
+           w[i] = (int16_t)CADC_GetSampleResultValue(DEMO_CADC_BASEADDR, 2U); //ADCA_CH3  - C
+
+            g_Adc16InterruptZeroFlag=CADC_GetSampleZeroCrossingStatusFlags(DEMO_CADC_BASEADDR);
+            
+        
+            g_Adc16InterruptHighFlag=CADC_GetSampleHighLimitStatusFlags(DEMO_CADC_BASEADDR);
+            
+             
+            // g_Adc16IneterruptLowFlag=CADC_GetSampleLowLimitStatusFlags(DEMO_CADC_BASEADDR);
+        }
+          uSaHall = u[i];
+          vSaHall = v[i];
+          wSaHall = w[i];
+          i++;
+         if(i==10) i=0;
+         
+         #if 0
+         #ifdef DEBUG_PRINT  
+            PRINTF("u= %d\r\n", uSaHall);
+            PRINTF("v= %d\r\n", vSaHall);
+            PRINTF("w= %d\r\n", wSaHall);
+            
+            PRINTF("h= %d\r\n", g_Adc16InterruptZeroFlag);
+            PRINTF("ze= %d\r\n",  g_Adc16InterruptHighFlag);
+         #endif
+         #endif  
+        CADC_ClearSampleHighLimitStatusFlags(DEMO_CADC_BASEADDR, 0U);
+        CADC_ClearSampleHighLimitStatusFlags(DEMO_CADC_BASEADDR, 1U);
+        CADC_ClearSampleHighLimitStatusFlags(DEMO_CADC_BASEADDR, 2U);
+
+        CADC_ClearSampleZeroCrossingStatusFlags(DEMO_CADC_BASEADDR, 0U);
+        CADC_ClearSampleZeroCrossingStatusFlags(DEMO_CADC_BASEADDR, 1U);
+        CADC_ClearSampleZeroCrossingStatusFlags(DEMO_CADC_BASEADDR, 2U);
+        #if 0
+          if(   g_Adc16InterruptZeroFlag > 0xf )
+            {
+                 PRINTF("11111111111\r\n");
+                 PRINTF("\r\n");
+                  EnableIRQ(ADC_LIMIT_IRQn);;
+                 //CADC_EnableInterrupts(DEMO_CADC_BASEADDR, kCADC_HighLimitInterruptEnable);
+                 CADC_EnableInterrupts(DEMO_CADC_BASEADDR, kCADC_ZeroCrossingInterruptEnable);
+                 
+            }
+          else 
+          {
+            // CADC_DisableInterrupts(DEMO_CADC_BASEADDR, kCADC_LowLimitInterruptEnable);
+             CADC_DisableInterrupts(DEMO_CADC_BASEADDR, kCADC_ZeroCrossingInterruptEnable);
+             DisableIRQ(ADC_LIMIT_IRQn);
+          }
+        #endif 
+        #if 0
+          if(g_Adc16InterruptHighFlag > 0xe)
+          {
+            
+            PRINTF("2222222222\r\n");
+                 PRINTF("\r\n");
+            EnableIRQ(ADC_LIMIT_IRQn);
+            CADC_EnableInterrupts(DEMO_CADC_BASEADDR, kCADC_HighLimitInterruptEnable);
+          }
+          else
+          {
+             DisableIRQ(ADC_LIMIT_IRQn);
+             CADC_DisableInterrupts(DEMO_CADC_BASEADDR, kCADC_HighLimitInterruptEnable);
+          }
+       #endif 
+       
+       
+       CADC_ClearStatusFlags(DEMO_CADC_BASEADDR, kCADC_ConverterAEndOfScanFlag);
+      // EnableIRQ(ADC_LIMIT_IRQn);
+     //  CADC_EnableInterrupts(DEMO_CADC_BASEADDR, kCADC_HighLimitInterruptEnable);
+            
 
 }
-
-

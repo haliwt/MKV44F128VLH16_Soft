@@ -21,15 +21,18 @@
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
-#define CADC_BASEADDR ADC
+#define ADC_LIMIT_IRQn                  ADC_ERR_IRQn
+#define ADC_LIMIT_IRQHandler            ADC_ERR_IRQHandler
+
+#define CADC_BASEADDR                   ADC
 
 #define CADC_CHANNEL1_NUMBER 7U     //2U
-#define CADC_CHANNEL1_ENABLE_DIFF    false//true  ADCA_CH2 -9PIN
+#define CADC_CHANNEL1_ENABLE_DIFF    false//true  ADCA_CHC7
 
 #define CADC_CHANNEL2_NUMBER 6U     //3U
-#define CADC_CHANNEL2_ENABLE_DIFF   false //true  ADCA_CH3 -10PIN
+#define CADC_CHANNEL2_ENABLE_DIFF   false //true  ADCA_CHC6 
 
-#define CADC_CHANNEL3_NUMBER 3U
+#define CADC_CHANNEL3_NUMBER 3U     // ADCA_CH3
 #define CADC_CHANNEL3_ENABLE_DIFF   false //true
 
 
@@ -48,7 +51,8 @@
 #define CADC_RESULT_REG_ADDR            0x4005c01cU
 
 #define DEMO_CADC_SAMPLE_COUNT 16U /* The cadc sample count. */
-
+extern volatile uint16_t g_Adc16InterruptZeroFlag;
+extern volatile uint16_t g_Adc16InterruptHighFlag;
 
 void ADC_CADC_Init(void);
 
@@ -63,7 +67,9 @@ void ADC_DMA_Init(void);
 uint16_t ADC_DMA_ReadValue(void);
 
 
-
+void ADC_Phase_U(void);
+void ADC_Phase_V(void);
+void ADC_Phase_W(void);
 
 
 #endif 

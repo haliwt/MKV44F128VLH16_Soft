@@ -7,7 +7,7 @@
 #include "led.h"
 
 
-/* ¶¨ÒåÒ»¸ö°´¼ü----*/
+/* ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½----*/
 typedef enum
 {
   KEY_UP   = 0,
@@ -45,16 +45,16 @@ typedef enum
 #define ABC_POWER_GPIO_PIN       		29//3
 
 
-#define BRAKE_KEY               PAin(1)   //É²³µ°´¼ü - °´Ò»´ÎÉ²³µ£¬ÔÙ°´Ò»´Î½â³ýÉ²³µ
-#define START_KEY               PEin(25)  //ÆðÍ£°´¼ü£¬µç»ú //PEin(30)  //ÓêË¢Æ÷°´¼ü£¬°´Ò»´ÎÒ»µµ£¬ÔÙ°´Ò»´Î¶þµµ£¬ÔÙ°´Ò»ÏÂ¹Ø±Õ
-#define DIR_KEY                 PEin(24)  //·½Ïò°´¼ü£¬µç»ú DIR_KEY3
-#define DIGITAL_ADD_KEY         PAin(12)  //Êý×Ö¼ÓËÙ     DIGITAL_ADD_KEY
-#define DIGITAL_REDUCE_KEY      PAin(13)  //Êý×Ö¼õËÙ
-#define DOOR_KEY          		PAin(2)   //³µÃÅ°´¼ü£¬
-#define HALL_SWITCH_KEY         PAin(4)   //ÓÐÎÞ»ô¶ûÇÐ»»£¬°´¼ü
-#define WHEEL_KEY          		PAin(5)   //³µÂÖÌ½²â°´¼ü
-#define WIPERS_KEY          	PEin(30)  //ÓêË¢Æ÷°´¼ü£¬°´Ò»´ÎÒ»µµ£¬ÔÙ°´Ò»´Î¶þµµ£¬ÔÙ°´Ò»ÏÂ¹Ø±Õ
-//#define AIR_KEY         		PEin(29)  //¿Õµ÷°´¼ü£¬°´Ò»´Î¿ª£¬ÔÙ°´Ò»´Î¹Ø±Õ//PAin(13)  
+#define BRAKE_KEY               PAin(1)   //É²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ - ï¿½ï¿½Ò»ï¿½ï¿½É²ï¿½ï¿½ï¿½ï¿½ï¿½Ù°ï¿½Ò»ï¿½Î½ï¿½ï¿½É²ï¿½ï¿½
+#define START_KEY               PEin(25)  //ï¿½ï¿½Í£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ //PEin(30)  //ï¿½ï¿½Ë¢ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½Ù°ï¿½Ò»ï¿½Î¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ù°ï¿½Ò»ï¿½Â¹Ø±ï¿½
+#define DIR_KEY                 PEin(24)  //ï¿½ï¿½ï¿½ò°´¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ DIR_KEY3
+#define DIGITAL_ADD_KEY         PAin(12)  //ï¿½ï¿½ï¿½Ö¼ï¿½ï¿½ï¿½     DIGITAL_ADD_KEY
+#define DIGITAL_REDUCE_KEY      PAin(13)  //ï¿½ï¿½ï¿½Ö¼ï¿½ï¿½ï¿½
+#define DOOR_KEY          		PAin(2)   //ï¿½ï¿½ï¿½Å°ï¿½ï¿½ï¿½ï¿½ï¿½
+#define HALL_SWITCH_KEY         PAin(4)   //ï¿½ï¿½ï¿½Þ»ï¿½ï¿½ï¿½ï¿½Ð»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+#define WHEEL_KEY          		PAin(5)   //ï¿½ï¿½ï¿½ï¿½Ì½ï¿½â°´ï¿½ï¿½
+#define WIPERS_KEY          	PEin(30)  //ï¿½ï¿½Ë¢ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½Ù°ï¿½Ò»ï¿½Î¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ù°ï¿½Ò»ï¿½Â¹Ø±ï¿½
+//#define AIR_KEY         		PEin(29)  //ï¿½Õµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò»ï¿½Î¿ï¿½ï¿½ï¿½ï¿½Ù°ï¿½Ò»ï¿½Î¹Ø±ï¿½//PAin(13)  
 #define ABC_POWER_KEY       	PEin(29)
 
 
@@ -76,12 +76,12 @@ typedef enum
 #define BRAKE_KEY_IRQ           PORTA_IRQn  //interrupt number
 //#define START_KEY_IRQ           PORTE_IRQn
 
-#define BARKE_KEY_IRQ_HANDLER   PORTA_IRQHandler   //BCD;Pin detect (Port E)--'startup_MKV46F16.s'  
+#define BARKE_KEY_IRQ_HANDLER      PORTA_IRQHandler   //BCD;Pin detect (Port E)--'startup_MKV46F16.s'  
 //#define START_KEY_IRQ_HANDLER   PORTE_IRQHandler   //DCD -PORTE_IRQHandler ;Pin detect (Port E)-'startup_MKV46F16.s' 
 
-/*³õÊ¼»¯°´¼ü*/
+/*ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½*/
 void KEY_Init(void);
-/* °´¼üÉ¨Ãè³ÌÐò */
+/* ï¿½ï¿½ï¿½ï¿½É¨ï¿½ï¿½ï¿½ï¿½ï¿½ */
 uint8_t KEY_Scan(uint8_t mode);
 
 
